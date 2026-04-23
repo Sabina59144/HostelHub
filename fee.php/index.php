@@ -17,8 +17,8 @@ $fees = $stmt->fetchAll(PDO::FETCH_ASSOC);
         <th>Student ID</th>
         <th>Type</th>
         <th>Amount</th>
-        <th>Status</th>
         <th>Due Date</th>
+        <th>Payment Status</th>
         <th>Action</th>
     </tr>
 
@@ -29,8 +29,13 @@ $fees = $stmt->fetchAll(PDO::FETCH_ASSOC);
         <td><?= $fee['student_id'] ?></td>
         <td><?= $fee['fee_type'] ?></td>
         <td><?= $fee['amount'] ?></td>
-        <td><?= $fee['status'] ?></td>
         <td><?= $fee['due_date'] ?></td>
+
+        
+        <td>
+            <?= $fee['is_paid'] == 1 ? 'Paid' : 'Unpaid' ?>
+        </td>
+
         <td>
             <a href="edit.php?id=<?= $fee['fee_id'] ?>">Edit</a> |
             <a href="delete.php?id=<?= $fee['fee_id'] ?>">Delete</a>

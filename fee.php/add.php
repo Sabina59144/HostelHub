@@ -1,34 +1,50 @@
 <?php
 include '../config/db.php';
 
-$stmt = $conn->query("SELECT * FROM fees");
-$fees = $stmt->fetchAll(PDO::FETCH_ASSOC);
+if (isset($_POST['submit'])) {
+
+    $receipt_number = $_POST['receipt_number'];
+    $student_id     = $_POST['student_id'];
+    $fee_type       = $_POST['fee_type'];
+    $amount         = $_POST['amount'];
+    $due_date       = $_POST['due_date'];
+    $notes          = $_POST['notes'];
+
+    $stmt = $conn->prepare("INSERT INTO fees 
+    (receipt_number, student_id, fee_type, amount, due_date, notes)
+    VALUES (?, ?, ?, ?, ?, ?)");
+
+    $stmt->execute([
+        $receipt_number,
+        $student_id,
+        $fee_type,
+        $amount,
+        $due_date,
+        $notes
+    ]);
+
+    echo "Fee added successfully!";
+}
 ?>
 
-<h2>Fees List</h2>
+<h2>Add Fee</h2>
 
-<a href="add.php">+ Add Fee</a>
+<form method="POST">
+    Receipt Number: <input type="text" name="receipt_number" required><br><br>
+    Student ID: <input type="number" name="student_id" required><br><br>
 
-<table border="1">
-<tr>
-    <th>ID</th>
-    <th>Student ID</th>
-    <th>Amount</th>
-    <th>Status</th>
-    <th>Action</th>
-</tr>
+    Fee Type:
+    <select name="fee_type">
+        <option value="rent">Rent</option>
+        <option value="deposit">Deposit</option>
+        <option value="utility">Utility</option>
+        <option value="fine">Fine</option>
+        <option value="other">Other</option>
+    </select><br><br>
 
-<?php foreach ($fees as $fee): ?>
-<tr>
-    <td><?= $fee['id'] ?></td>
-    <td><?= $fee['student_id'] ?></td>
-    <td><?= $fee['amount'] ?></td>
-    <td><?= $fee['status'] ?></td>
-    <td>
-        <a href="edit.php?id=<?= $fee['id'] ?>">Edit</a> |
-        <a href="delete.php?id=<?= $fee['id'] ?>">Delete</a>
-    </td>
-</tr>
-<?php endforeach; ?>
+    Amount: <input type="number" step="0.01" name="amount" required><br><br>
+    Due Date: <input type="date" name="due_date" required><br><br>
+    Notes: <textarea name="notes"></textarea><br><br>
 
-</table>
+    <button type="submit" name="submit">Save</button>
+</form>

@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Maintenance Plan</title>
+    <link rel="stylesheet" href="../../css/styles.css">
+</head>
+<body>
+
+<h2>Maintenance Module Plan</h2>
+
+<h3>Features to be built:</h3>
+<ul>
+    <li>Add Maintenance Request</li>
+    <li>List Requests</li>
+    <li>Edit & Update Requests</li>
+    <li>Delete Requests</li>
+</ul>
+
+<h3>Fields:</h3>
+<ul>
+    <li>Ticket Number</li>
+    <li>Room ID</li>
+    <li>Assigned To</li>
+    <li>Date Reported</li>
+    <li>Reported By</li>
+    <li>Status (Resolved / Not Resolved)</li>
+</ul>
+
+<hr />
+
+<h3>Add Maintenance Request</h3>
+<button id="openFormBtn">Open Add Request</button>
+
+<!-- Modal -->
+<div id="modalBackdrop" class="modal-backdrop" role="dialog" aria-modal="true" aria-hidden="true">
+    <div class="modal" role="document">
+        <div class="modal-header">
+            <h3>Add Maintenance Request</h3>
+            <button id="closeModal" class="modal-close" aria-label="Close">×</button>
+        </div>
+        <form id="maintenanceForm">
+            <div class="form-row">
+                <label for="ticket_number">Ticket Number*</label>
+                <input type="text" id="ticket_number" name="ticket_number" required />
+            </div>
+            <div class="form-row">
+                <label for="room_id">Room ID*</label>
+                <input type="text" id="room_id" name="room_id" required />
+            </div>
+            <div class="form-row">
+                <label for="assigned_to">Assigned To*</label>
+                <input type="text" id="assigned_to" name="assigned_to" required />
+            </div>
+            <div class="form-row">
+                <label for="date_reported">Date Reported*</label>
+                <input type="date" id="date_reported" name="date_reported" required />
+            </div>
+            <div class="form-row">
+                <label for="reported_by">Reported By*</label>
+                <input type="text" id="reported_by" name="reported_by" required />
+            </div>
+            <div class="form-row">
+                <label for="status">Status*</label>
+                <select id="status" name="status" required>
+                        <option value="">-- Select --</option>
+                        <option value="Not Resolved">Not Resolved</option>
+                        <option value="Resolved">Resolved</option>
+                </select>
+            </div>
+            <div style="margin-top:8px; text-align:right;">
+                <button type="submit">Submit Request</button>
+            </div>
+            <div id="formMessage" role="status" style="margin-top:8px;color:green;"></div>
+        </form>
+    </div>
+</div>
+
+<script type="module">
+import { validateMaintenanceForm, submitMaintenance } from '../../js/maintenance/validator.js';
+
+const form = document.getElementById('maintenanceForm');
+const msg = document.getElementById('formMessage');
+
+// Modal controls
+const openBtn = document.getElementById('openFormBtn');
+const backdrop = document.getElementById('modalBackdrop');
+const closeBtn = document.getElementById('closeModal');
+
+function openModal() {
+  backdrop.style.display = 'flex';
+  backdrop.setAttribute('aria-hidden', 'false');
+}
+
+function closeModal() {
+  backdrop.style.display = 'none';
+  backdrop.setAttribute('aria-hidden', 'true');
+}
+
+openBtn.addEventListener('click', openModal);
+closeBtn.addEventListener('click', closeModal);
+backdrop.addEventListener('click', (ev) => { if (ev.target === backdrop) closeModal(); });
+
+form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    msg.textContent = '';
+    msg.style.color = 'green';
+
+    const data = {
+        ticket_number: document.getElementById('ticket_number').value.trim(),
+        room_id: document.getElementById('room_id').value.trim(),
+        assigned_to: document.getElementById('assigned_to').value.trim(),
+        date_reported: document.getElementById('date_reported').value,
+        reported_by: document.getElementById('reported_by').value.trim(),
+        status: document.getElementById('status').value
+    };
+
+    const errors = validateMaintenanceForm(data);
+    if (errors.length) {
+        msg.style.color = 'red';
+        msg.textContent = errors.join(' ');
+        return;
+    }
+
+    try {
+        const json = await submitMaintenance('../../api/maintenance/submit_maintenance.php', data);
+        if (json.success) {
+            msg.style.color = 'green';
+            msg.textContent = 'Maintenance request submitted successfully.';
+            form.reset();
+            closeModal();
+        } else {
+            msg.style.color = 'red';
+            msg.textContent = json.errors ? json.errors.join(' ') : 'Submission failed.';
+        }
+    } catch (err) {
+        msg.style.color = 'red';
+        msg.textContent = 'Network or server error.';
+    }
+});
+</script>
+
+</body>
+</html>

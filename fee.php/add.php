@@ -1,5 +1,5 @@
 <?php
-include '../config/db.php';
+include '..//db.php';
 
 $stmt = $conn->query("SELECT * FROM fees");
 $fees = $stmt->fetchAll(PDO::FETCH_ASSOC);

@@ -1,15 +1,16 @@
 <?php
-require_once("../db.php");
+require_once("../config/db.php");
 
 try {
-    $stmt = $db->query("SELECT name FROM sqlite_master WHERE type='table' AND name='maintenance'");
-    $table = $stmt->fetch();
+    $stmt = $db->query("SHOW TABLES LIKE 'maintenance'");
+    $result = $stmt->fetch();
 
-    if ($table) {
+    if ($result) {
         echo "Maintenance table exists ✅";
     } else {
         echo "Maintenance table NOT found ❌";
     }
+
 } catch (PDOException $e) {
     echo "Error: " . $e->getMessage();
 }

@@ -1,11 +1,14 @@
 <?php
-include '../config/db.php';
+require_once("../includes/db.php");
 
-$id = $_GET['id'];
+if (!isset($_GET['id'])) {
+    die("Invalid request");
+}
 
-$stmt = $conn->prepare("DELETE FROM fees WHERE fee_id = ?");
+$id = (int) $_GET['id'];
+
+$stmt = $db->prepare("DELETE FROM fees WHERE fee_id = ?");
 $stmt->execute([$id]);
 
-header("Location: list.php");
+header("Location: index.php");
 exit;
-?>

@@ -12,3 +12,11 @@ try {
     die("Connection failed: " . $e->getMessage());
 }
 ?>
+
+<?php
+$conn = mysqli_connect("localhost","root","","hostel_db");
+
+if(!$conn){
+    die("Connection Failed");
+}
+?>

@@ -262,7 +262,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             <?php echo ($room_id == $room['room_id']) ? 'selected' : ''; ?>>
                             <?php echo htmlspecialchars($room['room_number'] . ' (' . $room['room_type'] . ')'); ?>
                         </option>
-                    <?php endwhile; ?>
+                    <?php endforeach; ?>
                 </select>
                 <div class="hint">Optional — can be assigned later</div>
             </div>

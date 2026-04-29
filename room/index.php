@@ -25,11 +25,7 @@
 <!-- ── Main Content ── -->
 <div class="container">
 
-    <!-- Week 1 setup banner -->
-    <div class="week-banner">
-        <strong>Week 1 — Setup Complete ✅</strong>
-       
-    </div>
+   
 
     <!-- Page heading -->
     <div class="page-title">

@@ -1,82 +1,189 @@
+<?php
+include 'db.php';
+
+$result = mysqli_query($conn, "SELECT * FROM rooms");
+?>
 
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>HostelHub — Room Module</title>
-    <a href="style.css"></a>
+<title>Room Management System</title>
+
+<style>
+body{
+    font-family: Arial;
+    background:#f2f2f2;
+    margin:0;
+    padding:20px;
+}
+
+.container{
+    width:90%;
+    margin:auto;
+}
+
+h1{
+    text-align:center;
+    color:#333;
+}
+
+.form-box, .table-box{
+    background:white;
+    padding:20px;
+    margin-bottom:20px;
+    border-radius:8px;
+}
+
+input, select{
+    width:100%;
+    padding:10px;
+    margin:8px 0;
+}
+
+button{
+    padding:10px 20px;
+    background:green;
+    color:white;
+    border:none;
+    cursor:pointer;
+}
+
+table{
+    width:100%;
+    border-collapse:collapse;
+}
+
+table th, table td{
+    border:1px solid #ddd;
+    padding:10px;
+    text-align:center;
+}
+
+th{
+    background:#333;
+    color:white;
+}
+
+.available{
+    color:green;
+    font-weight:bold;
+}
+
+.pending{
+    color:orange;
+    font-weight:bold;
+}
+
+a{
+    text-decoration:none;
+    padding:5px 10px;
+}
+
+.edit{
+    background:blue;
+    color:white;
+}
+
+.delete{
+    background:red;
+    color:white;
+}
+</style>
+
 </head>
 <body>
 
-<!-- ── Navigation Bar ── -->
-<nav class="navbar">
-    <h1>🏨 HostelHub</h1>
-    <div>
-        <!-- Show the logged-in user's name from the session -->
-        <span class="user-info">Logged in as: <strong><?php echo htmlspecialchars($_SESSION['username']); ?></strong></span>
-        <!-- Link back to the main dashboard -->
-        <a href="../dashboard.php">🏠 Dashboard</a>
-        <!-- Logout link -->
-        <a href="../logout.php">🚪 Logout</a>
-    </div>
-</nav>
-
-<!-- ── Main Content ── -->
 <div class="container">
 
-   
+<h1>Room Management System</h1>
 
-    <!-- Page heading -->
-    <div class="page-title">
-        <h2>🛏️ Room Module</h2>
-        <p>Manage hostel room records — add, view, edit, and search rooms</p>
-    </div>
+<!-- Add Room Form -->
+<div class="form-box">
 
-    <!-- Summary cards showing quick stats from the database -->
-    <div class="summary-cards">
-        <div class="card">
-            <div class="number"><?php echo $totalRooms; ?></div>
-            <div class="label">Total Rooms</div>
-        </div>
-        <div class="card">
-            <div class="number"><?php echo $totalAvail; ?></div>
-            <div class="label">Available Rooms</div>
-        </div>
-        <div class="card">
-            <div class="number"><?php echo $totalEnsuite; ?></div>
-            <div class="label">Ensuite Rooms</div>
-        </div>
-    </div>
+<h2>Add New Room</h2>
 
-    <!-- Module action buttons — these pages will be built in Weeks 2-4 -->
-    <div class="actions">
-        <a href="add_room.php" class="action-btn">
-            <div class="icon">➕</div>
-            <div class="btn-label">Add Room</div>
-            <div class="btn-desc">Register a new room</div>
-        </a>
-        <a href="list_rooms.php" class="action-btn">
-            <div class="icon">📋</div>
-            <div class="btn-label">All Rooms</div>
-            <div class="btn-desc">View all room records</div>
-        </a>
-        <a href="search_room.php" class="action-btn">
-            <div class="icon">🔍</div>
-            <div class="btn-label">Find Room</div>
-            <div class="btn-desc">Search by room number</div>
-        </a>
-        <a href="filter_rooms.php" class="action-btn">
-            <div class="icon">🗂️</div>
-            <div class="btn-label">Filter Rooms</div>
-            <div class="btn-desc">Filter by type or availability</div>
-        </a>
-    </div>
+<form action="save-room.php" method="POST">
 
-</div><!-- end container -->
+<input type="text" name="room_number" placeholder="Room Number" required>
+
+<select name="room_type" required>
+<option value="">Select Room Type</option>
+<option value="single">Single</option>
+<option value="double">Double</option>
+<option value="triple">Triple</option>
+</select>
+
+<input type="number" name="capacity" placeholder="Capacity" required>
+
+<input type="number" step="0.01" name="price" placeholder="Monthly Price" required>
+
+<select name="ensuite" required>
+<option value="">Ensuite Facility</option>
+<option value="1">Yes</option>
+<option value="0">No</option>
+</select>
+
+<input type="date" name="available_from" required>
+
+<button type="submit">Add Room</button>
+
+</form>
+
+</div>
+
+<!-- Room List -->
+<div class="table-box">
+
+<h2>All Rooms</h2>
+
+<table>
+
+<tr>
+<th>ID</th>
+<th>Room No</th>
+<th>Type</th>
+<th>Capacity</th>
+<th>Price</th>
+<th>Ensuite</th>
+<th>Status</th>
+<th>Actions</th>
+</tr>
+
+<?php while($row = mysqli_fetch_assoc($result)) { ?>
+
+<tr>
+
+<td><?php echo $row['room_id']; ?></td>
+<td><?php echo $row['room_number']; ?></td>
+<td><?php echo ucfirst($row['room_type']); ?></td>
+<td><?php echo $row['capacity']; ?></td>
+<td>$<?php echo $row['price_per_month']; ?></td>
+<td><?php echo $row['ensuite_facility'] ? 'Yes' : 'No'; ?></td>
+
+<td>
+<?php
+if($row['available_from'] <= date('Y-m-d')){
+    echo "<span class='available'>Available</span>";
+}else{
+    echo "<span class='pending'>Coming Soon</span>";
+}
+?>
+</td>
+
+<td>
+<a class="edit" href="edit-room.php?id=<?php echo $row['room_id']; ?>">Edit</a>
+<a class="delete" href="delete-room.php?id=<?php echo $row['room_id']; ?>" onclick="return confirm('Delete this room?')">Delete</a>
+</td>
+
+</tr>
+
+<?php } ?>
+
+</table>
+
+</div>
+
+</div>
 
 </body>
 </html>
-<?php
-mysqli_close($conn);
-?>

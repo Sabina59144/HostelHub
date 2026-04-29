@@ -8,19 +8,16 @@ if (!isset($_SESSION['user_id'])) {
 require_once '../includes/db.php';
 
 // Get total students
-$result        = mysqli_query($conn, "SELECT COUNT(*) AS total FROM students");
-$row           = mysqli_fetch_assoc($result);
-$totalStudents = $row['total'];
+$stmt          = $db->query("SELECT COUNT(*) AS total FROM students");
+$totalStudents = $stmt->fetch()['total'];
 
 // Get active students
-$activeResult = mysqli_query($conn, "SELECT COUNT(*) AS cnt FROM students WHERE status = 1");
-$activeRow    = mysqli_fetch_assoc($activeResult);
-$totalActive  = $activeRow['cnt'];
+$stmt        = $db->query("SELECT COUNT(*) AS cnt FROM students WHERE status = 1");
+$totalActive = $stmt->fetch()['cnt'];
 
 // Get unassigned students
-$unassignedResult = mysqli_query($conn, "SELECT COUNT(*) AS cnt FROM students WHERE room_id IS NULL");
-$unassignedRow    = mysqli_fetch_assoc($unassignedResult);
-$totalUnassigned  = $unassignedRow['cnt'];
+$stmt            = $db->query("SELECT COUNT(*) AS cnt FROM students WHERE room_id IS NULL");
+$totalUnassigned = $stmt->fetch()['cnt'];
 ?>
 
 <!DOCTYPE html>
@@ -82,28 +79,4 @@ $totalUnassigned  = $unassignedRow['cnt'];
         <a href="add_student.php" class="action-btn">
             <div class="icon"></div>
             <div class="btn-label">Add Student</div>
-            <div class="btn-desc">Register a new student</div>
-        </a>
-        <a href="list_students.php" class="action-btn">
-            <div class="icon">📋</div>
-            <div class="btn-label">All Students</div>
-            <div class="btn-desc">View all student records</div>
-        </a>
-        <a href="search_student.php" class="action-btn">
-            <div class="icon">🔍</div>
-            <div class="btn-label">Find Student</div>
-            <div class="btn-desc">Search by name or ID</div>
-        </a>
-        <a href="filter_students.php" class="action-btn">
-            <div class="icon">🗂️</div>
-            <div class="btn-label">Filter Students</div>
-            <div class="btn-desc">Filter by status or room</div>
-        </a>
-    </div>
-
-</div><!-- end container -->
-
-</body>
-
-<?php mysqli_close($conn); ?>
-</html>
+            <div class="btn-desc">Register a new student</d

@@ -10,7 +10,7 @@ if (!isset($_SESSION['user_id'])) {
 require_once '../includes/db.php';
 
 // ── Get all rooms for the dropdown ────────────────────────────
-$roomsResult = mysqli_query($conn, "SELECT room_id, room_number, room_type FROM rooms ORDER BY room_number");
+$roomsResult = $db->query("SELECT room_id, room_number, room_type FROM rooms ORDER BY room_number")->fetchAll();
 
 // ── Initialise variables ──────────────────────────────────────
 $errors         = [];
@@ -52,40 +52,31 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     // Check student_number is unique
     if (empty($errors)) {
-        $checkNum = mysqli_prepare($conn, "SELECT student_id FROM students WHERE student_number = ?");
-        mysqli_stmt_bind_param($checkNum, "s", $student_number);
-        mysqli_stmt_execute($checkNum);
-        mysqli_stmt_store_result($checkNum);
-        if (mysqli_stmt_num_rows($checkNum) > 0) {
+        $checkNum = $db->prepare("SELECT student_id FROM students WHERE student_number = ?");
+        $checkNum->execute([$student_number]);
+        if ($checkNum->rowCount() > 0) {
             $errors[] = "This student number already exists. Please use a unique number.";
         }
-        mysqli_stmt_close($checkNum);
     }
 
     // Check email is unique
     if (empty($errors)) {
-        $checkEmail = mysqli_prepare($conn, "SELECT student_id FROM students WHERE email = ?");
-        mysqli_stmt_bind_param($checkEmail, "s", $email);
-        mysqli_stmt_execute($checkEmail);
-        mysqli_stmt_store_result($checkEmail);
-        if (mysqli_stmt_num_rows($checkEmail) > 0) {
+        $checkEmail = $db->prepare("SELECT student_id FROM students WHERE email = ?");
+        $checkEmail->execute([$email]);
+        if ($checkEmail->rowCount() > 0) {
             $errors[] = "This email address is already registered.";
         }
-        mysqli_stmt_close($checkEmail);
     }
 
     // ── Insert into database if no errors ─────────────────────
     if (empty($errors)) {
-        $stmt = mysqli_prepare($conn,
+        $dob  = !empty($date_of_birth) ? $date_of_birth : null;
+        $stmt = $db->prepare(
             "INSERT INTO students (student_number, full_name, email, date_of_birth, room_id, status)
              VALUES (?, ?, ?, ?, ?, ?)"
         );
-        $dob = !empty($date_of_birth) ? $date_of_birth : null;
-        mysqli_stmt_bind_param($stmt, "ssssis",
-            $student_number, $full_name, $email, $dob, $room_id, $status
-        );
 
-        if (mysqli_stmt_execute($stmt)) {
+        if ($stmt->execute([$student_number, $full_name, $email, $dob, $room_id, $status])) {
             $success        = "Student '{$full_name}' has been registered successfully!";
             // Clear form fields after successful insert
             $student_number = $full_name = $email = $date_of_birth = "";
@@ -93,7 +84,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         } else {
             $errors[] = "Something went wrong. Please try again.";
         }
-        mysqli_stmt_close($stmt);
     }
 }
 ?>
@@ -266,9 +256,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <select id="room_id" name="room_id">
                     <option value="">-- No room assigned yet --</option>
                     <?php
-                    // Reset rooms result to loop from beginning
-                    mysqli_data_seek($roomsResult, 0);
-                    while ($room = mysqli_fetch_assoc($roomsResult)):
+                    foreach ($roomsResult as $room):
                     ?>
                         <option value="<?php echo $room['room_id']; ?>"
                             <?php echo ($room_id == $room['room_id']) ? 'selected' : ''; ?>>
@@ -292,4 +280,4 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 </body>
 </html>
-<?php mysqli_close($conn); ?>
+<?php $db = null; ?>

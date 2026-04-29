@@ -1,3 +1,27 @@
+<?php
+session_start();
+if (!isset($_SESSION['user_id'])) {
+    header("Location: ../login.php");
+    exit();
+}
+
+require_once '../includes/db.php';
+
+// Get total students
+$result        = mysqli_query($conn, "SELECT COUNT(*) AS total FROM students");
+$row           = mysqli_fetch_assoc($result);
+$totalStudents = $row['total'];
+
+// Get active students
+$activeResult = mysqli_query($conn, "SELECT COUNT(*) AS cnt FROM students WHERE status = 1");
+$activeRow    = mysqli_fetch_assoc($activeResult);
+$totalActive  = $activeRow['cnt'];
+
+// Get unassigned students
+$unassignedResult = mysqli_query($conn, "SELECT COUNT(*) AS cnt FROM students WHERE room_id IS NULL");
+$unassignedRow    = mysqli_fetch_assoc($unassignedResult);
+$totalUnassigned  = $unassignedRow['cnt'];
+?>
 
 <!DOCTYPE html>
 <html lang="en">
@@ -5,7 +29,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>HostelHub — Student Module</title>
-    <link rel="stylesheet" href="../../css/styles.css">
+    <link rel="stylesheet" href="../css/style.css">
 </head>
 <body>
 
@@ -80,4 +104,6 @@
 </div><!-- end container -->
 
 </body>
+
+<?php mysqli_close($conn); ?>
 </html>

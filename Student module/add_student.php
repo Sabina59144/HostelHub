@@ -7,7 +7,7 @@ if (!isset($_SESSION['user_id'])) {
 }
 
 // ── Connect to database ───────────────────────────────────────
-require_once 'config/db.php';
+require_once '../includes/db.php';
 
 // ── Get all rooms for the dropdown ────────────────────────────
 $roomsResult = mysqli_query($conn, "SELECT room_id, room_number, room_type FROM rooms ORDER BY room_number");

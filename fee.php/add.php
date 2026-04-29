@@ -37,13 +37,15 @@ if (isset($_POST['submit'])) {
 
 <h2>Add Fee</h2>
 
-<?php if ($message) echo "<p>$message</p>"; ?>
+<?php if ($message) echo "<p style='color:red;'>$message</p>"; ?>
 
 <form method="POST">
 
-Receipt Number: <input type="text" name="receipt_number" required><br><br>
+Receipt Number:
+<input type="text" name="receipt_number" required><br><br>
 
-Student ID: <input type="number" name="student_id" required><br><br>
+Student ID:
+<input type="number" name="student_id" required><br><br>
 
 Fee Type:
 <select name="fee_type">
@@ -54,10 +56,25 @@ Fee Type:
     <option value="other">Other</option>
 </select><br><br>
 
-Amount: <input type="number" step="0.01" name="amount" required><br><br>
+Amount:
+<input type="number" step="0.01" name="amount" required><br><br>
 
-Due Date: <input type="date" name="due_date" required><br><br>
+<!-- ✅ CALENDAR FIELD -->
+Due Date:
+<input type="text" id="due_date" name="due_date" required readonly><br><br>
 
 <button type="submit" name="submit">Save</button>
 
 </form>
+
+<!-- ✅ FLATPICKR CALENDAR LIBRARY -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+
+<script>
+flatpickr("#due_date", {
+    dateFormat: "Y-m-d",
+    allowInput: false
+});
+</script>

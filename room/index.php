@@ -206,7 +206,7 @@ $recentRooms = $db->query(
 
 <!-- ── Navbar ── -->
 <nav class="navbar">
-    <h1>🏨 HostelHub</h1>
+    <h1><img src="../room/home.png" alt="home"></h1>
     <div>
         <span style="font-size:13px; opacity:0.85;">Logged in as:
             <strong><?php echo isset($_SESSION['username']) ? htmlspecialchars($_SESSION['username']) : 'Guest'; ?></strong>

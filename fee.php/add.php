@@ -46,11 +46,18 @@ if (isset($_POST['submit'])) {
 <html>
 <head>
     <title>Add Fee</title>
+
+    <!-- CSS -->
+    <link rel="stylesheet" href="style.css">
+
+    <!-- Flatpickr -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
 </head>
 <body>
 
-<h2>Add Fee</h2>
+<div class="bill-card">
+
+<h2>Generate Fee Entry</h2>
 
 <?php if ($message): ?>
     <p style="color:red;"><?= $message ?></p>
@@ -59,11 +66,10 @@ if (isset($_POST['submit'])) {
 <form method="POST">
 
     Receipt Number:
-    <input type="text" name="receipt_number" value="<?= $receipt_number ?>" required>
-    <br><br>
+   <input type="text" name="receipt_number" value="<?= $receipt_number ?>" required>
 
     Student ID:
-    <input type="number" name="student_id" required><br><br>
+    <input type="number" name="student_id" required>
 
     Fee Type:
     <select name="fee_type" required>
@@ -73,17 +79,19 @@ if (isset($_POST['submit'])) {
         <option value="fine">Fine</option>
         <option value="laundry">Laundry</option>
         <option value="other">Other</option>
-    </select><br><br>
+    </select>
 
     Amount:
-    <input type="number" step="0.01" name="amount" required><br><br>
+    <input type="number" step="0.01" name="amount" required>
 
     Due Date:
-    <input type="text" id="due_date" name="due_date" required readonly><br><br>
+    <input type="text" id="due_date" name="due_date" required readonly>
 
-    <button type="submit" name="submit">Save</button>
+    <button type="submit" name="submit">Confirm Fee Entry</button>
 
 </form>
+
+</div>
 
 <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 <script>

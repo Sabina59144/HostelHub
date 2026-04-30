@@ -1,10 +1,10 @@
 <?php
-// session_start();
-// Temporarily disabled — uncomment when login.php is ready
-// if (!isset($_SESSION['user_id'])) {
-//     header("Location: ../login.php");
-//     exit();
-// }
+session_start();
+
+if (!isset($_SESSION['user_id'])) {
+    header("Location: ../login.php");
+    exit();
+}
 
 
 require_once '../includes/db.php';
@@ -287,17 +287,4 @@ $recentStudents = $recentStmt->fetchAll();
                     </td>
                     <td>
                         <a href="edit_student.php?id=<?php echo $s['student_id']; ?>"
-                           style="color:#B71C1C; font-size:13px; text-decoration:none;">Edit</a>
-                    </td>
-                </tr>
-                <?php endforeach; ?>
-            </tbody>
-        </table>
-        <?php endif; ?>
-    </div>
-
-</div><!-- end container -->
-
-</body>
-</html>
-<?php $db = null; ?>
+                           style="

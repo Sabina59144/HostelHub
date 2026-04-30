@@ -1,20 +1,19 @@
 <?php
 $host = "localhost";
-$user = "root";
+$dbname = "hostelhub";
+$username = "root";
 $password = "";
-$database = "hostelhub";
 
 try {
     $db = new PDO(
-        "mysql:host=$host;dbname=$database;charset=utf8mb4",
-        $user,
+        "mysql:host=$host;dbname=$dbname;charset=utf8mb4",
+        $username,
         $password
     );
 
     $db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-    $db->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_ASSOC);
 
-} catch (PDOException $e) {
+} catch(PDOException $e) {
     die("Connection failed: " . $e->getMessage());
 }
 ?>

@@ -3,56 +3,78 @@ require_once("../includes/db.php");
 
 $stmt = $db->prepare("SELECT * FROM fees ORDER BY fee_id DESC");
 $stmt->execute();
-$fees = $stmt->fetchAll();
+$fees = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 $today = date('Y-m-d');
 ?>
 
-<h2>Fees List</h2>
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Fees List</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
 
-<a href="add.php">+ Add Fee</a>
-<br><br>
+<div class="container">
 
-<table border="1" cellpadding="10">
+    <h2>Hostel Fee Records</h2>
 
-<tr>
-    <th>ID</th>
-    <th>Receipt</th>
-    <th>Student</th>
-    <th>Type</th>
-    <th>Amount</th>
-    <th>Due Date</th>
-    <th>Status</th>
-    <th>Action</th>
-</tr>
+    <a href="add.php" class="add-btn">+ Add Fee</a>
 
-<?php foreach ($fees as $fee): ?>
+    <table>
+        <tr>
+            <th>ID</th>
+            <th>Receipt</th>
+            <th>Student</th>
+            <th>Type</th>
+            <th>Amount</th>
+            <th>Due Date</th>
+            <th>Status</th>
+            <th>Action</th>
+        </tr>
 
-<?php
-if ($fee['is_paid'] !== null) {
-    $status = "Paid (" . $fee['is_paid'] . ")";
-} elseif ($fee['due_date'] < $today) {
-    $status = "Overdue";
-} else {
-    $status = "Unpaid";
-}
-?>
+        <?php foreach ($fees as $fee): ?>
 
-<tr>
-    <td><?= $fee['fee_id'] ?></td>
-    <td><?= htmlspecialchars($fee['receipt_number']) ?></td>
-    <td><?= htmlspecialchars($fee['student_id']) ?></td>
-    <td><?= htmlspecialchars($fee['fee_type']) ?></td>
-    <td><?= htmlspecialchars($fee['amount']) ?></td>
-    <td><?= htmlspecialchars($fee['due_date']) ?></td>
-    <td><?= $status ?></td>
+        <?php
+        if ($fee['is_paid'] == 1) {
+            $status = "Paid";
+            $statusClass = "paid";
+        } elseif ($fee['due_date'] < $today) {
+            $status = "Overdue";
+            $statusClass = "overdue";
+        } else {
+            $status = "Unpaid";
+            $statusClass = "unpaid";
+        }
+        ?>
 
-    <td>
-        <a href="edit.php?id=<?= $fee['fee_id'] ?>">Mark Paid</a> |
-        <a href="delete.php?id=<?= $fee['fee_id'] ?>" onclick="return confirm('Delete?')">Delete</a>
-    </td>
-</tr>
+        <tr>
+            <td><?= $fee['fee_id'] ?></td>
+            <td><?= htmlspecialchars($fee['receipt_number']) ?></td>
+            <td><?= htmlspecialchars($fee['student_id']) ?></td>
+            <td><?= htmlspecialchars($fee['fee_type']) ?></td>
+            <td>$<?= htmlspecialchars($fee['amount']) ?></td>
+            <td><?= htmlspecialchars($fee['due_date']) ?></td>
 
-<?php endforeach; ?>
+            <td class="<?= $statusClass ?>">
+                <?= $status ?>
+            </td>
 
-</table>
+            <td>
+                <a class="pay-btn" href="edit.php?id=<?= $fee['fee_id'] ?>">Mark Paid</a>
+                <a class="delete-btn"
+                   href="delete.php?id=<?= $fee['fee_id'] ?>"
+                   onclick="return confirm('Delete this fee record?')">
+                   Delete
+                </a>
+            </td>
+        </tr>
+
+        <?php endforeach; ?>
+    </table>
+
+</div>
+
+</body>
+</html>

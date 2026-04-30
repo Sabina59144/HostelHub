@@ -7,19 +7,17 @@ $message = "";
 $stmt = $db->query("SELECT MAX(fee_id) AS last_id FROM fees");
 $row = $stmt->fetch(PDO::FETCH_ASSOC);
 
-$next_id = $row['last_id'] + 1;
+$next_id = ($row['last_id'] ?? 0) + 0;
 $receipt_number = "RCP-" . date("Y") . "-" . str_pad($next_id, 4, "0", STR_PAD_LEFT);
 
-
-// Form submit
 if (isset($_POST['submit'])) {
 
-    $student_id = (int) $_POST['student_id'];
-    $fee_type   = $_POST['fee_type'];
-    $amount     = (float) $_POST['amount'];
-    $due_date   = $_POST['due_date'];
+    $receipt_number = trim($_POST['receipt_number']);
+    $student_id     = (int) $_POST['student_id'];
+    $fee_type       = $_POST['fee_type'];
+    $amount         = (float) $_POST['amount'];
+    $due_date       = $_POST['due_date'];
 
-    // Validation
     if ($amount <= 0) {
         $message = "Amount must be greater than 0.";
     } else {
@@ -48,8 +46,6 @@ if (isset($_POST['submit'])) {
 <html>
 <head>
     <title>Add Fee</title>
-
-    <!-- Flatpickr Calendar -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
 </head>
 <body>
@@ -63,12 +59,11 @@ if (isset($_POST['submit'])) {
 <form method="POST">
 
     Receipt Number:
-    <input type="text" name="receipt_number" value="<?= $receipt_number ?>" readonly>
+    <input type="text" name="receipt_number" value="<?= $receipt_number ?>" required>
     <br><br>
 
     Student ID:
-    <input type="number" name="student_id" required>
-    <br><br>
+    <input type="number" name="student_id" required><br><br>
 
     Fee Type:
     <select name="fee_type" required>
@@ -76,28 +71,24 @@ if (isset($_POST['submit'])) {
         <option value="deposit">Deposit</option>
         <option value="utility">Utility</option>
         <option value="fine">Fine</option>
+        <option value="laundry">Laundry</option>
         <option value="other">Other</option>
-    </select>
-    <br><br>
+    </select><br><br>
 
     Amount:
-    <input type="number" step="0.01" name="amount" required>
-    <br><br>
+    <input type="number" step="0.01" name="amount" required><br><br>
 
     Due Date:
-    <input type="text" id="due_date" name="due_date" required readonly>
-    <br><br>
+    <input type="text" id="due_date" name="due_date" required readonly><br><br>
 
     <button type="submit" name="submit">Save</button>
 
 </form>
 
 <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
-
 <script>
 flatpickr("#due_date", {
-    dateFormat: "Y-m-d",
-    allowInput: false
+    dateFormat: "Y-m-d"
 });
 </script>
 

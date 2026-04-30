@@ -1,9 +1,7 @@
 <?php
-// login.php
 require_once("includes/session.php");
 require_once("includes/db.php");
 
-// If already logged in, go straight to dashboard
 if (isLoggedIn()) {
     header("Location: dashboard.php");
     exit();
@@ -42,71 +40,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login — HostelHub</title>
-    <style>
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-        body {
-            font-family: 'Segoe UI', sans-serif;
-            background: #f5f5f5;
-            display: flex; align-items: center; justify-content: center;
-            min-height: 100vh;
-        }
-        .login-container {
-            background: white; border-radius: 12px;
-            padding: 40px 36px; width: 100%; max-width: 400px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
-        }
-        .login-header { text-align: center; margin-bottom: 28px; }
-        .login-logo { font-size: 48px; margin-bottom: 8px; }
-        .login-header h1 { font-size: 24px; color: #B71C1C; }
-        .login-header p  { font-size: 13px; color: #888; margin-top: 4px; }
-
-        .alert-error {
-            background: #ffebee; border: 1px solid #ef9a9a;
-            color: #c62828; padding: 10px 14px;
-            border-radius: 6px; font-size: 13px; margin-bottom: 20px;
-        }
-        .form-group { margin-bottom: 18px; }
-        .form-group label {
-            display: block; font-size: 13px;
-            font-weight: 600; margin-bottom: 6px; color: #444;
-        }
-        .form-group input {
-            width: 100%; padding: 10px 12px;
-            border: 1px solid #ddd; border-radius: 6px;
-            font-size: 14px; font-family: inherit;
-            transition: border-color 0.2s;
-        }
-        .form-group input:focus { outline: none; border-color: #B71C1C; }
-
-        .password-wrapper { position: relative; }
-        .password-wrapper input { padding-right: 44px; }
-        .toggle-password {
-            position: absolute; right: 10px; top: 50%;
-            transform: translateY(-50%);
-            background: none; border: none; cursor: pointer;
-            font-size: 16px; color: #888;
-        }
-
-        .btn-login {
-            width: 100%; background: #B71C1C; color: white;
-            border: none; padding: 12px;
-            border-radius: 6px; font-size: 15px;
-            font-weight: 700; cursor: pointer; margin-top: 6px;
-        }
-        .btn-login:hover { background: #8B0000; }
-
-        .login-footer {
-            text-align: center; font-size: 12px;
-            color: #aaa; margin-top: 24px;
-        }
-        .forget-password {
-            text-align: center; margin-top: 14px; font-size: 13px;
-        }
-        .forget-password a { color: #B71C1C; text-decoration: none; }
-        .forget-password a:hover { text-decoration: underline; }
-    </style>
+    <link rel="stylesheet" href="css/style.css">
 </head>
-<body>
+<body class="login-page">
     <div class="login-container">
         <div class="login-header">
             <div class="login-logo">🏨</div>
@@ -114,9 +50,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <p>Student Hostel Management System</p>
         </div>
 
-        <?php if (!empty($error)): ?>
-            <div class="alert-error">⚠️ <?= htmlspecialchars($error) ?></div>
-        <?php endif; ?>
+        <?php
+session_start(); if (!empty($error)): ?>
+            <div class="alert alert-error"><?= htmlspecialchars($error) ?></div>
+        <?php
+session_start(); endif; ?>
 
         <form method="POST" action="login.php">
             <div class="form-group">
@@ -138,7 +76,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <button type="submit" class="btn-login">Login</button>
         </form>
 
-        <p class="forget-password">
+        <p class="forgot-password">
             <a href="forget_password.php">Forgot your password?</a>
         </p>
         <p class="login-footer">HostelHub &copy; <?= date('Y') ?></p>

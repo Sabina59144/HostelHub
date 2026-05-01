@@ -1,6 +1,7 @@
 <?php
-require_once '../includes/session.php';
-requireLogin();
+// // require_once '../includes/session.php';
+session_start();
+// requireLogin();
 require_once '../includes/db.php';
 
 // ── Stats ─────────────────────────────────────────────────────────────
@@ -159,7 +160,7 @@ $recentStudents = $recentStmt->fetchAll();
     <h1>🏨 HostelHub</h1>
     <div>
         <span style="font-size:13px; opacity:0.85;">Logged in as:
-            <strong><?php echo htmlspecialchars($_SESSION['username']); ?></strong>
+            <strong><?php echo htmlspecialchars($_SESSION['username'] ?? 'Guest'); ?></strong>
         </span>
         <a href="../dashboard.php">🏠 Dashboard</a>
         <a href="../logout.php">🚪 Logout</a>
@@ -281,4 +282,17 @@ $recentStudents = $recentStmt->fetchAll();
                     </td>
                     <td>
                         <a href="edit_student.php?id=<?php echo $s['student_id']; ?>"
-                           style="
+                           style="color:#B71C1C; font-size:13px; text-decoration:none;">Edit</a>
+                    </td>
+                </tr>
+                <?php endforeach; ?>
+            </tbody>
+        </table>
+        <?php endif; ?>
+    </div>
+
+</div><!-- end container -->
+
+</body>
+</html>
+<?php $db = null; ?>

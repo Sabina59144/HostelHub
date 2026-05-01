@@ -7,8 +7,7 @@ $password = "";
 try {
     $db = new PDO("mysql:host=$host;dbname=$dbname", $username, $password);
     $db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-
-    echo "DB Connected ✅"; // For demo (you can remove later)
+    // DB connection established. Do not echo here - included scripts expect JSON only.
 } catch (PDOException $e) {
     die("Connection failed: " . $e->getMessage());
 }

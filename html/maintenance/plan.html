@@ -1,55 +1,41 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Maintenance Plan</title>
-    <link rel="stylesheet" href="../../css/styles.css">
+    <title>Add Maintenance Request</title>
+    <link rel="stylesheet" href="../../css/styles.css?v=20260501a">
 </head>
 <body>
+<main class="app-shell">
+    <header class="app-header">
+        <h1>Maintenance Requests</h1>
+        <p>Log and track hostel maintenance issues quickly.</p>
+        <nav>
+            <ul class="top-nav">
+                <li><a class="active" href="plan.html">Add Request</a></li>
+                <li><a href="index.php">View Requests</a></li>
+            </ul>
+        </nav>
+    </header>
 
-<h2>Maintenance Module Plan</h2>
-
-<h3>Features to be built:</h3>
-<ul>
-    <li>Add Maintenance Request</li>
-    <li>List Requests</li>
-    <li>Edit & Update Requests</li>
-    <li>Delete Requests</li>
-</ul>
-
-<h3>Fields:</h3>
-<ul>
-    <li>Ticket Number</li>
-    <li>Room ID</li>
-    <li>Assigned To</li>
-    <li>Date Reported</li>
-    <li>Reported By</li>
-    <li>Status (Resolved / Not Resolved)</li>
-</ul>
-
-<hr />
-
-<h3>Add Maintenance Request</h3>
-<button id="openFormBtn">Open Add Request</button>
-
-<!-- Modal -->
-<div id="modalBackdrop" class="modal-backdrop" role="dialog" aria-modal="true" aria-hidden="true">
-    <div class="modal" role="document">
-        <div class="modal-header">
-            <h3>Add Maintenance Request</h3>
-            <button id="closeModal" class="modal-close" aria-label="Close">×</button>
-        </div>
-        <form id="maintenanceForm">
+    <section class="card">
+        <h2>Create New Request</h2>
+        <p class="muted-text">All fields marked with * are required.</p>
+        <form id="maintenanceForm" class="simple-form">
             <div class="form-row">
                 <label for="ticket_number">Ticket Number*</label>
-                <input type="text" id="ticket_number" name="ticket_number" required />
+                <input type="text" id="ticket_number" name="ticket_number" maxlength="20" placeholder="e.g. MT-2026-001" required />
             </div>
             <div class="form-row">
-                <label for="room_id">Room ID*</label>
-                <input type="text" id="room_id" name="room_id" required />
+                <label for="room_id">Room*</label>
+                <select id="room_id" name="room_id" required>
+                    <option value="">-- Select Room --</option>
+                </select>
             </div>
             <div class="form-row">
                 <label for="assigned_to">Assigned To*</label>
-                <input type="text" id="assigned_to" name="assigned_to" required />
+                <select id="assigned_to" name="assigned_to" required>
+                    <option value="">-- Select Staff --</option>
+                </select>
             </div>
             <div class="form-row">
                 <label for="date_reported">Date Reported*</label>
@@ -57,53 +43,160 @@
             </div>
             <div class="form-row">
                 <label for="reported_by">Reported By*</label>
-                <input type="text" id="reported_by" name="reported_by" required />
+                <select id="reported_by" name="reported_by" required>
+                    <option value="">-- Select Student --</option>
+                </select>
             </div>
             <div class="form-row">
                 <label for="status">Status*</label>
                 <select id="status" name="status" required>
-                        <option value="">-- Select --</option>
-                        <option value="Not Resolved">Not Resolved</option>
-                        <option value="Resolved">Resolved</option>
+                    <option value="">-- Select --</option>
+                    <option value="Not Resolved">Not Resolved</option>
+                    <option value="Resolved">Resolved</option>
                 </select>
             </div>
-            <div style="margin-top:8px; text-align:right;">
+            <div>
                 <button type="submit">Submit Request</button>
             </div>
-            <div id="formMessage" role="status" style="margin-top:8px;color:green;"></div>
         </form>
-    </div>
-</div>
+        <div id="formMessage" role="status"></div>
+    </section>
+</main>
 
-<script type="module">
-import { validateMaintenanceForm, submitMaintenance } from '../../js/maintenance/validator.js';
-
+<script>
 const form = document.getElementById('maintenanceForm');
 const msg = document.getElementById('formMessage');
-
-// Modal controls
-const openBtn = document.getElementById('openFormBtn');
-const backdrop = document.getElementById('modalBackdrop');
-const closeBtn = document.getElementById('closeModal');
-
-function openModal() {
-  backdrop.style.display = 'flex';
-  backdrop.setAttribute('aria-hidden', 'false');
+const dateInput = document.getElementById('date_reported');
+if (dateInput) {
+    dateInput.value = new Date().toISOString().slice(0, 10);
 }
 
-function closeModal() {
-  backdrop.style.display = 'none';
-  backdrop.setAttribute('aria-hidden', 'true');
+function showMessage(type, text) {
+    msg.className = 'alert ' + type;
+    msg.textContent = text;
 }
 
-openBtn.addEventListener('click', openModal);
-closeBtn.addEventListener('click', closeModal);
-backdrop.addEventListener('click', (ev) => { if (ev.target === backdrop) closeModal(); });
+function validateMaintenanceForm(data) {
+    const errors = [];
+    if (!data.ticket_number || !data.ticket_number.trim()) errors.push('Ticket Number is required.');
+    if (!data.room_id || !String(data.room_id).trim()) errors.push('Room ID is required.');
+    if (data.assigned_to === undefined || data.assigned_to === null || String(data.assigned_to).trim() === '') errors.push('Assigned To is required.');
+    if (!data.date_reported) errors.push('Date Reported is required.');
+    if (data.reported_by === undefined || data.reported_by === null || String(data.reported_by).trim() === '') errors.push('Reported By is required.');
+    if (!data.status) errors.push('Status is required.');
+    if (data.ticket_number && data.ticket_number.trim().length > 20) errors.push('Ticket Number must be 20 characters or less.');
+    if (data.room_id && !/^\d+$/.test(String(data.room_id))) errors.push('Room ID must be a room ID.');
+    if (data.date_reported && !/^\d{4}-\d{2}-\d{2}$/.test(data.date_reported)) errors.push('Date Reported must be in YYYY-MM-DD format.');
+    if (data.date_reported && /^\d{4}-\d{2}-\d{2}$/.test(data.date_reported)) {
+        const [y, m, d] = data.date_reported.split('-').map(Number);
+        const parsed = new Date(data.date_reported + 'T00:00:00');
+        const validDate = parsed.getFullYear() === y && (parsed.getMonth() + 1) === m && parsed.getDate() === d;
+        if (!validDate) errors.push('Date Reported must be a valid calendar date.');
+    }
+    if (data.assigned_to && !/^\d+$/.test(String(data.assigned_to))) errors.push('Assigned To must be a staff ID.');
+    if (data.reported_by && !/^\d+$/.test(String(data.reported_by))) errors.push('Reported By must be a student ID.');
+    if (data.status && !['Resolved', 'Not Resolved'].includes(data.status)) errors.push('Status must be either Resolved or Not Resolved.');
+    return errors;
+}
+
+function candidateUrls(endpointPath) {
+    const path = endpointPath.startsWith('/') ? endpointPath : '/' + endpointPath;
+    return [
+        '../../api/maintenance/' + endpointPath,
+        '/HostelHub/api/maintenance/' + endpointPath,
+        path
+    ];
+}
+
+async function fetchJsonWithFallback(endpointFile) {
+    const urls = candidateUrls(endpointFile);
+    for (const url of urls) {
+        try {
+            const response = await fetch(url, { cache: 'no-store' });
+            if (!response.ok) continue;
+            const text = await response.text();
+            const json = JSON.parse(text);
+            return json;
+        } catch (err) {
+            // try next candidate
+        }
+    }
+    return { success: false, errors: ['Failed to connect to API endpoint: ' + endpointFile] };
+}
+
+async function submitMaintenance(data) {
+    const urls = candidateUrls('submit_maintenance.php');
+    for (const url of urls) {
+        try {
+            const resp = await fetch(url, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: new URLSearchParams(data)
+            });
+            if (!resp.ok) continue;
+            const text = await resp.text();
+            return JSON.parse(text);
+        } catch (err) {
+            // try next candidate
+        }
+    }
+    return { success: false, errors: ['Failed to submit maintenance request.'] };
+}
+
+async function populateSelects() {
+    try {
+        const roomsResp = await fetchJsonWithFallback('list_rooms.php');
+        if (roomsResp && roomsResp.success) {
+            const sel = document.getElementById('room_id');
+            roomsResp.data.forEach(rm => {
+                const opt = document.createElement('option');
+                opt.value = rm.room_id;
+                opt.textContent = `${rm.room_number} (cap:${rm.capacity || 1})`;
+                sel.appendChild(opt);
+            });
+        } else {
+            showMessage('error', roomsResp && roomsResp.errors ? roomsResp.errors.join(' ') : 'Failed to load rooms.');
+            return;
+        }
+
+        const staffResp = await fetchJsonWithFallback('list_staffs.php');
+        if (staffResp && staffResp.success) {
+            const sel = document.getElementById('assigned_to');
+            staffResp.data.forEach(s => {
+                const opt = document.createElement('option');
+                opt.value = s.staff_id;
+                opt.textContent = `${s.name} (${s.role || 'staff'})`;
+                sel.appendChild(opt);
+            });
+        } else {
+            showMessage('error', staffResp && staffResp.errors ? staffResp.errors.join(' ') : 'Failed to load staffs.');
+            return;
+        }
+
+        const studentsResp = await fetchJsonWithFallback('list_students.php');
+        if (studentsResp && studentsResp.success) {
+            const sel = document.getElementById('reported_by');
+            studentsResp.data.forEach(st => {
+                const opt = document.createElement('option');
+                opt.value = st.student_id;
+                opt.textContent = `${st.name} (${st.email || ''})`;
+                sel.appendChild(opt);
+            });
+        } else {
+            showMessage('error', studentsResp && studentsResp.errors ? studentsResp.errors.join(' ') : 'Failed to load students.');
+            return;
+        }
+    } catch (err) {
+        showMessage('error', 'Failed to load dropdown options. Open this page via XAMPP URL (e.g. http://localhost/HostelHub/html/maintenance/plan.html).');
+    }
+}
+
+populateSelects();
 
 form.addEventListener('submit', async (e) => {
     e.preventDefault();
+    msg.className = '';
     msg.textContent = '';
-    msg.style.color = 'green';
 
     const data = {
         ticket_number: document.getElementById('ticket_number').value.trim(),
@@ -116,25 +209,23 @@ form.addEventListener('submit', async (e) => {
 
     const errors = validateMaintenanceForm(data);
     if (errors.length) {
-        msg.style.color = 'red';
-        msg.textContent = errors.join(' ');
+        showMessage('error', errors.join(' '));
         return;
     }
 
     try {
-        const json = await submitMaintenance('../../api/maintenance/submit_maintenance.php', data);
+        const json = await submitMaintenance(data);
         if (json.success) {
-            msg.style.color = 'green';
-            msg.textContent = 'Maintenance request submitted successfully.';
+            showMessage('success', 'Maintenance request submitted successfully.');
             form.reset();
-            closeModal();
+            if (dateInput) {
+                dateInput.value = new Date().toISOString().slice(0, 10);
+            }
         } else {
-            msg.style.color = 'red';
-            msg.textContent = json.errors ? json.errors.join(' ') : 'Submission failed.';
+            showMessage('error', json.errors ? json.errors.join(' ') : 'Submission failed.');
         }
     } catch (err) {
-        msg.style.color = 'red';
-        msg.textContent = 'Network or server error.';
+        showMessage('error', 'Network or server error.');
     }
 });
 </script>

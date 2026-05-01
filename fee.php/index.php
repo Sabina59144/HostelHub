@@ -62,7 +62,10 @@ $today = date('Y-m-d');
             </td>
 
             <td>
-                <a class="pay-btn" href="edit.php?id=<?= $fee['fee_id'] ?>">Mark Paid</a>
+                <?php if ($fee['is_paid'] != 1): ?>
+                    <a class="pay-btn" href="edit.php?id=<?= $fee['fee_id'] ?>">Mark Paid</a>
+                <?php endif; ?>
+
                 <a class="delete-btn"
                    href="delete.php?id=<?= $fee['fee_id'] ?>"
                    onclick="return confirm('Delete this fee record?')">
@@ -72,6 +75,7 @@ $today = date('Y-m-d');
         </tr>
 
         <?php endforeach; ?>
+
     </table>
 
 </div>

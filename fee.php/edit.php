@@ -17,20 +17,35 @@ if (!$fee) {
 
 if (isset($_POST['update'])) {
 
-    $today = date('Y-m-d');
-
-    $stmt = $db->prepare("UPDATE fees SET is_paid = ? WHERE fee_id = ?");
-    $stmt->execute([$today, $id]);
+    $stmt = $db->prepare("UPDATE fees SET is_paid = 1 WHERE fee_id = ?");
+    $stmt->execute([$id]);
 
     header("Location: index.php");
     exit;
 }
 ?>
 
-<h2>Mark Fee as Paid</h2>
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Mark Fee Paid</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
 
-<p>Receipt: <?= htmlspecialchars($fee['receipt_number']) ?></p>
+<div class="container">
 
-<form method="POST">
-    <button type="submit" name="update">Mark as Paid</button>
-</form>
+    <h2>Mark Fee as Paid</h2>
+
+    <p><strong>Receipt:</strong> <?= htmlspecialchars($fee['receipt_number']) ?></p>
+    <p><strong>Student ID:</strong> <?= htmlspecialchars($fee['student_id']) ?></p>
+    <p><strong>Amount:</strong> $<?= htmlspecialchars($fee['amount']) ?></p>
+
+    <form method="POST">
+        <button type="submit" name="update">Mark as Paid</button>
+    </form>
+
+</div>
+
+</body>
+</html>

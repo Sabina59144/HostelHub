@@ -66,7 +66,7 @@ $recentRooms = $db->query(
 
         /* ── Navbar ── */
         .navbar {
-            background: #B71C1C; color: white;
+            background: #0665d1; color: white;
             padding: 14px 30px; display: flex;
             justify-content: space-between; align-items: center;
         }
@@ -206,7 +206,9 @@ $recentRooms = $db->query(
 
 <!-- ── Navbar ── -->
 <nav class="navbar">
-    <h1><img src="room/logo.png" alt="Home Button" width="50"></h1>
+<img src="logo.png" alt="HostelHub Logo" 
+     height="100px" 
+     style="vertical-align: middle;  margin-right: 8px; margin-top: -20px; margin-bottom: -20px;">
     <div>
         <span style="font-size:13px; opacity:0.85;">Logged in as:
             <strong><?php echo isset($_SESSION['username']) ? htmlspecialchars($_SESSION['username']) : 'Guest'; ?></strong>
@@ -222,7 +224,7 @@ $recentRooms = $db->query(
 
     <!-- Page heading -->
     <div class="page-title">
-        <h2>🛏️ Room Module</h2>
+        <h2>🛏️ Room </h2>
         <p>Manage hostel rooms — add, view, edit, and search rooms</p>
     </div>
 
@@ -362,6 +364,7 @@ $recentRooms = $db->query(
                 </tbody>
             </table>
         <?php endif; ?>
+        
     </div>
 
 </div><!-- end container -->

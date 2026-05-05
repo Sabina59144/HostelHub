@@ -22,7 +22,7 @@ h2 {
     margin-bottom: 20px;
 }
 
-/* BUTTON */
+/* ADD BUTTON */
 .add-btn {
     display: inline-block;
     margin-bottom: 20px;
@@ -71,6 +71,12 @@ tr:hover {
     font-weight: bold;
 }
 
+/* Fine amount highlight */
+.has-fine {
+    color: #dc2626;
+    font-weight: bold;
+}
+
 /* ACTION BUTTONS */
 .pay-btn {
     background: #28a745;
@@ -93,6 +99,7 @@ tr:hover {
 .invoice-wrapper {
     display: flex;
     justify-content: center;
+    padding: 30px 0;
 }
 
 .invoice-card {
@@ -110,12 +117,23 @@ tr:hover {
     text-align: center;
 }
 
+.invoice-header h2 {
+    color: white;
+    margin: 0 0 4px;
+}
+
+.invoice-header p {
+    margin: 0;
+    opacity: 0.85;
+    font-size: 0.9rem;
+}
+
 .invoice-body {
     padding: 25px;
 }
 
 /* INPUTS */
-input, select {
+input, select, textarea {
     width: 100%;
     padding: 10px;
     margin-top: 6px;
@@ -123,6 +141,7 @@ input, select {
     border-radius: 8px;
     border: 1px solid #ccc;
     box-sizing: border-box;
+    font-family: Arial, sans-serif;
 }
 
 /* READONLY */
@@ -140,6 +159,7 @@ button {
     color: white;
     border-radius: 8px;
     cursor: pointer;
+    font-size: 0.95rem;
 }
 
 button:hover {
@@ -147,14 +167,6 @@ button:hover {
 }
 
 /* ERROR */
-.error {
-    background: #ffe5e5;
-    color: #c62828;
-    padding: 10px;
-    border-radius: 8px;
-    margin-bottom: 15px;
-    text-align: center;
-}
 .error {
     background: #fee2e2;
     color: #b91c1c;
@@ -164,4 +176,18 @@ button:hover {
     margin-bottom: 15px;
     font-weight: 600;
     text-align: center;
+}
+
+/* FINE SETTINGS PANEL */
+.fine-settings {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 14px;
+    margin-bottom: 15px;
+}
+
+.fine-settings label {
+    font-size: 0.85rem;
+    color: #555;
 }

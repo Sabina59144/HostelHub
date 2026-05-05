@@ -1,15 +1,13 @@
 <?php
 // login.php
-require_once("includes/session.php");
-require_once("includes/db.php");
+require_once(__DIR__ . "/includes/session.php");
+require_once(__DIR__ . "/includes/db.php");
 
-// If already logged in, go straight to dashboard
+// If already logged in, go to dashboard
 if (isLoggedIn()) {
     header("Location: dashboard.php");
     exit();
 }
-
-$error = "";
 
 // ---------------------------------------------------
 // Handle form submission (login validation)

@@ -1,79 +1,103 @@
 <?php
-// pages/register_staff.php
+// pages/edit_staff.php
 require_once("../includes/session.php");
 require_once("../includes/db.php");
-requireRole('admin'); // Only admins can add staff
+requireRole('admin');
 
-$errors   = [];
-$success  = "";
+// ---------------------------------------------------
+// Load the staff member to edit
+// ---------------------------------------------------
+$id = (int) ($_GET['id'] ?? 0);
+if (!$id) {
+    header("Location: users.php");
+    exit();
+}
+
+$stmt = $db->prepare("SELECT user_id, username, full_name, role, is_active FROM users WHERE user_id = ? LIMIT 1");
+$stmt->execute([$id]);
+$staff = $stmt->fetch();
+
+if (!$staff) {
+    header("Location: users.php");
+    exit();
+}
+
+$errors  = [];
+$success = "";
+
+// Pre-fill form with existing data
 $formData = [
-    'full_name' => '',
-    'username'  => '',
-    'role'      => 'staff',
+    'full_name' => $staff['full_name'],
+    'username'  => $staff['username'],
+    'role'      => $staff['role'],
 ];
 
 // ---------------------------------------------------
 // Handle form submission
 // ---------------------------------------------------
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $full_name        = trim($_POST['full_name']        ?? '');
-    $username         = trim($_POST['username']         ?? '');
-    $password         = $_POST['password']              ?? '';
-    $confirm_password = $_POST['confirm_password']      ?? '';
-    $role             = $_POST['role']                  ?? 'staff';
+    $full_name        = trim($_POST['full_name']   ?? '');
+    $username         = trim($_POST['username']    ?? '');
+    $role             = $_POST['role']             ?? 'staff';
+    $new_password     = $_POST['new_password']     ?? '';
+    $confirm_password = $_POST['confirm_password'] ?? '';
 
-    // Keep values for re-population
     $formData = compact('full_name', 'username', 'role');
 
     // --- Validation ---
     if (empty($full_name)) $errors['full_name'] = "Full name is required.";
     if (empty($username))  $errors['username']  = "Username is required.";
+    if (!in_array($role, ['admin', 'staff'])) $errors['role'] = "Invalid role.";
 
-    if (empty($password)) {
-        $errors['password'] = "Password is required.";
-    } elseif (strlen($password) < 8) {
-        $errors['password'] = "Password must be at least 8 characters.";
-    }
-
-    if (empty($confirm_password)) {
-        $errors['confirm_password'] = "Please confirm the password.";
-    } elseif ($password !== $confirm_password) {
-        $errors['confirm_password'] = "Passwords do not match.";
-    }
-
-    if (!in_array($role, ['admin', 'staff'])) {
-        $errors['role'] = "Invalid role selected.";
-    }
-
-    // --- Username uniqueness check ---
+    // Username uniqueness — exclude current user
     if (empty($errors['username'])) {
-        $check = $db->prepare("SELECT user_id FROM users WHERE username = ? LIMIT 1");
-        $check->execute([$username]);
+        $check = $db->prepare("SELECT user_id FROM users WHERE username = ? AND user_id != ? LIMIT 1");
+        $check->execute([$username, $id]);
         if ($check->fetch()) {
             $errors['username'] = "That username is already taken.";
         }
     }
 
-    // --- Save to DB if no errors ---
-    if (empty($errors)) {
-        $hashed = password_hash($password, PASSWORD_BCRYPT);
-        $stmt   = $db->prepare(
-            "INSERT INTO users (username, password, full_name, role, is_active)
-             VALUES (?, ?, ?, ?, 1)"
-        );
-        $stmt->execute([$username, $hashed, $full_name, $role]);
+    // Password only validated if user typed something
+    if ($new_password !== '') {
+        if (strlen($new_password) < 8) {
+            $errors['new_password'] = "Password must be at least 8 characters.";
+        } elseif ($new_password !== $confirm_password) {
+            $errors['confirm_password'] = "Passwords do not match.";
+        }
+    }
 
-        $success  = "Staff member <strong>" . htmlspecialchars($full_name) . "</strong> added successfully.";
-        $formData = ['full_name' => '', 'username' => '', 'role' => 'staff']; // reset form
+    // --- Update DB if no errors ---
+    if (empty($errors)) {
+        if ($new_password !== '') {
+            // Update with new password
+            $hashed = password_hash($new_password, PASSWORD_BCRYPT);
+            $stmt = $db->prepare("UPDATE users SET full_name = ?, username = ?, role = ?, password = ? WHERE user_id = ?");
+            $stmt->execute([$full_name, $username, $role, $hashed, $id]);
+        } else {
+            // Update without touching password
+            $stmt = $db->prepare("UPDATE users SET full_name = ?, username = ?, role = ? WHERE user_id = ?");
+            $stmt->execute([$full_name, $username, $role, $id]);
+        }
+
+        $success = "Staff member updated successfully.";
+
+        // Refresh staff data
+        $stmt = $db->prepare("SELECT user_id, username, full_name, role, is_active FROM users WHERE user_id = ? LIMIT 1");
+        $stmt->execute([$id]);
+        $staff = $stmt->fetch();
+        $formData = ['full_name' => $staff['full_name'], 'username' => $staff['username'], 'role' => $staff['role']];
     }
 }
+
+$isSelf = ((int) $staff['user_id'] === (int) $_SESSION['user_id']);
 ?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Add Staff — HostelHub</title>
+    <title>Edit Staff — HostelHub</title>
     <link rel="stylesheet" href="../css/style.css">
     <style>
         .form-page { max-width: 680px; margin: 0 auto; padding: 2rem 1rem 4rem; }
@@ -82,12 +106,26 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         .form-page .page-header h2 { font-size: 1.6rem; font-weight: 700; color: var(--text-primary, #1a1a2e); }
         .form-page .page-header p  { color: var(--text-muted, #666); margin-top: .25rem; }
 
+        /* Staff identity badge */
+        .staff-badge {
+            display: flex; align-items: center; gap: 1rem;
+            background: #f9fafb; border: 1px solid #e5e7eb;
+            border-radius: 10px; padding: .85rem 1.1rem;
+            margin-bottom: 1.75rem;
+        }
+        .avatar {
+            width: 42px; height: 42px; border-radius: 50%;
+            background: linear-gradient(135deg, #6366f1, #a78bfa);
+            display: flex; align-items: center; justify-content: center;
+            color: #fff; font-weight: 700; font-size: .9rem; flex-shrink: 0;
+        }
+        .staff-badge .name  { font-weight: 600; color: #111827; }
+        .staff-badge .login { font-size: .82rem; color: #9ca3af; }
+
         /* Card */
         .staff-card {
-            background: #fff;
-            border: 1px solid #e5e7eb;
-            border-radius: 12px;
-            padding: 2rem 2.25rem;
+            background: #fff; border: 1px solid #e5e7eb;
+            border-radius: 12px; padding: 2rem 2.25rem;
             box-shadow: 0 2px 8px rgba(0,0,0,.06);
         }
 
@@ -104,14 +142,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         .alert-success { background: #ecfdf5; border: 1px solid #6ee7b7; color: #065f46; }
         .alert-error   { background: #fef2f2; border: 1px solid #fca5a5; color: #991b1b; }
 
-        /* Form layout */
+        /* Form */
         .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem; }
         @media (max-width: 540px) { .form-row { grid-template-columns: 1fr; } }
 
         .form-group { margin-bottom: 1.25rem; }
         .form-group label {
             display: block; font-size: .85rem; font-weight: 600;
-            color: #374151; margin-bottom: .4rem;
+            color: #374151; margin-bottom: .4rem; letter-spacing: .01em;
         }
         .form-group input,
         .form-group select {
@@ -129,26 +167,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         .form-group select.is-invalid { border-color: #ef4444; }
         .field-error { color: #dc2626; font-size: .8rem; margin-top: .3rem; display: block; }
 
+        /* Password hint */
+        .field-hint { font-size: .78rem; color: #9ca3af; margin-top: .3rem; display: block; }
+
         /* Password wrapper */
         .password-wrapper { position: relative; }
-        .password-wrapper input { padding-right: 44px; }
-        .toggle-password {
-            position: absolute; right: 10px; top: 50%;
-            transform: translateY(-50%);
+        .password-wrapper input { padding-right: 2.8rem; }
+        .password-wrapper .toggle-password {
+            position: absolute; right: .75rem; top: 50%; transform: translateY(-50%);
             background: none; border: none; cursor: pointer;
-            font-size: 16px; opacity: .6; transition: opacity .2s;
+            font-size: 1rem; color: #9ca3af; padding: 0; line-height: 1;
         }
-        .toggle-password:hover { opacity: 1; }
+        .password-wrapper .toggle-password:hover { color: #6366f1; }
 
         /* Strength bar */
-        .strength-bar {
-            height: 4px; background: #e5e7eb; border-radius: 2px;
-            margin-top: 6px; overflow: hidden;
-        }
-        .strength-bar-fill {
-            height: 100%; width: 0%; border-radius: 2px;
-            transition: width .3s, background .3s;
-        }
+        .strength-bar { height: 4px; border-radius: 2px; margin-top: .4rem; background: #e5e7eb; overflow: hidden; }
+        .strength-bar-fill { height: 100%; width: 0; border-radius: 2px; transition: width .3s, background .3s; }
 
         /* Actions */
         .form-actions { display: flex; gap: 1rem; margin-top: 1.75rem; flex-wrap: wrap; }
@@ -166,7 +200,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             display: inline-flex; align-items: center;
             transition: border-color .2s, color .2s;
         }
-        .btn-secondary:hover { border-color: #9ca3af; color: #374151; text-decoration: none; }
+        .btn-secondary:hover { border-color: #9ca3af; color: #374151; }
     </style>
 </head>
 <body>
@@ -177,16 +211,28 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <div class="form-page">
 
             <div class="page-header">
-                <h2>➕ Add Staff Member</h2>
-                <p>Create a new hostel staff account.</p>
+                <h2>Edit Staff Member</h2>
+                <p>Update details for this staff account.</p>
+            </div>
+
+            <!-- Who we're editing -->
+            <?php
+                $initials = implode('', array_map(fn($w) => strtoupper($w[0]), array_slice(explode(' ', $staff['full_name']), 0, 2)));
+            ?>
+            <div class="staff-badge">
+                <div class="avatar"><?= htmlspecialchars($initials) ?></div>
+                <div>
+                    <div class="name"><?= htmlspecialchars($staff['full_name']) ?></div>
+                    <div class="login">@<?= htmlspecialchars($staff['username']) ?> &mdash; <?= ucfirst($staff['role']) ?></div>
+                </div>
             </div>
 
             <?php if (!empty($success)): ?>
-                <div class="alert alert-success">✅ <?= $success ?></div>
+                <div class="alert alert-success">✅ <?= htmlspecialchars($success) ?></div>
             <?php endif; ?>
 
             <div class="staff-card">
-                <form method="POST" action="register_staff.php" novalidate>
+                <form method="POST" action="edit_staff.php?id=<?= $id ?>" novalidate>
 
                     <div class="section-title">Account Details</div>
 
@@ -196,7 +242,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             <label for="full_name">Full Name <span style="color:#ef4444">*</span></label>
                             <input
                                 type="text" id="full_name" name="full_name"
-                                placeholder="e.g. Jane Smith"
                                 value="<?= htmlspecialchars($formData['full_name']) ?>"
                                 class="<?= isset($errors['full_name']) ? 'is-invalid' : '' ?>"
                                 required
@@ -210,7 +255,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             <label for="username">Username <span style="color:#ef4444">*</span></label>
                             <input
                                 type="text" id="username" name="username"
-                                placeholder="e.g. jsmith"
                                 value="<?= htmlspecialchars($formData['username']) ?>"
                                 class="<?= isset($errors['username']) ? 'is-invalid' : '' ?>"
                                 autocomplete="off" required
@@ -225,45 +269,48 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     <div class="form-group" style="max-width:320px;">
                         <label for="role">Role <span style="color:#ef4444">*</span></label>
                         <select id="role" name="role"
-                            class="<?= isset($errors['role']) ? 'is-invalid' : '' ?>">
+                            class="<?= isset($errors['role']) ? 'is-invalid' : '' ?>"
+                            <?= $isSelf ? 'disabled' : '' ?>>
                             <option value="staff" <?= $formData['role'] === 'staff' ? 'selected' : '' ?>>Staff</option>
                             <option value="admin" <?= $formData['role'] === 'admin' ? 'selected' : '' ?>>Admin</option>
                         </select>
-                        <?php if (isset($errors['role'])): ?>
-                            <span class="field-error"><?= htmlspecialchars($errors['role']) ?></span>
+                        <?php if ($isSelf): ?>
+                            <span class="field-hint">⚠️ You cannot change your own role.</span>
+                            <!-- Hidden fallback so role is still submitted -->
+                            <input type="hidden" name="role" value="<?= htmlspecialchars($formData['role']) ?>">
                         <?php endif; ?>
                     </div>
 
-                    <div class="section-title">Set Password</div>
+                    <div class="section-title">Change Password <span style="font-weight:400;text-transform:none;letter-spacing:0;color:#d1d5db;">— leave blank to keep current password</span></div>
 
-                    <!-- Password + Confirm -->
+                    <!-- New Password + Confirm -->
                     <div class="form-row">
                         <div class="form-group">
-                            <label for="password">Password <span style="color:#ef4444">*</span></label>
+                            <label for="new_password">New Password</label>
                             <div class="password-wrapper">
                                 <input
-                                    type="password" id="password" name="password"
+                                    type="password" id="new_password" name="new_password"
                                     placeholder="Min. 8 characters"
-                                    class="<?= isset($errors['password']) ? 'is-invalid' : '' ?>"
+                                    class="<?= isset($errors['new_password']) ? 'is-invalid' : '' ?>"
                                     oninput="updateStrength(this.value)"
-                                    autocomplete="new-password" required
+                                    autocomplete="new-password"
                                 >
-                                <button type="button" class="toggle-password" onclick="togglePwd('password')">👁</button>
+                                <button type="button" class="toggle-password" onclick="togglePwd('new_password')">👁</button>
                             </div>
                             <div class="strength-bar"><div class="strength-bar-fill" id="strengthFill"></div></div>
-                            <?php if (isset($errors['password'])): ?>
-                                <span class="field-error"><?= htmlspecialchars($errors['password']) ?></span>
+                            <?php if (isset($errors['new_password'])): ?>
+                                <span class="field-error"><?= htmlspecialchars($errors['new_password']) ?></span>
                             <?php endif; ?>
                         </div>
 
                         <div class="form-group">
-                            <label for="confirm_password">Confirm Password <span style="color:#ef4444">*</span></label>
+                            <label for="confirm_password">Confirm New Password</label>
                             <div class="password-wrapper">
                                 <input
                                     type="password" id="confirm_password" name="confirm_password"
-                                    placeholder="Repeat password"
+                                    placeholder="Repeat new password"
                                     class="<?= isset($errors['confirm_password']) ? 'is-invalid' : '' ?>"
-                                    autocomplete="new-password" required
+                                    autocomplete="new-password"
                                 >
                                 <button type="button" class="toggle-password" onclick="togglePwd('confirm_password')">👁</button>
                             </div>
@@ -274,8 +321,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     </div>
 
                     <div class="form-actions">
-                        <button type="submit" class="btn-primary">💾 Save Staff Member</button>
-                        <a href="users.php" class="btn-secondary">← Cancel</a>
+                        <button type="submit" class="btn-primary">💾 Save Changes</button>
+                        <a href="users.php" class="btn-secondary">← Back to Staff List</a>
                     </div>
 
                 </form>

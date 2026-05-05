@@ -6,7 +6,7 @@ $stmt = $db->prepare("SELECT * FROM fees WHERE is_active = 1 ORDER BY fee_id DES
 $stmt->execute();
 $fees = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-$today = date('Y-m-d');
+$today = new DateTime();
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -41,31 +41,57 @@ $today = date('Y-m-d');
         <?php foreach ($fees as $fee): ?>
 
         <?php
-        if ($fee['is_paid'] == 1) {
-            $status      = "Paid";
-            $statusClass = "paid";
-        } elseif ($fee['due_date'] < $today) {
-            $status      = "Overdue";
-            $statusClass = "overdue";
-        } else {
-            $status      = "Unpaid";
-            $statusClass = "unpaid";
-        }
+            // Dynamic fine calculation
+            $dueDate = new DateTime($fee['due_date']);
+            $fineAmount = 0;
+
+            if ($fee['is_paid'] == 1) {
+                $status = "Paid";
+                $statusClass = "paid";
+            } elseif ($today > $dueDate) {
+                $daysOverdue = $dueDate->diff($today)->days;
+
+                $fineAmount = $daysOverdue * $fee['fine_rate'];
+
+                if ($fineAmount > $fee['fine_cap']) {
+                    $fineAmount = $fee['fine_cap'];
+                }
+
+                $status = "Overdue";
+                $statusClass = "overdue";
+            } else {
+                $status = "Unpaid";
+                $statusClass = "unpaid";
+            }
+
+            $totalDue = $fee['amount'] + $fineAmount;
+
+            $rowClass = ($fineAmount > 0) ? 'has-fine' : '';
         ?>
 
-        <tr>
+        <tr class="<?= $rowClass ?>">
             <td><?= $fee['fee_id'] ?></td>
             <td><?= htmlspecialchars($fee['receipt_number']) ?></td>
             <td><?= htmlspecialchars($fee['student_id']) ?></td>
             <td><?= ucfirst(htmlspecialchars($fee['fee_type'])) ?></td>
             <td>$<?= number_format($fee['amount'], 2) ?></td>
-            <td class="<?= $fee['fine_amount'] > 0 ? 'has-fine' : '' ?>">
-                <?= $fee['fine_amount'] > 0 ? '$' . number_format($fee['fine_amount'], 2) : '—' ?>
+
+            <td>
+                <?= $fineAmount > 0 ? '$' . number_format($fineAmount, 2) : '—' ?>
             </td>
-            <td><strong>$<?= number_format($fee['total_due'], 2) ?></strong></td>
+
+            <td><strong>$<?= number_format($totalDue, 2) ?></strong></td>
+
             <td><?= htmlspecialchars($fee['due_date']) ?></td>
-            <td class="<?= $statusClass ?>"><?= $status ?></td>
-            <td><?= $fee['paid_at'] ? htmlspecialchars($fee['paid_at']) : '—' ?></td>
+
+            <td class="<?= $statusClass ?>">
+                <?= $status ?>
+            </td>
+
+            <td>
+                <?= $fee['paid_at'] ? htmlspecialchars($fee['paid_at']) : '—' ?>
+            </td>
+
             <td>
                 <a class="pay-btn" href="edit.php?id=<?= $fee['fee_id'] ?>">✏ Edit</a>
                 <a class="delete-btn" href="delete.php?id=<?= $fee['fee_id'] ?>">🗑 Delete</a>

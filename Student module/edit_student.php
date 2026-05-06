@@ -3,51 +3,82 @@ require_once '../includes/session.php';
 requireLogin();
 require_once '../includes/db.php';
 
+// ── Load student ───────────────────────────────────────────────
+if (!isset($_GET['id']) || !is_numeric($_GET['id'])) {
+    header("Location: list_students.php");
+    exit();
+}
+$student_id = (int)$_GET['id'];
+
+$stmt = $db->prepare("SELECT * FROM students WHERE student_id = ?");
+$stmt->execute([$student_id]);
+$student = $stmt->fetch();
+
+if (!$student) {
+    header("Location: list_students.php");
+    exit();
+}
+
+// ── Load rooms ─────────────────────────────────────────────────
 $roomsResult = $db->query("SELECT room_id, room_number, room_type FROM rooms ORDER BY room_number")->fetchAll();
 
-$errors = [];
+$errors  = [];
 $success = "";
-$student_number = $full_name = $email = $date_of_birth = "";
-$room_id = "";
 
+// ── Handle form submit ─────────────────────────────────────────
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $student_number = trim($_POST['student_number']);
     $full_name      = trim($_POST['full_name']);
     $email          = trim($_POST['email']);
     $date_of_birth  = trim($_POST['date_of_birth']);
     $room_id        = $_POST['room_id'] !== '' ? (int)$_POST['room_id'] : null;
-    $status         = 1;
+    $status         = (int)$_POST['status'];
 
     if (empty($student_number)) {
         $errors[] = "Student number is required.";
     } elseif (!preg_match('/^STU-\d{4}-\d{3}$/', $student_number)) {
         $errors[] = "Student number must follow the format STU-YYYY-XXX (e.g. STU-2024-001).";
     }
-    if (empty($full_name))  $errors[] = "Full name is required.";
-    if (empty($email))      $errors[] = "Email address is required.";
+    if (empty($full_name)) $errors[] = "Full name is required.";
+    if (empty($email))     $errors[] = "Email address is required.";
     elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) $errors[] = "Please enter a valid email address.";
 
+    // Check duplicate student_number (excluding current)
     if (empty($errors)) {
-        $chk = $db->prepare("SELECT student_id FROM students WHERE student_number = ?");
-        $chk->execute([$student_number]);
-        if ($chk->rowCount() > 0) $errors[] = "This student number already exists.";
+        $chk = $db->prepare("SELECT student_id FROM students WHERE student_number = ? AND student_id != ?");
+        $chk->execute([$student_number, $student_id]);
+        if ($chk->rowCount() > 0) $errors[] = "This student number is already in use.";
     }
+    // Check duplicate email (excluding current)
     if (empty($errors)) {
-        $chk = $db->prepare("SELECT student_id FROM students WHERE email = ?");
-        $chk->execute([$email]);
+        $chk = $db->prepare("SELECT student_id FROM students WHERE email = ? AND student_id != ?");
+        $chk->execute([$email, $student_id]);
         if ($chk->rowCount() > 0) $errors[] = "This email address is already registered.";
     }
 
     if (empty($errors)) {
         $dob  = !empty($date_of_birth) ? $date_of_birth : null;
-        $stmt = $db->prepare("INSERT INTO students (student_number, full_name, email, date_of_birth, room_id, status) VALUES (?,?,?,?,?,?)");
-        if ($stmt->execute([$student_number, $full_name, $email, $dob, $room_id, $status])) {
-            $success = "Student '{$full_name}' has been registered successfully!";
-            $student_number = $full_name = $email = $date_of_birth = $room_id = "";
+        $upd  = $db->prepare(
+            "UPDATE students SET student_number=?, full_name=?, email=?, date_of_birth=?, room_id=?, status=? WHERE student_id=?"
+        );
+        if ($upd->execute([$student_number, $full_name, $email, $dob, $room_id, $status, $student_id])) {
+            $success = "Student record updated successfully!";
+            // Refresh student data
+            $stmt = $db->prepare("SELECT * FROM students WHERE student_id = ?");
+            $stmt->execute([$student_id]);
+            $student = $stmt->fetch();
         } else {
             $errors[] = "Something went wrong. Please try again.";
         }
     }
+} else {
+    // Pre-fill from DB
+    $student_number = $student['student_number'];
+    $full_name      = $student['full_name'];
+    $email          = $student['email'];
+    $date_of_birth  = $student['date_of_birth'] ?? '';
+    $room_id        = $student['room_id'] ?? '';
+    $status         = $student['status'];
 }
 ?>
 <!DOCTYPE html>
@@ -55,7 +86,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>HostelHub — Add Student</title>
+    <title>HostelHub — Edit Student</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="../css/style.css">
@@ -98,7 +129,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
         .hint { font-size:11px; color:#94a3b8; margin-top:5px; }
 
-        .btn-row { display:flex; gap:12px; margin-top:28px; }
+        .btn-row { display:flex; gap:12px; margin-top:28px; flex-wrap:wrap; }
         .btn-submit {
             background:#1a56db; color:#fff; border:none;
             padding:11px 28px; border-radius:10px; font-size:14px;
@@ -112,6 +143,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             text-decoration:none; font-weight:600; transition:background 0.2s;
         }
         .btn-back:hover { background:#f8fafc; text-decoration:none; }
+        .btn-danger {
+            background:#fff1f2; color:#dc2626; border:1.5px solid #fda4af;
+            padding:11px 28px; border-radius:10px; font-size:14px;
+            text-decoration:none; font-weight:600; transition:background 0.2s; margin-left:auto;
+        }
+        .btn-danger:hover { background:#dc2626; color:#fff; text-decoration:none; border-color:#dc2626; }
     </style>
 </head>
 <body>
@@ -120,8 +157,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 <div class="container">
     <div class="page-header">
-        <h2>Add New Student</h2>
-        <p>Fill in the form below to register a new student into the system</p>
+        <h2>Edit Student</h2>
+        <p>Updating record for <strong><?= htmlspecialchars($student['full_name']) ?></strong> · <?= htmlspecialchars($student['student_number']) ?></p>
     </div>
 
     <?php if ($success): ?>
@@ -169,9 +206,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <div class="hint">Optional</div>
             </div>
             <div class="form-group">
-                <label for="room_id">Assign Room</label>
+                <label for="room_id">Assigned Room</label>
                 <select id="room_id" name="room_id">
-                    <option value="">-- No room assigned yet --</option>
+                    <option value="">-- No room assigned --</option>
                     <?php foreach ($roomsResult as $room): ?>
                         <option value="<?= $room['room_id'] ?>"
                             <?= ($room_id == $room['room_id']) ? 'selected' : '' ?>>
@@ -179,11 +216,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         </option>
                     <?php endforeach; ?>
                 </select>
-                <div class="hint">Optional — can be assigned later</div>
+            </div>
+            <div class="form-group">
+                <label for="status">Status *</label>
+                <select id="status" name="status">
+                    <option value="1" <?= $status == 1 ? 'selected' : '' ?>>Active / Enrolled</option>
+                    <option value="0" <?= $status == 0 ? 'selected' : '' ?>>Inactive / Left</option>
+                </select>
             </div>
             <div class="btn-row">
-                <button type="submit" class="btn-submit">➕ Register Student</button>
-                <a href="index.php" class="btn-back">← Back</a>
+                <button type="submit" class="btn-submit">💾 Save Changes</button>
+                <a href="list_students.php" class="btn-back">← Back</a>
+                <a href="list_students.php?delete=<?= $student_id ?>"
+                   class="btn-danger"
+                   onclick="return confirm('Delete this student? This cannot be undone.')">
+                   🗑️ Delete
+                </a>
             </div>
         </form>
     </div>

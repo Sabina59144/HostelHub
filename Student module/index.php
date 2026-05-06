@@ -1,6 +1,6 @@
 <?php
 require_once '../includes/session.php';
-// requireLogin();
+requireLogin();
 require_once '../includes/db.php';
 
 $totalStudents   = $db->query("SELECT COUNT(*) AS c FROM students")->fetch()['c'];
@@ -195,7 +195,12 @@ $pct = $totalStudents > 0 ? round(($totalActive / $totalStudents) * 100) : 0;
                 <?php foreach ($recentStudents as $s): ?>
                 <tr>
                     <td><strong><?= htmlspecialchars($s['student_number']) ?></strong></td>
-                    <td><?= htmlspecialchars($s['full_name']) ?></td>
+                    <td>
+                        <a href="view_student.php?id=<?= $s['student_id'] ?>"
+                           style="color:#1e293b;font-weight:500;text-decoration:none;">
+                           <?= htmlspecialchars($s['full_name']) ?>
+                        </a>
+                    </td>
                     <td style="color:#64748b"><?= htmlspecialchars($s['email']) ?></td>
                     <td>
                         <?php if ($s['room_number']): ?>

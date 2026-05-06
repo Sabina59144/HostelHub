@@ -1,10 +1,10 @@
 <?php
 // ── Start session and check login ─────────────────────────────
-session_start();
-if (!isset($_SESSION['user_id'])) {
-    header("Location: ../login.php");
-    exit();
-}
+//session_start();
+//if (!isset($_SESSION['user_id'])) {
+//    header("Location: ../login.php");
+//    exit();
+//}
 
 // ── Connect to database ───────────────────────────────────────
 require_once '../includes/db.php';
@@ -207,7 +207,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <div class="container">
 
     <div class="page-title">
-        <h2>➕ Add New Room</h2>
+        <h2>Add New Room</h2>
         <p>Fill in the form below to register a new room into the system</p>
     </div>
 
@@ -257,7 +257,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     <div class="hint">Number of students this room can hold</div>
                 </div>
                 <div class="form-group">
-                    <label for="price_per_month">Price per Month (£) *</label>
+                    <label for="price_per_month">Price per Month (kr.) *</label>
                     <input type="number" id="price_per_month" name="price_per_month"
                            value="<?php echo htmlspecialchars($price_per_month); ?>"
                            placeholder="e.g. 450.00" step="0.01" min="0">
@@ -284,7 +284,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             <!-- Buttons -->
             <div class="btn-row">
-                <button type="submit" class="btn-submit">➕ Add Room</button>
+                <button type="submit" class="btn-submit">Add </button>
                 <a href="index.php" class="btn-back">← Back</a>
             </div>
 

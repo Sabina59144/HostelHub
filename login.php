@@ -50,11 +50,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <p>Student Hostel Management System</p>
         </div>
 
-        <?php
-session_start(); if (!empty($error)): ?>
+        <?php if (!empty($error)): ?>
             <div class="alert alert-error"><?= htmlspecialchars($error) ?></div>
-        <?php
-session_start(); endif; ?>
+        <?php endif; ?>
 
         <form method="POST" action="login.php">
             <div class="form-group">

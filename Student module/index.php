@@ -1,25 +1,22 @@
 <?php
-// // require_once '../includes/session.php';
-session_start();
+require_once '../includes/session.php';
 // requireLogin();
 require_once '../includes/db.php';
 
-// ── Stats ─────────────────────────────────────────────────────────────
 $totalStudents   = $db->query("SELECT COUNT(*) AS c FROM students")->fetch()['c'];
 $totalActive     = $db->query("SELECT COUNT(*) AS c FROM students WHERE status = 1")->fetch()['c'];
 $totalInactive   = $db->query("SELECT COUNT(*) AS c FROM students WHERE status = 0")->fetch()['c'];
 $totalUnassigned = $db->query("SELECT COUNT(*) AS c FROM students WHERE room_id IS NULL")->fetch()['c'];
 
-// ── 5 most recently added students ────────────────────────────────────
 $recentStmt = $db->query(
-    "SELECT s.student_id, s.student_number, s.full_name, s.email, s.status,
-            r.room_number
-     FROM   students s
+    "SELECT s.student_id, s.student_number, s.full_name, s.email, s.status, r.room_number
+     FROM students s
      LEFT JOIN rooms r ON s.room_id = r.room_id
-     ORDER BY s.student_id DESC
-     LIMIT 5"
+     ORDER BY s.student_id DESC LIMIT 5"
 );
 $recentStudents = $recentStmt->fetchAll();
+
+$pct = $totalStudents > 0 ? round(($totalActive / $totalStudents) * 100) : 0;
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -27,195 +24,130 @@ $recentStudents = $recentStmt->fetchAll();
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>HostelHub — Student Module</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../css/style.css">
     <style>
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-        body { font-family: 'Segoe UI', sans-serif; background: #f5f5f5; color: #333; }
+        body { background: #f0f4f8; font-family: 'DM Sans', sans-serif; }
+        .container { padding: 32px 40px; max-width: 1200px; margin: 0 auto; }
 
-        /* ── Navbar ── */
-        .navbar {
-            background: #B71C1C; color: white;
-            padding: 14px 30px; display: flex;
-            justify-content: space-between; align-items: center;
-        }
-        .navbar h1 { font-size: 20px; }
-        .navbar a  { color: white; text-decoration: none; margin-left: 20px; font-size: 13px; }
-        .navbar a:hover { text-decoration: underline; }
+        .page-header { margin-bottom: 28px; }
+        .page-header h2 { font-family: 'Playfair Display', serif; font-size: 26px; color: #0f1923; margin-bottom: 4px; }
+        .page-header p  { color: #64748b; font-size: 14px; }
 
-        /* ── Container ── */
-        .container { padding: 30px; max-width: 1100px; margin: 0 auto; }
-
-        /* ── Page title ── */
-        .page-title { margin-bottom: 24px; }
-        .page-title h2 { font-size: 24px; color: #B71C1C; }
-        .page-title p  { font-size: 13px; color: #666; margin-top: 4px; }
-
-        /* ── Stat cards ── */
-        .stat-cards {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 16px;
-            margin-bottom: 30px;
-        }
+        .stat-cards { display: grid; grid-template-columns: repeat(4,1fr); gap: 18px; margin-bottom: 32px; }
         .stat-card {
-            background: white; border-radius: 10px;
-            padding: 20px 24px; box-shadow: 0 2px 8px rgba(0,0,0,0.07);
-            border-left: 5px solid #ccc;
-            transition: transform 0.15s;
+            background: #fff; border-radius: 16px; padding: 24px 22px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.06); border: 1px solid #e8edf3;
+            position: relative; overflow: hidden; transition: transform 0.2s, box-shadow 0.2s;
         }
-        .stat-card:hover { transform: translateY(-3px); }
-        .stat-card.total   { border-color: #B71C1C; }
-        .stat-card.active  { border-color: #2e7d32; }
-        .stat-card.inactive{ border-color: #e65100; }
-        .stat-card.unassigned { border-color: #1565c0; }
-        .stat-number {
-            font-size: 36px; font-weight: 700; color: #222;
-            line-height: 1;
+        .stat-card:hover { transform: translateY(-4px); box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
+        .stat-card::before {
+            content:''; position:absolute; top:0; left:0; right:0; height:3px; border-radius:16px 16px 0 0;
         }
-        .stat-label {
-            font-size: 12px; color: #777; margin-top: 6px; text-transform: uppercase; letter-spacing: 0.5px;
-        }
-        .stat-icon { font-size: 28px; float: right; opacity: 0.15; margin-top: -4px; }
+        .stat-card.blue::before  { background: linear-gradient(90deg,#1a56db,#60a5fa); }
+        .stat-card.green::before { background: linear-gradient(90deg,#059669,#34d399); }
+        .stat-card.amber::before { background: linear-gradient(90deg,#d97706,#fbbf24); }
+        .stat-card.rose::before  { background: linear-gradient(90deg,#dc2626,#fb7185); }
 
-        /* ── Action buttons ── */
-        .section-title {
-            font-size: 14px; font-weight: 700; color: #555;
-            text-transform: uppercase; letter-spacing: 0.5px;
-            margin-bottom: 14px;
+        .stat-icon-wrap {
+            width:44px; height:44px; border-radius:12px;
+            display:flex; align-items:center; justify-content:center;
+            font-size:20px; margin-bottom:16px;
         }
-        .action-grid {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 14px;
-            margin-bottom: 30px;
-        }
+        .blue  .stat-icon-wrap { background:#eff6ff; }
+        .green .stat-icon-wrap { background:#ecfdf5; }
+        .amber .stat-icon-wrap { background:#fffbeb; }
+        .rose  .stat-icon-wrap { background:#fff1f2; }
+
+        .stat-number { font-family:'Playfair Display',serif; font-size:2.2rem; font-weight:700; line-height:1; color:#0f1923; display:block; margin-bottom:5px; }
+        .stat-label  { font-size:13px; color:#64748b; font-weight:500; display:block; }
+
+        .section-label { font-size:11px; font-weight:700; letter-spacing:.12em; text-transform:uppercase; color:#94a3b8; margin-bottom:16px; }
+
+        .action-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:14px; margin-bottom:32px; }
         .action-btn {
-            background: white; border-radius: 10px;
-            padding: 20px 16px; text-decoration: none; color: #333;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.07);
-            display: flex; flex-direction: column; align-items: center;
-            gap: 8px; transition: all 0.15s; border: 2px solid transparent;
+            background:#fff; border-radius:12px; padding:20px 16px;
+            text-decoration:none; color:#1e293b;
+            box-shadow:0 1px 4px rgba(0,0,0,0.06); border:1px solid #e8edf3;
+            display:flex; flex-direction:column; align-items:center; gap:8px;
+            transition:all 0.18s;
         }
-        .action-btn:hover { border-color: #B71C1C; transform: translateY(-2px); }
-        .action-btn .btn-icon { font-size: 28px; }
-        .action-btn .btn-label { font-size: 14px; font-weight: 700; color: #222; }
-        .action-btn .btn-desc  { font-size: 11px; color: #999; text-align: center; }
+        .action-btn:hover { border-color:#1a56db; transform:translateY(-2px); box-shadow:0 6px 20px rgba(0,0,0,0.09); text-decoration:none; color:#1a56db; }
+        .action-btn .btn-icon  { font-size:28px; }
+        .action-btn .btn-label { font-size:14px; font-weight:600; }
+        .action-btn .btn-desc  { font-size:11px; color:#94a3b8; text-align:center; }
 
-        /* ── Recent students table ── */
-        .card {
-            background: white; border-radius: 10px;
-            padding: 24px; box-shadow: 0 2px 8px rgba(0,0,0,0.07);
-            margin-bottom: 24px;
-        }
-        .card-header {
-            display: flex; justify-content: space-between; align-items: center;
-            margin-bottom: 16px;
-        }
-        .card-header h3 { font-size: 15px; color: #333; }
-        .card-header a  { font-size: 13px; color: #B71C1C; text-decoration: none; }
-        .card-header a:hover { text-decoration: underline; }
+        .progress-wrap { margin-bottom:32px; }
+        .progress-meta { display:flex; justify-content:space-between; font-size:13px; color:#64748b; margin-bottom:8px; }
+        .progress-bar  { background:#e8edf3; border-radius:20px; height:8px; overflow:hidden; }
+        .progress-fill { height:100%; border-radius:20px; background:linear-gradient(90deg,#1a56db,#60a5fa); }
 
-        table { width: 100%; border-collapse: collapse; }
-        th {
-            text-align: left; font-size: 11px; color: #999;
-            text-transform: uppercase; letter-spacing: 0.5px;
-            padding: 8px 12px; border-bottom: 2px solid #f0f0f0;
-        }
-        td {
-            padding: 10px 12px; font-size: 13px;
-            border-bottom: 1px solid #f5f5f5;
-            vertical-align: middle;
-        }
-        tr:last-child td { border-bottom: none; }
-        tr:hover td { background: #fafafa; }
+        .card { background:#fff; border-radius:16px; padding:24px; box-shadow:0 2px 12px rgba(0,0,0,0.06); border:1px solid #e8edf3; }
+        .card-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:18px; }
+        .card-header h3 { font-size:15px; font-weight:600; color:#0f1923; }
+        .card-header a  { font-size:13px; color:#1a56db; text-decoration:none; }
+        .card-header a:hover { text-decoration:underline; }
 
-        .badge {
-            display: inline-block; padding: 2px 10px;
-            border-radius: 20px; font-size: 11px; font-weight: 600;
-        }
-        .badge-active   { background: #e8f5e9; color: #2e7d32; }
-        .badge-inactive { background: #fff3e0; color: #e65100; }
-        .badge-unassigned { background: #e3f2fd; color: #1565c0; font-size: 11px; }
+        table { width:100%; border-collapse:collapse; }
+        th { text-align:left; font-size:11px; color:#94a3b8; text-transform:uppercase; letter-spacing:0.5px; padding:8px 12px; border-bottom:2px solid #f0f4f8; }
+        td { padding:11px 12px; font-size:13px; border-bottom:1px solid #f0f4f8; vertical-align:middle; }
+        tr:last-child td { border-bottom:none; }
+        tr:hover td { background:#f8fafc; }
 
-        .no-data { text-align: center; padding: 30px; color: #aaa; font-size: 13px; }
+        .badge { display:inline-block; padding:3px 10px; border-radius:20px; font-size:11px; font-weight:600; }
+        .badge-active     { background:#ecfdf5; color:#059669; }
+        .badge-inactive   { background:#fff1f2; color:#dc2626; }
+        .badge-unassigned { background:#eff6ff; color:#1a56db; }
 
-        /* ── Progress bar ── */
-        .progress-wrap { margin-bottom: 30px; }
-        .progress-label {
-            display: flex; justify-content: space-between;
-            font-size: 12px; color: #666; margin-bottom: 6px;
-        }
-        .progress-bar {
-            background: #f0f0f0; border-radius: 20px; height: 10px; overflow: hidden;
-        }
-        .progress-fill {
-            height: 100%; border-radius: 20px; background: #B71C1C;
-            transition: width 1s ease;
-        }
+        .no-data { text-align:center; padding:30px; color:#94a3b8; font-size:13px; }
     </style>
 </head>
 <body>
 
-<!-- ── Navbar ── -->
-<nav class="navbar">
-    <h1>🏨 HostelHub</h1>
-    <div>
-        <span style="font-size:13px; opacity:0.85;">Logged in as:
-            <strong><?php echo htmlspecialchars($_SESSION['username'] ?? 'Guest'); ?></strong>
-        </span>
-        <a href="../dashboard.php">🏠 Dashboard</a>
-        <a href="../logout.php">🚪 Logout</a>
-    </div>
-</nav>
+<?php include '../includes/navbar.php'; ?>
 
-<!-- ── Main Content ── -->
 <div class="container">
 
-    <!-- Page heading -->
-    <div class="page-title">
-        <h2>👨‍🎓 Student Module</h2>
+    <div class="page-header">
+        <h2>Student Module</h2>
         <p>Manage hostel student records — add, view, edit, and search students</p>
     </div>
 
-    <!-- ── Stat Cards ── -->
     <div class="stat-cards">
-        <div class="stat-card total">
-            <div class="stat-icon">👥</div>
-            <div class="stat-number"><?php echo $totalStudents; ?></div>
-            <div class="stat-label">Total Students</div>
+        <div class="stat-card blue">
+            <div class="stat-icon-wrap">👥</div>
+            <span class="stat-number"><?= $totalStudents ?></span>
+            <span class="stat-label">Total Students</span>
         </div>
-        <div class="stat-card active">
-            <div class="stat-icon">✅</div>
-            <div class="stat-number"><?php echo $totalActive; ?></div>
-            <div class="stat-label">Active / Enrolled</div>
+        <div class="stat-card green">
+            <div class="stat-icon-wrap">✅</div>
+            <span class="stat-number"><?= $totalActive ?></span>
+            <span class="stat-label">Active / Enrolled</span>
         </div>
-        <div class="stat-card inactive">
-            <div class="stat-icon">🚫</div>
-            <div class="stat-number"><?php echo $totalInactive; ?></div>
-            <div class="stat-label">Inactive / Left</div>
+        <div class="stat-card amber">
+            <div class="stat-icon-wrap">🚫</div>
+            <span class="stat-number"><?= $totalInactive ?></span>
+            <span class="stat-label">Inactive / Left</span>
         </div>
-        <div class="stat-card unassigned">
-            <div class="stat-icon">🛏️</div>
-            <div class="stat-number"><?php echo $totalUnassigned; ?></div>
-            <div class="stat-label">No Room Assigned</div>
+        <div class="stat-card rose">
+            <div class="stat-icon-wrap">🛏️</div>
+            <span class="stat-number"><?= $totalUnassigned ?></span>
+            <span class="stat-label">No Room Assigned</span>
         </div>
     </div>
 
-    <!-- ── Occupancy progress bar ── -->
-    <?php
-    $pct = $totalStudents > 0 ? round(($totalActive / $totalStudents) * 100) : 0;
-    ?>
     <div class="progress-wrap">
-        <div class="progress-label">
+        <div class="progress-meta">
             <span>Active enrolment rate</span>
-            <span><?php echo $pct; ?>%</span>
+            <span><?= $pct ?>%</span>
         </div>
         <div class="progress-bar">
-            <div class="progress-fill" style="width: <?php echo $pct; ?>%"></div>
+            <div class="progress-fill" style="width:<?= $pct ?>%"></div>
         </div>
     </div>
 
-    <!-- ── Quick Actions ── -->
-    <div class="section-title">Quick Actions</div>
+    <p class="section-label">Quick Actions</p>
     <div class="action-grid">
         <a href="add_student.php" class="action-btn">
             <div class="btn-icon">➕</div>
@@ -227,27 +159,26 @@ $recentStudents = $recentStmt->fetchAll();
             <div class="btn-label">View All</div>
             <div class="btn-desc">Browse all student records</div>
         </a>
-        <a href="search_student.php" class="action-btn">
-            <div class="btn-icon">🔍</div>
-            <div class="btn-label">Search</div>
-            <div class="btn-desc">Find a student by name or ID</div>
+        <a href="list_students.php?status=1" class="action-btn">
+            <div class="btn-icon">✅</div>
+            <div class="btn-label">Active</div>
+            <div class="btn-desc">View enrolled students</div>
         </a>
-        <a href="list_students.php?filter=unassigned" class="action-btn">
+        <a href="list_students.php?room=unassigned" class="action-btn">
             <div class="btn-icon">🛏️</div>
             <div class="btn-label">Unassigned</div>
             <div class="btn-desc">Students without a room</div>
         </a>
     </div>
 
-    <!-- ── Recent Students ── -->
+    <p class="section-label">Recently Added</p>
     <div class="card">
         <div class="card-header">
-            <h3>🕐 Recently Added Students</h3>
+            <h3>🕐 Latest Students</h3>
             <a href="list_students.php">View all →</a>
         </div>
-
         <?php if (empty($recentStudents)): ?>
-            <div class="no-data">No students registered yet. <a href="add_student.php">Add the first one →</a></div>
+            <div class="no-data">No students yet. <a href="add_student.php">Add the first one →</a></div>
         <?php else: ?>
         <table>
             <thead>
@@ -263,12 +194,12 @@ $recentStudents = $recentStmt->fetchAll();
             <tbody>
                 <?php foreach ($recentStudents as $s): ?>
                 <tr>
-                    <td><strong><?php echo htmlspecialchars($s['student_number']); ?></strong></td>
-                    <td><?php echo htmlspecialchars($s['full_name']); ?></td>
-                    <td style="color:#777;"><?php echo htmlspecialchars($s['email']); ?></td>
+                    <td><strong><?= htmlspecialchars($s['student_number']) ?></strong></td>
+                    <td><?= htmlspecialchars($s['full_name']) ?></td>
+                    <td style="color:#64748b"><?= htmlspecialchars($s['email']) ?></td>
                     <td>
                         <?php if ($s['room_number']): ?>
-                            <?php echo htmlspecialchars($s['room_number']); ?>
+                            <?= htmlspecialchars($s['room_number']) ?>
                         <?php else: ?>
                             <span class="badge badge-unassigned">Unassigned</span>
                         <?php endif; ?>
@@ -281,8 +212,8 @@ $recentStudents = $recentStmt->fetchAll();
                         <?php endif; ?>
                     </td>
                     <td>
-                        <a href="edit_student.php?id=<?php echo $s['student_id']; ?>"
-                           style="color:#B71C1C; font-size:13px; text-decoration:none;">Edit</a>
+                        <a href="edit_student.php?id=<?= $s['student_id'] ?>"
+                           style="color:#1a56db; font-size:13px; text-decoration:none; font-weight:600;">Edit</a>
                     </td>
                 </tr>
                 <?php endforeach; ?>
@@ -291,8 +222,8 @@ $recentStudents = $recentStmt->fetchAll();
         <?php endif; ?>
     </div>
 
-</div><!-- end container -->
+</div>
 
+<?php $db = null; ?>
 </body>
 </html>
-<?php $db = null; ?>

@@ -3,11 +3,25 @@ require_once("../includes/db.php");
 
 $message = "";
 
-// Generate automatic receipt number
-$stmt = $db->query("SELECT MAX(fee_id) AS last_id FROM fees");
+// Generate automatic receipt number from latest receipt_number
+$stmt = $db->query("
+    SELECT receipt_number
+    FROM fees
+    ORDER BY receipt_number DESC
+    LIMIT 1
+");
+
 $row = $stmt->fetch(PDO::FETCH_ASSOC);
-$next_id = ($row['last_id'] ?? 0) + 1;
-$receipt_number = "RCP-" . date("Y") . "-" . str_pad($next_id, 4, "0", STR_PAD_LEFT);
+
+if ($row) {
+    $lastReceipt = $row['receipt_number'];
+    $lastNumber = (int) substr($lastReceipt, -4);
+    $nextNumber = $lastNumber + 1;
+} else {
+    $nextNumber = 1;
+}
+
+$receipt_number = "RCP-" . date("Y") . "-" . str_pad($nextNumber, 4, "0", STR_PAD_LEFT);
 
 if (isset($_POST['submit'])) {
 
@@ -17,7 +31,7 @@ if (isset($_POST['submit'])) {
     $amount         = (float) $_POST['amount'];
     $due_date       = $_POST['due_date'];
     $fine_rate      = isset($_POST['fine_rate']) ? (float) $_POST['fine_rate'] : 0.50;
-    $fine_cap       = isset($_POST['fine_cap'])  ? (float) $_POST['fine_cap']  : 15.00;
+    $fine_cap       = isset($_POST['fine_cap']) ? (float) $_POST['fine_cap'] : 15.00;
 
     // Validation
     if (
@@ -26,7 +40,7 @@ if (isset($_POST['submit'])) {
         $amount <= 0 ||
         empty($due_date)
     ) {
-        $message = "❌ Denied! Invalid information entered.";
+        $message = "❌ Invalid information entered.";
     } else {
 
         // Check duplicate receipt number
@@ -34,22 +48,34 @@ if (isset($_POST['submit'])) {
         $check->execute([$receipt_number]);
 
         if ($check->fetchColumn() > 0) {
-            $message = "❌ Denied! Receipt number already exists.";
+            $message = "❌ Receipt number already exists.";
         } else {
 
-            // Calculate fine if already overdue at time of entry
+            // Calculate fine if overdue
             $today = date('Y-m-d');
             $fine_amount = 0.00;
+
             if ($due_date < $today) {
-                $days_overdue = (int) round((strtotime($today) - strtotime($due_date)) / 86400);
-                $fine_amount  = min(round($days_overdue * $fine_rate, 2), $fine_cap);
+                $days_overdue = floor((strtotime($today) - strtotime($due_date)) / 86400);
+                $fine_amount = min(round($days_overdue * $fine_rate, 2), $fine_cap);
             }
+
             $total_due = $amount + $fine_amount;
 
             $stmt = $db->prepare("
-                INSERT INTO fees
-                (receipt_number, student_id, fee_type, amount, due_date,
-                 is_paid, fine_rate, fine_cap, fine_amount, total_due, is_active)
+                INSERT INTO fees (
+                    receipt_number,
+                    student_id,
+                    fee_type,
+                    amount,
+                    due_date,
+                    is_paid,
+                    fine_rate,
+                    fine_cap,
+                    fine_amount,
+                    total_due,
+                    is_active
+                )
                 VALUES (?, ?, ?, ?, ?, 0, ?, ?, ?, ?, 1)
             ");
 
@@ -93,14 +119,16 @@ if (isset($_POST['submit'])) {
         <div class="invoice-body">
 
             <?php if ($message): ?>
-                <div class="error"><?= $message ?></div>
+                <div class="error"><?= htmlspecialchars($message) ?></div>
             <?php endif; ?>
 
             <form method="POST">
 
                 <label>Receipt Number</label>
-                <input type="text" name="receipt_number"
-                       value="<?= htmlspecialchars($receipt_number) ?>" required>
+                <input type="text"
+                       name="receipt_number"
+                       value="<?= htmlspecialchars($receipt_number) ?>"
+                       required>
 
                 <label>Student ID</label>
                 <input type="number" name="student_id" min="1" required>
@@ -123,12 +151,20 @@ if (isset($_POST['submit'])) {
 
                 <div class="fine-settings">
                     <label>Fine Rate ($ per day overdue)</label>
-                    <input type="number" step="0.01" min="0" max="99.99"
-                           name="fine_rate" value="0.50">
+                    <input type="number"
+                           step="0.01"
+                           min="0"
+                           max="99.99"
+                           name="fine_rate"
+                           value="0.50">
 
                     <label>Fine Cap ($)</label>
-                    <input type="number" step="0.01" min="0" max="99.99"
-                           name="fine_cap" value="15.00">
+                    <input type="number"
+                           step="0.01"
+                           min="0"
+                           max="99.99"
+                           name="fine_cap"
+                           value="15.00">
                 </div>
 
                 <button type="submit" name="submit">Confirm Fee Entry</button>
@@ -141,7 +177,9 @@ if (isset($_POST['submit'])) {
 
 <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 <script>
-flatpickr("#due_date", { dateFormat: "Y-m-d" });
+flatpickr("#due_date", {
+    dateFormat: "Y-m-d"
+});
 </script>
 
 </body>

@@ -1,6 +1,10 @@
 <?php
-$host = "localhost";
-$dbname = "hostelhub";
+// BUG FIX: All PHP files used require_once("../includes/db.php")
+// but db.php lives in the SAME folder as the other files.
+// Place all files in one folder (e.g. /hostelhub/) and use this file as-is.
+
+$host     = "localhost";
+$dbname   = "hostelhub";
 $username = "root";
 $password = "";
 
@@ -10,10 +14,9 @@ try {
         $username,
         $password
     );
-
     $db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
-} catch(PDOException $e) {
+} catch (PDOException $e) {
     die("Connection failed: " . $e->getMessage());
 }
 ?>

@@ -22,35 +22,36 @@ $today = new DateTime();
     <a href="add.php" class="add-btn">+ Add Fee</a>
 
     <table>
-        <tr>
-            <th>Receipt</th>
-            <th>Student</th>
-            <th>Type</th>
-            <th>Amount</th>
-            <th>Fine</th>
-            <th>Total Due</th>
-            <th>Due Date</th>
-            <th>Status</th>
-            <th>Paid At</th>
-            <th>Actions</th>
-        </tr>
-
+        <thead>
+            <tr>
+                <th>Receipt</th>
+                <th>Student</th>
+                <th>Type</th>
+                <th>Amount</th>
+                <th>Fine</th>
+                <th>Total Due</th>
+                <th>Due Date</th>
+                <th>Status</th>
+                <th>Paid At</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
         <?php foreach ($fees as $fee): ?>
         <?php
-            $dueDate = new DateTime($fee['due_date']);
+            $dueDate    = new DateTime($fee['due_date']);
             $fineAmount = 0;
 
             if ($fee['is_paid']) {
-                $status = "Paid";
+                $status      = "Paid";
                 $statusClass = "paid";
             } elseif ($today > $dueDate) {
                 $daysOverdue = $dueDate->diff($today)->days;
-                $fineAmount = min($daysOverdue * $fee['fine_rate'], $fee['fine_cap']);
-
-                $status = "Overdue";
+                $fineAmount  = min($daysOverdue * $fee['fine_rate'], $fee['fine_cap']);
+                $status      = "Overdue";
                 $statusClass = "overdue";
             } else {
-                $status = "Unpaid";
+                $status      = "Unpaid";
                 $statusClass = "unpaid";
             }
 
@@ -69,12 +70,12 @@ $today = new DateTime();
             <td>
                 <a class="pay-btn"
                    href="edit.php?id=<?= urlencode($fee['receipt_number']) ?>">✏ Edit</a>
-
                 <a class="delete-btn"
                    href="delete.php?id=<?= urlencode($fee['receipt_number']) ?>">🗑 Delete</a>
             </td>
         </tr>
         <?php endforeach; ?>
+        </tbody>
     </table>
 </div>
 

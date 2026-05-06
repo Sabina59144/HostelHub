@@ -3,25 +3,27 @@ require_once("../includes/db.php");
 
 $message = "";
 
-// Generate automatic receipt number from latest receipt_number
+
 $stmt = $db->query("
     SELECT receipt_number
     FROM fees
-    ORDER BY receipt_number DESC
+    ORDER BY CAST(SUBSTRING_INDEX(receipt_number, '-', -1) AS UNSIGNED) DESC
     LIMIT 1
 ");
-
 $row = $stmt->fetch(PDO::FETCH_ASSOC);
 
 if ($row) {
-    $lastReceipt = $row['receipt_number'];
-    $lastNumber = (int) substr($lastReceipt, -4);
+    $lastNumber = (int) substr($row['receipt_number'], -4);
     $nextNumber = $lastNumber + 1;
 } else {
     $nextNumber = 1;
 }
 
 $receipt_number = "RCP-" . date("Y") . "-" . str_pad($nextNumber, 4, "0", STR_PAD_LEFT);
+
+// BUG FIX 3: Load students from DB for dropdown (can't type a valid student_id blindly)
+$studentStmt = $db->query("SELECT student_id, full_name FROM students WHERE status = 1 ORDER BY full_name ASC");
+$students = $studentStmt->fetchAll(PDO::FETCH_ASSOC);
 
 if (isset($_POST['submit'])) {
 
@@ -31,9 +33,8 @@ if (isset($_POST['submit'])) {
     $amount         = (float) $_POST['amount'];
     $due_date       = $_POST['due_date'];
     $fine_rate      = isset($_POST['fine_rate']) ? (float) $_POST['fine_rate'] : 0.50;
-    $fine_cap       = isset($_POST['fine_cap']) ? (float) $_POST['fine_cap'] : 15.00;
+    $fine_cap       = isset($_POST['fine_cap'])  ? (float) $_POST['fine_cap']  : 15.00;
 
-    // Validation
     if (
         empty($receipt_number) ||
         $student_id <= 0 ||
@@ -43,7 +44,6 @@ if (isset($_POST['submit'])) {
         $message = "❌ Invalid information entered.";
     } else {
 
-        // Check duplicate receipt number
         $check = $db->prepare("SELECT COUNT(*) FROM fees WHERE receipt_number = ?");
         $check->execute([$receipt_number]);
 
@@ -51,44 +51,26 @@ if (isset($_POST['submit'])) {
             $message = "❌ Receipt number already exists.";
         } else {
 
-            // Calculate fine if overdue
-            $today = date('Y-m-d');
+            $today       = date('Y-m-d');
             $fine_amount = 0.00;
 
             if ($due_date < $today) {
                 $days_overdue = floor((strtotime($today) - strtotime($due_date)) / 86400);
-                $fine_amount = min(round($days_overdue * $fine_rate, 2), $fine_cap);
+                $fine_amount  = min(round($days_overdue * $fine_rate, 2), $fine_cap);
             }
 
             $total_due = $amount + $fine_amount;
 
             $stmt = $db->prepare("
                 INSERT INTO fees (
-                    receipt_number,
-                    student_id,
-                    fee_type,
-                    amount,
-                    due_date,
-                    is_paid,
-                    fine_rate,
-                    fine_cap,
-                    fine_amount,
-                    total_due,
-                    is_active
-                )
-                VALUES (?, ?, ?, ?, ?, 0, ?, ?, ?, ?, 1)
+                    receipt_number, student_id, fee_type, amount, due_date,
+                    is_paid, fine_rate, fine_cap, fine_amount, total_due, is_active
+                ) VALUES (?, ?, ?, ?, ?, 0, ?, ?, ?, ?, 1)
             ");
 
             $stmt->execute([
-                $receipt_number,
-                $student_id,
-                $fee_type,
-                $amount,
-                $due_date,
-                $fine_rate,
-                $fine_cap,
-                $fine_amount,
-                $total_due
+                $receipt_number, $student_id, $fee_type, $amount, $due_date,
+                $fine_rate, $fine_cap, $fine_amount, $total_due
             ]);
 
             header("Location: index.php");
@@ -97,7 +79,6 @@ if (isset($_POST['submit'])) {
     }
 }
 ?>
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -130,8 +111,17 @@ if (isset($_POST['submit'])) {
                        value="<?= htmlspecialchars($receipt_number) ?>"
                        required>
 
-                <label>Student ID</label>
-                <input type="number" name="student_id" min="1" required>
+                <!-- BUG FIX 3: Student dropdown instead of a blank number input -->
+                <label>Student</label>
+                <select name="student_id" required>
+                    <option value="">— Select a Student —</option>
+                    <?php foreach ($students as $s): ?>
+                        <option value="<?= $s['student_id'] ?>">
+                            <?= htmlspecialchars($s['full_name']) ?>
+                            (ID: <?= $s['student_id'] ?>)
+                        </option>
+                    <?php endforeach; ?>
+                </select>
 
                 <label>Fee Type</label>
                 <select name="fee_type" required>
@@ -151,20 +141,10 @@ if (isset($_POST['submit'])) {
 
                 <div class="fine-settings">
                     <label>Fine Rate ($ per day overdue)</label>
-                    <input type="number"
-                           step="0.01"
-                           min="0"
-                           max="99.99"
-                           name="fine_rate"
-                           value="0.50">
+                    <input type="number" step="0.01" min="0" name="fine_rate" value="0.50">
 
                     <label>Fine Cap ($)</label>
-                    <input type="number"
-                           step="0.01"
-                           min="0"
-                           max="99.99"
-                           name="fine_cap"
-                           value="15.00">
+                    <input type="number" step="0.01" min="0" name="fine_cap" value="15.00">
                 </div>
 
                 <button type="submit" name="submit">Confirm Fee Entry</button>
@@ -177,9 +157,7 @@ if (isset($_POST['submit'])) {
 
 <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 <script>
-flatpickr("#due_date", {
-    dateFormat: "Y-m-d"
-});
+flatpickr("#due_date", { dateFormat: "Y-m-d" });
 </script>
 
 </body>

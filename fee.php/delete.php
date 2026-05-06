@@ -138,7 +138,7 @@ if (isset($_POST['confirm_delete'])) {
         </table>
 
         <div class="warning-text">
-            ⚠ This record will be archived (soft-deleted). It will no longer appear in the fees list but remains in the database for audit purposes.
+            ⚠ This record will be archived (soft-deleted). It will no longer appear in the fees list but remains in the database for other purposes (audit).
         </div>
 
         <form method="POST">

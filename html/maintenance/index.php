@@ -29,6 +29,7 @@
                         <th>Reported By</th>
                         <th>Date Reported</th>
                         <th>Status</th>
+                                <th>Actions</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -37,6 +38,33 @@
         </div>
         <div id="tableMessage"></div>
     </section>
+    
+            <!-- Edit modal -->
+            <div id="editModal" class="modal" style="display:none;">
+                <div class="modal-content">
+                    <h3>Edit Maintenance Request</h3>
+                    <form id="editForm">
+                        <input type="hidden" name="maintenance_id" id="maintenance_id">
+                        <div>
+                            <label for="status">Status</label>
+                            <select name="status" id="status">
+                                <option value="Pending">Pending</option>
+                                <option value="Inprogress">Inprogress</option>
+                                <option value="Completed">Completed</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label for="resolution_note">Resolution Note</label>
+                            <textarea name="resolution_note" id="resolution_note" rows="4"></textarea>
+                        </div>
+                        <div class="modal-actions">
+                            <button type="button" id="saveEdit">Save</button>
+                            <button type="button" id="cancelEdit">Cancel</button>
+                        </div>
+                        <div id="editErrors" class="alert error" style="display:none;margin-top:8px;"></div>
+                    </form>
+                </div>
+            </div>
 </main>
 
 <script>
@@ -46,12 +74,39 @@ function createCell(value) {
     return td;
 }
 
-function createStatusCell(isResolved) {
+function createStatusCell(status) {
     const td = document.createElement('td');
     const badge = document.createElement('span');
-    badge.className = 'status-badge ' + (isResolved == 1 ? 'resolved' : 'pending');
-    badge.textContent = isResolved == 1 ? 'Resolved' : 'Not Resolved';
+    const s = (status || '').toLowerCase();
+    if (s === 'completed' || s === 'resolved') {
+        badge.className = 'status-badge resolved';
+        badge.textContent = 'Completed';
+    } else if (s === 'inprogress' || s === 'in-progress') {
+        badge.className = 'status-badge inprogress';
+        badge.textContent = 'Inprogress';
+    } else {
+        badge.className = 'status-badge pending';
+        badge.textContent = 'Pending';
+    }
     td.appendChild(badge);
+    return td;
+}
+
+function createActionsCell(id) {
+    const td = document.createElement('td');
+    const editBtn = document.createElement('button');
+    editBtn.textContent = 'Edit';
+    editBtn.className = 'btn small';
+    editBtn.addEventListener('click', () => openEditModal(id));
+
+    const delBtn = document.createElement('button');
+    delBtn.textContent = 'Delete';
+    delBtn.className = 'btn small danger';
+    delBtn.addEventListener('click', () => deleteMaintenance(id));
+
+    td.appendChild(editBtn);
+    td.appendChild(document.createTextNode(' '));
+    td.appendChild(delBtn);
     return td;
 }
 
@@ -82,7 +137,10 @@ async function loadMaintenance() {
                 tr.appendChild(createCell(row.assigned_to_name));
                 tr.appendChild(createCell(row.reported_by_name));
                 tr.appendChild(createCell(row.date_reported));
-                tr.appendChild(createStatusCell(row.is_resolved));
+                // prefer explicit status if provided, otherwise derive from is_resolved
+                const status = row.status !== undefined ? row.status : (row.is_resolved == 1 ? 'Completed' : 'Pending');
+                tr.appendChild(createStatusCell(status));
+                tr.appendChild(createActionsCell(row.maintenance_id));
                 tbody.appendChild(tr);
             });
         } else {
@@ -94,6 +152,88 @@ async function loadMaintenance() {
 }
 
 loadMaintenance();
+
+// Modal logic
+function openEditModal(id) {
+    // fetch details
+    fetch(`../../api/maintenance/get_maintenance_item.php?id=${encodeURIComponent(id)}`)
+        .then(r => r.json())
+        .then(json => {
+            if (!json.success) {
+                alert(json.errors ? json.errors.join('\n') : 'Failed to fetch item');
+                return;
+            }
+            const data = json.data;
+            document.getElementById('maintenance_id').value = data.maintenance_id;
+            document.getElementById('status').value = data.status || (data.is_resolved == 1 ? 'Completed' : 'Pending');
+            document.getElementById('resolution_note').value = data.resolution_note || '';
+            document.getElementById('editErrors').style.display = 'none';
+            document.getElementById('editModal').style.display = 'block';
+        })
+        .catch(() => alert('Failed to fetch maintenance item.'));
+}
+
+function closeEditModal() {
+    document.getElementById('editModal').style.display = 'none';
+}
+
+document.getElementById('cancelEdit').addEventListener('click', closeEditModal);
+
+document.getElementById('saveEdit').addEventListener('click', async () => {
+    const id = document.getElementById('maintenance_id').value;
+    const status = document.getElementById('status').value;
+    const resolution_note = document.getElementById('resolution_note').value.trim();
+
+    const errors = [];
+    if (!status) errors.push('Status is required.');
+    if (status === 'Completed' && resolution_note.length === 0) errors.push('Resolution Note is required when marked Completed.');
+    if (resolution_note.length > 2000) errors.push('Resolution Note must be 2000 characters or less.');
+
+    const errBox = document.getElementById('editErrors');
+    if (errors.length) {
+        errBox.style.display = 'block';
+        errBox.textContent = errors.join(' ');
+        return;
+    }
+
+    try {
+        const resp = await fetch('../../api/maintenance/update_maintenance.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: new URLSearchParams({ maintenance_id: id, status, resolution_note })
+        });
+        const json = await resp.json();
+        if (json.success) {
+            closeEditModal();
+            loadMaintenance();
+        } else {
+            errBox.style.display = 'block';
+            errBox.textContent = json.errors ? json.errors.join(' ') : 'Failed to update.';
+        }
+    } catch (err) {
+        errBox.style.display = 'block';
+        errBox.textContent = 'Request failed.';
+    }
+});
+
+async function deleteMaintenance(id) {
+    if (!confirm('Delete this maintenance request? This cannot be undone.')) return;
+    try {
+        const resp = await fetch('../../api/maintenance/delete_maintenance.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: new URLSearchParams({ maintenance_id: id })
+        });
+        const json = await resp.json();
+        if (json.success) {
+            loadMaintenance();
+        } else {
+            alert(json.errors ? json.errors.join('\n') : 'Failed to delete.');
+        }
+    } catch (err) {
+        alert('Delete request failed.');
+    }
+}
 </script>
 
 </body>

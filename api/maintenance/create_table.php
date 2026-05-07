@@ -26,6 +26,9 @@ try {
     ) ENGINE=InnoDB;");
 
     // Maintenance (assigned_to references staffs, reported_by references students)
+    // Drop existing maintenance table and recreate to ensure new schema
+    $db->exec("DROP TABLE IF EXISTS maintenance;");
+
     $db->exec("CREATE TABLE IF NOT EXISTS maintenance (
         maintenance_id INT AUTO_INCREMENT PRIMARY KEY,
         ticket_number VARCHAR(20) NOT NULL UNIQUE,
@@ -34,6 +37,8 @@ try {
         date_reported DATE DEFAULT (CURRENT_DATE),
         reported_by INT,
         is_resolved TINYINT(1) DEFAULT 0,
+        status VARCHAR(20) DEFAULT 'Pending',
+        resolution_note TEXT DEFAULT '',
         FOREIGN KEY (room_id) REFERENCES rooms(room_id) ON DELETE CASCADE,
         FOREIGN KEY (assigned_to) REFERENCES staffs(staff_id) ON DELETE SET NULL,
         FOREIGN KEY (reported_by) REFERENCES students(student_id) ON DELETE SET NULL

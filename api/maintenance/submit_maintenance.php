@@ -7,7 +7,9 @@ $ticket_number = isset($_POST['ticket_number']) ? trim($_POST['ticket_number']) 
 $room_id = isset($_POST['room_id']) ? trim($_POST['room_id']) : '';
 $date_reported = isset($_POST['date_reported']) ? trim($_POST['date_reported']) : '';
 $reported_by = isset($_POST['reported_by']) ? trim($_POST['reported_by']) : '';
-$status = isset($_POST['status']) ? trim($_POST['status']) : '';
+// Status omitted from add form; default to Pending
+$status = isset($_POST['status']) && trim($_POST['status']) !== '' ? trim($_POST['status']) : 'Pending';
+$resolution_note = isset($_POST['resolution_note']) ? trim($_POST['resolution_note']) : '';
 
 if ($ticket_number === '') $errors[] = 'Ticket Number is required.';
 if ($room_id === '') $errors[] = 'Room ID is required.';
@@ -15,7 +17,7 @@ $assigned_to = isset($_POST['assigned_to']) ? trim($_POST['assigned_to']) : '';
 if ($assigned_to === '') $errors[] = 'Assigned To is required.';
 if ($date_reported === '') $errors[] = 'Date Reported is required.';
 if ($reported_by === '') $errors[] = 'Reported By is required.';
-if ($status === '') $errors[] = 'Status is required.';
+if (strlen($resolution_note) > 2000) $errors[] = 'Resolution Note must be 2000 characters or less.';
 if ($ticket_number !== '' && strlen($ticket_number) > 20) $errors[] = 'Ticket Number must be 20 characters or less.';
 
 // room_id should be numeric id
@@ -40,8 +42,9 @@ if ($assigned_to !== '' && !ctype_digit($assigned_to)) {
 if ($reported_by !== '' && !ctype_digit($reported_by)) {
     $errors[] = 'Reported By must be a student ID.';
 }
-if ($status !== '' && !in_array($status, ['Resolved', 'Not Resolved'], true)) {
-    $errors[] = 'Status must be either Resolved or Not Resolved.';
+$allowedStatuses = ['Resolved', 'Not Resolved', 'Pending', 'Inprogress', 'Completed'];
+if ($status !== '' && !in_array($status, $allowedStatuses, true)) {
+    $errors[] = 'Status is invalid.';
 }
 
 if (!empty($errors)) {
@@ -78,14 +81,17 @@ try {
         exit;
     }
 
-    $stmt = $db->prepare("INSERT INTO maintenance (ticket_number, room_id, assigned_to, date_reported, reported_by, is_resolved) VALUES (:ticket, :room, :assigned, :date_reported, :reported_by, :is_resolved)");
+    $stmt = $db->prepare("INSERT INTO maintenance (ticket_number, room_id, assigned_to, date_reported, reported_by, is_resolved, status, resolution_note) VALUES (:ticket, :room, :assigned, :date_reported, :reported_by, :is_resolved, :status, :resolution_note)");
 
     $stmt->bindValue(':ticket', $ticket_number, PDO::PARAM_STR);
     $stmt->bindValue(':room', (int)$room_id, PDO::PARAM_INT);
     $stmt->bindValue(':assigned', (int)$assigned_to, PDO::PARAM_INT);
     $stmt->bindValue(':date_reported', $date_reported, PDO::PARAM_STR);
     $stmt->bindValue(':reported_by', (int)$reported_by, PDO::PARAM_INT);
-    $stmt->bindValue(':is_resolved', ($status === 'Resolved') ? 1 : 0, PDO::PARAM_INT);
+    $is_resolved_val = ($status === 'Resolved' || $status === 'Completed') ? 1 : 0;
+    $stmt->bindValue(':is_resolved', $is_resolved_val, PDO::PARAM_INT);
+    $stmt->bindValue(':status', $status, PDO::PARAM_STR);
+    $stmt->bindValue(':resolution_note', $resolution_note, PDO::PARAM_STR);
 
     $stmt->execute();
 
@@ -98,7 +104,8 @@ try {
             'assigned_to' => htmlspecialchars($assigned_to, ENT_QUOTES, 'UTF-8'),
             'date_reported' => $date_reported,
             'reported_by' => (int)$reported_by,
-            'status' => htmlspecialchars($status, ENT_QUOTES, 'UTF-8')
+            'status' => htmlspecialchars($status, ENT_QUOTES, 'UTF-8'),
+            'resolution_note' => htmlspecialchars($resolution_note, ENT_QUOTES, 'UTF-8')
         ]
     ];
 

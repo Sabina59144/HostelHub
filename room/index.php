@@ -23,6 +23,7 @@ if (isset($_GET['msg'])) {
     if ($_GET['msg'] === 'updated')   $msg = "Room updated successfully!";
     if ($_GET['msg'] === 'deleted')   $msg = "Room deleted successfully!";
     if ($_GET['msg'] === 'allocated') $msg = "Student allocated successfully!";
+    if ($_GET['msg'] === 'removed')   $msg = "Student successfully removed from the room.";
 }
 
 // ── Search + Filter (PDO prepared) ────────────────────────────────────

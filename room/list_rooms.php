@@ -7,6 +7,12 @@
 
 require_once '../includes/db.php';
 
+// ── Success message ───────────────────────────────────────────────────
+$msg = "";
+if (isset($_GET['msg'])) {
+    if ($_GET['msg'] === 'removed') $msg = "Student successfully removed from the room.";
+}
+
 // ── Filters from query string ─────────────────────────────────────────
 $search = trim($_GET['search'] ?? '');
 $type   = $_GET['type']   ?? '';
@@ -92,6 +98,43 @@ $activeNav = 'rooms';
         }
         .filter-chips a:hover { border-color: #2563eb; color: #2563eb; }
         .filter-chips a.active { background: #2563eb; color: white; border-color: #2563eb; }
+
+        /* Occupants toggle & sub-table */
+        .occupants-toggle {
+            font-size: 12px; font-weight: 600;
+            color: #7c3aed; background: #ede9fe;
+            border: none; border-radius: 999px;
+            padding: 3px 10px; cursor: pointer;
+            transition: background 0.15s;
+            white-space: nowrap;
+        }
+        .occupants-toggle:hover { background: #ddd6fe; }
+
+        .occupants-row { display: none; }
+        .occupants-row.open { display: table-row; }
+
+        .occupants-inner {
+            background: #fafafa;
+            border-top: 1px dashed #e5e7eb;
+            padding: 14px 20px 14px 36px;
+        }
+        .occupants-inner table {
+            width: 100%; border: none;
+            margin: 0;
+        }
+        .occupants-inner table th {
+            font-size: 11px; font-weight: 700;
+            color: #9ca3af; text-transform: uppercase;
+            letter-spacing: 0.5px; padding: 6px 12px;
+            background: transparent; border-bottom: 1px solid #e5e7eb;
+        }
+        .occupants-inner table td {
+            font-size: 13px; color: #374151;
+            padding: 8px 12px;
+            border-bottom: 1px solid #f3f4f6;
+        }
+        .occupants-inner table tr:last-child td { border-bottom: none; }
+        .action-link.remove { color: #dc2626; }
     </style>
 </head>
 <body>
@@ -104,6 +147,10 @@ $activeNav = 'rooms';
         <h2><?php echo htmlspecialchars($heading); ?></h2>
         <p>Browse and filter every room registered in HostelHub.</p>
     </div>
+
+    <?php if ($msg): ?>
+        <div class="alert-success"><?php echo htmlspecialchars($msg); ?></div>
+    <?php endif; ?>
 
     <!-- Floor filter chips -->
     <div class="filter-chips">
@@ -182,6 +229,19 @@ $activeNav = 'rooms';
     ksort($byFloor);
 
     $floorNames = ['A'=>'1st Floor', 'B'=>'2nd Floor', 'C'=>'3rd Floor', 'D'=>'4th Floor', 'E'=>'5th Floor'];
+
+    // Fetch all currently allocated active students (keyed by room_id)
+    $occupantRows = $db->query(
+        "SELECT student_id, student_number, full_name, email, room_id
+         FROM students
+         WHERE room_id IS NOT NULL AND status = 1
+         ORDER BY full_name"
+    )->fetchAll();
+
+    $occupantsByRoom = [];
+    foreach ($occupantRows as $oRow) {
+        $occupantsByRoom[(int)$oRow['room_id']][] = $oRow;
+    }
     ?>
 
     <div class="results-count" style="margin-bottom: 18px;">
@@ -234,15 +294,28 @@ $activeNav = 'rooms';
                     </thead>
                     <tbody>
                         <?php foreach ($floorRooms as $room):
-                            $occ  = (int)$room['occupants'];
-                            $cap  = (int)$room['capacity'];
-                            $left = max(0, $cap - $occ);
+                            $occ      = (int)$room['occupants'];
+                            $cap      = (int)$room['capacity'];
+                            $left     = max(0, $cap - $occ);
+                            $rid      = (int)$room['room_id'];
+                            $students = $occupantsByRoom[$rid] ?? [];
+                            $toggleId = 'occ-' . $rid;
                         ?>
                         <tr>
                             <td><strong><?php echo htmlspecialchars($room['room_number']); ?></strong></td>
                             <td><?php echo ucfirst(htmlspecialchars($room['room_type'])); ?></td>
                             <td><?php echo $cap; ?></td>
-                            <td><?php echo $occ; ?></td>
+                            <td>
+                                <?php if ($occ > 0): ?>
+                                    <button class="occupants-toggle"
+                                            onclick="toggleOccupants('<?php echo $toggleId; ?>', this)"
+                                            title="View students in this room">
+                                        👥 <?php echo $occ; ?> student<?php echo $occ === 1 ? '' : 's'; ?>
+                                    </button>
+                                <?php else: ?>
+                                    <span style="color:#9ca3af; font-size:13px;">—</span>
+                                <?php endif; ?>
+                            </td>
                             <td>
                                 <?php if ($left === 0): ?>
                                     <span class="badge badge-full">Full</span>
@@ -266,13 +339,48 @@ $activeNav = 'rooms';
                                 <?php endif; ?>
                             </td>
                             <td>
-                                <a href="edit_room.php?id=<?php echo $room['room_id']; ?>" class="action-link edit">Edit</a>
+                                <a href="edit_room.php?id=<?php echo $rid; ?>" class="action-link edit">Edit</a>
                                 <?php if ($left > 0): ?>
-                                    <a href="allocate_room.php?room_id=<?php echo $room['room_id']; ?>" class="action-link allocate">Allocate</a>
+                                    <a href="allocate_room.php?room_id=<?php echo $rid; ?>" class="action-link allocate">Allocate</a>
                                 <?php endif; ?>
-                                <a href="delete_room.php?id=<?php echo $room['room_id']; ?>" class="action-link delete">Delete</a>
+                                <a href="delete_room.php?id=<?php echo $rid; ?>" class="action-link delete">Delete</a>
                             </td>
                         </tr>
+
+                        <?php if ($occ > 0): ?>
+                        <tr id="<?php echo $toggleId; ?>" class="occupants-row">
+                            <td colspan="9" style="padding: 0;">
+                                <div class="occupants-inner">
+                                    <table>
+                                        <thead>
+                                            <tr>
+                                                <th>Student #</th>
+                                                <th>Full Name</th>
+                                                <th>Email</th>
+                                                <th>Action</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <?php foreach ($students as $st): ?>
+                                            <tr>
+                                                <td><?php echo htmlspecialchars($st['student_number']); ?></td>
+                                                <td><?php echo htmlspecialchars($st['full_name']); ?></td>
+                                                <td><?php echo htmlspecialchars($st['email']); ?></td>
+                                                <td>
+                                                    <a href="remove_allocation.php?student_id=<?php echo (int)$st['student_id']; ?>"
+                                                       class="action-link remove">
+                                                        Remove from Room
+                                                    </a>
+                                                </td>
+                                            </tr>
+                                            <?php endforeach; ?>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </td>
+                        </tr>
+                        <?php endif; ?>
+
                         <?php endforeach; ?>
                     </tbody>
                 </table>
@@ -281,6 +389,17 @@ $activeNav = 'rooms';
     <?php endif; ?>
 
 </div>
+
+<script>
+    function toggleOccupants(rowId, btn) {
+        const row = document.getElementById(rowId);
+        if (!row) return;
+        const isOpen = row.classList.toggle('open');
+        btn.textContent = isOpen
+            ? btn.textContent.replace('👥', '▲')
+            : btn.textContent.replace('▲', '👥');
+    }
+</script>
 
 </body>
 </html>

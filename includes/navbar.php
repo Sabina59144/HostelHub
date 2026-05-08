@@ -53,8 +53,8 @@ $base        = $inSubdir ? '../' : '';
             </a>
         </li>
         <li>
-            <a href="<?= $base ?>pages/rooms.php"
-               class="<?= $currentPage === 'rooms.php' ? 'active' : '' ?>">
+            <a href="<?= $base ?>room/index.php"
+               class="<?= strpos($_SERVER['SCRIPT_FILENAME'], DIRECTORY_SEPARATOR . 'room' . DIRECTORY_SEPARATOR) !== false ? 'active' : '' ?>">
                 Rooms
             </a>
         </li>

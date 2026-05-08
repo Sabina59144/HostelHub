@@ -184,7 +184,7 @@ $fees = $feeStmt->fetch();
             <?php else: ?>
             <div style="text-align:center;padding:24px 0;color:#94a3b8;font-size:13px;">
                 🛏️ No room assigned yet.<br>
-                <a href="edit_student.php?id=<?= $student_id ?>" style="color:#1a56db;font-weight:600;font-size:13px;margin-top:8px;display:inline-block;">Assign a room →</a>
+                <a href="../room/allocate_room.php" style="color:#1a56db;font-weight:600;font-size:13px;margin-top:8px;display:inline-block;">Allocate a room →</a>
             </div>
             <?php endif; ?>
         </div>
@@ -202,13 +202,4 @@ $fees = $feeStmt->fetch();
             <span class="fee-lbl">Paid</span>
         </div>
         <div class="fee-card pending">
-            <span class="fee-num">£<?= number_format($fees['pending_amount'] ?? 0, 2) ?></span>
-            <span class="fee-lbl">Outstanding</span>
-        </div>
-    </div>
-
-</div>
-
-<?php $db = null; ?>
-</body>
-</html>
+            <span 

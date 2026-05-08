@@ -11,11 +11,14 @@ require_once '../includes/db.php';
 $search = trim($_GET['search'] ?? '');
 $type   = $_GET['type']   ?? '';
 $filter = $_GET['filter'] ?? '';   // 'ensuite', 'available', 'full', ''
+$floor  = strtoupper(trim($_GET['floor'] ?? ''));
 
 $validTypes   = ['', 'single', 'double', 'triple'];
 $validFilters = ['', 'ensuite', 'available', 'full'];
+$validFloors  = ['', 'A', 'B', 'C', 'D', 'E'];
 if (!in_array($type, $validTypes, true))     $type = '';
 if (!in_array($filter, $validFilters, true)) $filter = '';
+if (!in_array($floor, $validFloors, true))   $floor = '';
 
 // ── Build query ───────────────────────────────────────────────────────
 $sql = "SELECT r.*, COUNT(s.student_id) AS occupants
@@ -32,6 +35,10 @@ if ($search !== '') {
 if ($type !== '') {
     $sql     .= " AND r.room_type = ?";
     $params[] = $type;
+}
+if ($floor !== '') {
+    $sql     .= " AND r.floor = ?";
+    $params[] = $floor;
 }
 if ($filter === 'ensuite') {
     $sql .= " AND r.ensuite_facility = 1";
@@ -60,7 +67,8 @@ $headings = [
     'full'      => 'Fully Occupied Rooms',
 ];
 $heading = $headings[$filter];
-if ($type !== '') $heading = ucfirst($type) . ' ' . $heading;
+if ($type !== '')  $heading = ucfirst($type)            . ' ' . $heading;
+if ($floor !== '') $heading = "Floor $floor "          . $heading;
 
 $activeNav = 'rooms';
 ?>
@@ -97,15 +105,32 @@ $activeNav = 'rooms';
         <p>Browse and filter every room registered in HostelHub.</p>
     </div>
 
-    <!-- Quick filter chips -->
+    <!-- Floor filter chips -->
     <div class="filter-chips">
-        <a href="list_rooms.php"                   class="<?php echo $filter==='' && $type==='' ? 'active' : ''; ?>">All</a>
-        <a href="list_rooms.php?filter=available"  class="<?php echo $filter==='available' ? 'active' : ''; ?>">Available now</a>
-        <a href="list_rooms.php?filter=ensuite"    class="<?php echo $filter==='ensuite'   ? 'active' : ''; ?>">Ensuite</a>
-        <a href="list_rooms.php?filter=full"       class="<?php echo $filter==='full'      ? 'active' : ''; ?>">Full</a>
-        <a href="list_rooms.php?type=single"       class="<?php echo $type==='single'      ? 'active' : ''; ?>">Single</a>
-        <a href="list_rooms.php?type=double"       class="<?php echo $type==='double'      ? 'active' : ''; ?>">Double</a>
-        <a href="list_rooms.php?type=triple"       class="<?php echo $type==='triple'      ? 'active' : ''; ?>">Triple</a>
+        <a href="list_rooms.php"                   class="<?php echo $floor==='' ? 'active' : ''; ?>">All floors</a>
+        <a href="list_rooms.php?floor=A"           class="<?php echo $floor==='A' ? 'active' : ''; ?>">Floor A (1st)</a>
+        <a href="list_rooms.php?floor=B"           class="<?php echo $floor==='B' ? 'active' : ''; ?>">Floor B (2nd)</a>
+        <a href="list_rooms.php?floor=C"           class="<?php echo $floor==='C' ? 'active' : ''; ?>">Floor C (3rd)</a>
+        <a href="list_rooms.php?floor=D"           class="<?php echo $floor==='D' ? 'active' : ''; ?>">Floor D (4th)</a>
+        <a href="list_rooms.php?floor=E"           class="<?php echo $floor==='E' ? 'active' : ''; ?>">Floor E (5th)</a>
+    </div>
+
+    <!-- Status / type filter chips -->
+    <div class="filter-chips">
+        <a href="list_rooms.php<?php echo $floor ? '?floor='.$floor : ''; ?>"
+           class="<?php echo $filter==='' && $type==='' ? 'active' : ''; ?>">Any</a>
+        <a href="list_rooms.php?filter=available<?php echo $floor ? '&floor='.$floor : ''; ?>"
+           class="<?php echo $filter==='available' ? 'active' : ''; ?>">Available now</a>
+        <a href="list_rooms.php?filter=ensuite<?php echo $floor ? '&floor='.$floor : ''; ?>"
+           class="<?php echo $filter==='ensuite'   ? 'active' : ''; ?>">Ensuite</a>
+        <a href="list_rooms.php?filter=full<?php echo $floor ? '&floor='.$floor : ''; ?>"
+           class="<?php echo $filter==='full'      ? 'active' : ''; ?>">Full</a>
+        <a href="list_rooms.php?type=single<?php echo $floor ? '&floor='.$floor : ''; ?>"
+           class="<?php echo $type==='single'      ? 'active' : ''; ?>">Single</a>
+        <a href="list_rooms.php?type=double<?php echo $floor ? '&floor='.$floor : ''; ?>"
+           class="<?php echo $type==='double'      ? 'active' : ''; ?>">Double</a>
+        <a href="list_rooms.php?type=triple<?php echo $floor ? '&floor='.$floor : ''; ?>"
+           class="<?php echo $type==='triple'      ? 'active' : ''; ?>">Triple</a>
     </div>
 
     <!-- Search bar -->
@@ -115,6 +140,15 @@ $activeNav = 'rooms';
                 <input type="text" name="search"
                        placeholder="Search by room number..."
                        value="<?php echo htmlspecialchars($search); ?>">
+
+                <select name="floor">
+                    <option value="">All floors</option>
+                    <?php foreach (['A'=>'1st','B'=>'2nd','C'=>'3rd','D'=>'4th','E'=>'5th'] as $f => $ord): ?>
+                        <option value="<?php echo $f; ?>" <?php echo $floor === $f ? 'selected' : ''; ?>>
+                            Floor <?php echo $f; ?> (<?php echo $ord; ?>)
+                        </option>
+                    <?php endforeach; ?>
+                </select>
 
                 <select name="type">
                     <option value="">All Types</option>
@@ -131,7 +165,7 @@ $activeNav = 'rooms';
                 </select>
 
                 <button type="submit" class="btn btn-primary">Search</button>
-                <?php if ($search !== '' || $type !== '' || $filter !== ''): ?>
+                <?php if ($search !== '' || $type !== '' || $filter !== '' || $floor !== ''): ?>
                     <a href="list_rooms.php" class="btn btn-secondary">Clear</a>
                 <?php endif; ?>
             </div>
@@ -153,6 +187,7 @@ $activeNav = 'rooms';
             <table>
                 <thead>
                     <tr>
+                        <th>Floor</th>
                         <th>Room No.</th>
                         <th>Type</th>
                         <th>Capacity</th>
@@ -171,6 +206,7 @@ $activeNav = 'rooms';
                         $left = max(0, $cap - $occ);
                     ?>
                     <tr>
+                        <td><?php echo htmlspecialchars($room['floor'] ?? substr($room['room_number'], 0, 1)); ?></td>
                         <td><strong><?php echo htmlspecialchars($room['room_number']); ?></strong></td>
                         <td><?php echo ucfirst(htmlspecialchars($room['room_type'])); ?></td>
                         <td><?php echo $cap; ?></td>

@@ -51,11 +51,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $available_from   = trim($_POST['available_from']   ?? '');
     $ensuite_facility = isset($_POST['ensuite_facility']) ? 1 : 0;
 
-    // Required: room number
+    // Required: room number — must follow the A01..E20 pattern.
+    // Floor letter A–E (1st to 5th floor) + 2-digit room 01–20.
     if ($room_number === '') {
         $errors[] = "Room number is required.";
-    } elseif (strlen($room_number) > 20) {
-        $errors[] = "Room number must be 20 characters or fewer.";
+    } elseif (!preg_match('/^[A-E](0[1-9]|1[0-9]|20)$/', strtoupper($room_number))) {
+        $errors[] = "Room number must be in the format A01–E20 (floor letter A–E, then 01–20).";
+    } else {
+        // Normalise to uppercase so lookups & uniqueness behave consistently
+        $room_number = strtoupper($room_number);
     }
 
     // Room type — must be one of the enum options
@@ -180,8 +184,10 @@ $activeNav = 'rooms';
                     <label for="room_number">Room Number <span class="req">*</span></label>
                     <input type="text" id="room_number" name="room_number"
                            value="<?php echo htmlspecialchars($room_number); ?>"
-                           maxlength="20" required>
-                    <div class="hint">Must be unique across all rooms.</div>
+                           pattern="[A-E](0[1-9]|1[0-9]|20)"
+                           title="Floor letter A–E followed by a room number 01–20, e.g. A01 or E20"
+                           maxlength="3" required>
+                    <div class="hint">Format: floor letter (A–E) + room 01–20, e.g. <code>A01</code>, <code>C14</code>, <code>E20</code>. Must be unique.</div>
                 </div>
                 <div class="form-group">
                     <label for="room_type">Room Type <span class="req">*</span></label>

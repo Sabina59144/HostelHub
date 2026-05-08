@@ -2,6 +2,12 @@
 --  HostelHub — Database Schema
 --  Run this once in phpMyAdmin (or `mysql -u root` from the CLI) to
 --  create the database and all tables needed by the app.
+--
+--  Building layout: 5 floors labelled A, B, C, D, E (A = first floor).
+--  Each floor has 20 rooms numbered 01–20, e.g. A01 … A20, B01 … B20,
+--  up to E01 … E20 (100 rooms total). The "floor" column is computed
+--  automatically from the room_number, so existing INSERT/UPDATE
+--  queries do not need to set it.
 -- ─────────────────────────────────────────────────────────────────────
 
 CREATE DATABASE IF NOT EXISTS hostelhub
@@ -46,10 +52,14 @@ INSERT INTO users (username, password, full_name, role, is_active) VALUES
 
 -- ─────────────────────────────────────────────────────────────────────
 --  rooms
+--    floor — auto-derived from the first letter of room_number.
+--            A = 1st floor, B = 2nd, C = 3rd, D = 4th, E = 5th.
+--    room_number must follow "<A-E><01-20>", e.g. A01, C14, E20.
 -- ─────────────────────────────────────────────────────────────────────
 CREATE TABLE rooms (
     room_id           INT             NOT NULL AUTO_INCREMENT,
     room_number       VARCHAR(20)     NOT NULL,
+    floor             CHAR(1)         GENERATED ALWAYS AS (UPPER(LEFT(room_number, 1))) STORED,
     room_type         ENUM('single','double','triple') NOT NULL DEFAULT 'single',
     capacity          INT             NOT NULL DEFAULT 1,
     price_per_month   DECIMAL(8,2)    NOT NULL DEFAULT 0.00,
@@ -58,7 +68,8 @@ CREATE TABLE rooms (
     created_at        TIMESTAMP       NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     PRIMARY KEY (room_id),
-    UNIQUE KEY uq_room_number (room_number)
+    UNIQUE KEY uq_room_number (room_number),
+    KEY idx_room_floor (floor)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- ─────────────────────────────────────────────────────────────────────
@@ -155,16 +166,115 @@ CREATE TABLE allocations (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- ─────────────────────────────────────────────────────────────────────
---  Sample data (handy while developing)
+--  Sample rooms — 100 rooms, 5 floors × 20 rooms each.
+--  Capacity, type, ensuite and price are random per room.
 -- ─────────────────────────────────────────────────────────────────────
 INSERT INTO rooms (room_number, room_type, capacity, price_per_month, ensuite_facility, available_from) VALUES
-('101A', 'single', 1, 450.00, 1, CURDATE()),
-('102B', 'double', 2, 380.00, 0, CURDATE()),
-('103C', 'triple', 3, 320.00, 0, CURDATE()),
-('201A', 'single', 1, 500.00, 1, CURDATE()),
-('202B', 'double', 2, 400.00, 1, CURDATE());
+('A01', 'triple', 3, 3700.00, 0, CURDATE()),
+('A02', 'single', 1, 3500.00, 1, CURDATE()),
+('A03', 'double', 2, 3450.00, 0, CURDATE()),
+('A04', 'single', 1, 3200.00, 0, CURDATE()),
+('A05', 'triple', 3, 3700.00, 0, CURDATE()),
+('A06', 'triple', 3, 4000.00, 1, CURDATE()),
+('A07', 'triple', 3, 3700.00, 0, CURDATE()),
+('A08', 'triple', 3, 3700.00, 0, CURDATE()),
+('A09', 'single', 1, 3200.00, 0, CURDATE()),
+('A10', 'single', 1, 3200.00, 0, CURDATE()),
+('A11', 'single', 1, 3500.00, 1, CURDATE()),
+('A12', 'triple', 3, 3700.00, 0, CURDATE()),
+('A13', 'triple', 3, 3700.00, 0, CURDATE()),
+('A14', 'triple', 3, 4000.00, 1, CURDATE()),
+('A15', 'triple', 3, 4000.00, 1, CURDATE()),
+('A16', 'double', 2, 3450.00, 0, CURDATE()),
+('A17', 'double', 2, 3750.00, 1, CURDATE()),
+('A18', 'double', 2, 3450.00, 0, CURDATE()),
+('A19', 'single', 1, 3500.00, 1, CURDATE()),
+('A20', 'double', 2, 3450.00, 0, CURDATE()),
+('B01', 'double', 2, 3550.00, 0, CURDATE()),
+('B02', 'single', 1, 3300.00, 0, CURDATE()),
+('B03', 'single', 1, 3300.00, 0, CURDATE()),
+('B04', 'double', 2, 3550.00, 0, CURDATE()),
+('B05', 'double', 2, 3550.00, 0, CURDATE()),
+('B06', 'triple', 3, 3800.00, 0, CURDATE()),
+('B07', 'single', 1, 3600.00, 1, CURDATE()),
+('B08', 'double', 2, 3850.00, 1, CURDATE()),
+('B09', 'single', 1, 3300.00, 0, CURDATE()),
+('B10', 'single', 1, 3600.00, 1, CURDATE()),
+('B11', 'double', 2, 3850.00, 1, CURDATE()),
+('B12', 'triple', 3, 3800.00, 0, CURDATE()),
+('B13', 'triple', 3, 3800.00, 0, CURDATE()),
+('B14', 'triple', 3, 3800.00, 0, CURDATE()),
+('B15', 'single', 1, 3600.00, 1, CURDATE()),
+('B16', 'single', 1, 3300.00, 0, CURDATE()),
+('B17', 'single', 1, 3300.00, 0, CURDATE()),
+('B18', 'single', 1, 3300.00, 0, CURDATE()),
+('B19', 'double', 2, 3550.00, 0, CURDATE()),
+('B20', 'triple', 3, 3800.00, 0, CURDATE()),
+('C01', 'single', 1, 3500.00, 0, CURDATE()),
+('C02', 'double', 2, 3750.00, 0, CURDATE()),
+('C03', 'triple', 3, 4000.00, 0, CURDATE()),
+('C04', 'triple', 3, 4300.00, 1, CURDATE()),
+('C05', 'triple', 3, 4000.00, 0, CURDATE()),
+('C06', 'triple', 3, 4300.00, 1, CURDATE()),
+('C07', 'single', 1, 3800.00, 1, CURDATE()),
+('C08', 'triple', 3, 4000.00, 0, CURDATE()),
+('C09', 'single', 1, 3500.00, 0, CURDATE()),
+('C10', 'double', 2, 3750.00, 0, CURDATE()),
+('C11', 'triple', 3, 4300.00, 1, CURDATE()),
+('C12', 'triple', 3, 4000.00, 0, CURDATE()),
+('C13', 'triple', 3, 4000.00, 0, CURDATE()),
+('C14', 'single', 1, 3500.00, 0, CURDATE()),
+('C15', 'single', 1, 3500.00, 0, CURDATE()),
+('C16', 'double', 2, 3750.00, 0, CURDATE()),
+('C17', 'single', 1, 3500.00, 0, CURDATE()),
+('C18', 'triple', 3, 4300.00, 1, CURDATE()),
+('C19', 'double', 2, 3750.00, 0, CURDATE()),
+('C20', 'triple', 3, 4000.00, 0, CURDATE()),
+('D01', 'double', 2, 4250.00, 1, CURDATE()),
+('D02', 'double', 2, 3950.00, 0, CURDATE()),
+('D03', 'double', 2, 3950.00, 0, CURDATE()),
+('D04', 'single', 1, 4000.00, 1, CURDATE()),
+('D05', 'triple', 3, 4500.00, 1, CURDATE()),
+('D06', 'double', 2, 4250.00, 1, CURDATE()),
+('D07', 'triple', 3, 4200.00, 0, CURDATE()),
+('D08', 'triple', 3, 4200.00, 0, CURDATE()),
+('D09', 'double', 2, 3950.00, 0, CURDATE()),
+('D10', 'single', 1, 4000.00, 1, CURDATE()),
+('D11', 'double', 2, 3950.00, 0, CURDATE()),
+('D12', 'single', 1, 3700.00, 0, CURDATE()),
+('D13', 'single', 1, 4000.00, 1, CURDATE()),
+('D14', 'single', 1, 4000.00, 1, CURDATE()),
+('D15', 'double', 2, 4250.00, 1, CURDATE()),
+('D16', 'single', 1, 3700.00, 0, CURDATE()),
+('D17', 'double', 2, 4250.00, 1, CURDATE()),
+('D18', 'double', 2, 4250.00, 1, CURDATE()),
+('D19', 'double', 2, 4250.00, 1, CURDATE()),
+('D20', 'single', 1, 4000.00, 1, CURDATE()),
+('E01', 'triple', 3, 4500.00, 0, CURDATE()),
+('E02', 'triple', 3, 4800.00, 1, CURDATE()),
+('E03', 'double', 2, 4550.00, 1, CURDATE()),
+('E04', 'double', 2, 4250.00, 0, CURDATE()),
+('E05', 'double', 2, 4250.00, 0, CURDATE()),
+('E06', 'single', 1, 4000.00, 0, CURDATE()),
+('E07', 'single', 1, 4300.00, 1, CURDATE()),
+('E08', 'triple', 3, 4500.00, 0, CURDATE()),
+('E09', 'triple', 3, 4500.00, 0, CURDATE()),
+('E10', 'triple', 3, 4500.00, 0, CURDATE()),
+('E11', 'triple', 3, 4500.00, 0, CURDATE()),
+('E12', 'triple', 3, 4800.00, 1, CURDATE()),
+('E13', 'triple', 3, 4500.00, 0, CURDATE()),
+('E14', 'single', 1, 4000.00, 0, CURDATE()),
+('E15', 'single', 1, 4300.00, 1, CURDATE()),
+('E16', 'triple', 3, 4500.00, 0, CURDATE()),
+('E17', 'triple', 3, 4500.00, 0, CURDATE()),
+('E18', 'double', 2, 4250.00, 0, CURDATE()),
+('E19', 'single', 1, 4000.00, 0, CURDATE()),
+('E20', 'double', 2, 4250.00, 0, CURDATE());
 
+-- ─────────────────────────────────────────────────────────────────────
+--  Sample students (a couple pre-allocated to demo the joins)
+-- ─────────────────────────────────────────────────────────────────────
 INSERT INTO students (student_number, full_name, email, phone, date_of_birth, room_id, status) VALUES
 ('S2025001', 'Alex Johnson', 'alex.j@example.com',  '07123456001', '2003-04-12', 1,    1),
-('S2025002', 'Priya Sharma', 'priya.s@example.com', '07123456002', '2002-11-03', 2,    1),
+('S2025002', 'Priya Sharma', 'priya.s@example.com', '07123456002', '2002-11-03', 21,   1),
 ('S2025003', 'Tom Williams', 'tom.w@example.com',   '07123456003', '2004-01-22', NULL, 1);

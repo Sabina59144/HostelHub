@@ -312,6 +312,7 @@ $activeNav = 'rooms';
             <table>
                 <thead>
                     <tr>
+                        <th>Floor</th>
                         <th>Room No.</th>
                         <th>Type</th>
                         <th>Capacity</th>
@@ -325,6 +326,7 @@ $activeNav = 'rooms';
                 <tbody>
                     <?php foreach ($rooms as $room): ?>
                     <tr>
+                        <td><?php echo htmlspecialchars($room['floor'] ?? substr($room['room_number'], 0, 1)); ?></td>
                         <td><strong><?php echo htmlspecialchars($room['room_number']); ?></strong></td>
                         <td><?php echo ucfirst(htmlspecialchars($room['room_type'])); ?></td>
                         <td><?php echo $room['capacity']; ?></td>

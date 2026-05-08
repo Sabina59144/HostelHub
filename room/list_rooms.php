@@ -172,80 +172,113 @@ $activeNav = 'rooms';
         </form>
     </div>
 
-    <div class="card">
-        <div class="card-header">
-            <h3><?php echo count($rooms); ?> room(s) found</h3>
-            <a href="add_room.php">+ Add New Room</a>
-        </div>
+    <?php
+    // Group rooms by floor so each floor renders as its own section
+    $byFloor = [];
+    foreach ($rooms as $r) {
+        $f = $r['floor'] ?? substr($r['room_number'], 0, 1);
+        $byFloor[$f][] = $r;
+    }
+    ksort($byFloor);
 
-        <?php if (empty($rooms)): ?>
+    $floorNames = ['A'=>'1st Floor', 'B'=>'2nd Floor', 'C'=>'3rd Floor', 'D'=>'4th Floor', 'E'=>'5th Floor'];
+    ?>
+
+    <div class="results-count" style="margin-bottom: 18px;">
+        <?php echo count($rooms); ?> room(s) found across
+        <?php echo count($byFloor); ?> floor(s)
+        &middot; <a href="add_room.php" style="color:#2563eb; text-decoration:none; font-weight:600;">+ Add New Room</a>
+    </div>
+
+    <?php if (empty($rooms)): ?>
+        <div class="card">
             <div class="no-data">
                 No rooms match these filters.
                 <a href="list_rooms.php">Clear filters</a>
             </div>
-        <?php else: ?>
-            <table>
-                <thead>
-                    <tr>
-                        <th>Floor</th>
-                        <th>Room No.</th>
-                        <th>Type</th>
-                        <th>Capacity</th>
-                        <th>Occupied</th>
-                        <th>Spots Left</th>
-                        <th>Price / Month</th>
-                        <th>Ensuite</th>
-                        <th>Status</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <?php foreach ($rooms as $room):
-                        $occ  = (int)$room['occupants'];
-                        $cap  = (int)$room['capacity'];
-                        $left = max(0, $cap - $occ);
-                    ?>
-                    <tr>
-                        <td><?php echo htmlspecialchars($room['floor'] ?? substr($room['room_number'], 0, 1)); ?></td>
-                        <td><strong><?php echo htmlspecialchars($room['room_number']); ?></strong></td>
-                        <td><?php echo ucfirst(htmlspecialchars($room['room_type'])); ?></td>
-                        <td><?php echo $cap; ?></td>
-                        <td><?php echo $occ; ?></td>
-                        <td>
-                            <?php if ($left === 0): ?>
-                                <span class="badge badge-full">Full</span>
-                            <?php else: ?>
-                                <span class="badge badge-spots"><?php echo $left; ?> open</span>
-                            <?php endif; ?>
-                        </td>
-                        <td><?php echo number_format($room['price_per_month'], 2); ?> kr.</td>
-                        <td>
-                            <?php if ($room['ensuite_facility']): ?>
-                                <span class="badge badge-ensuite">Yes</span>
-                            <?php else: ?>
-                                <span class="badge badge-shared">No</span>
-                            <?php endif; ?>
-                        </td>
-                        <td>
-                            <?php if ($room['available_from'] <= date('Y-m-d')): ?>
-                                <span class="badge badge-available">Available</span>
-                            <?php else: ?>
-                                <span class="badge badge-soon">From <?php echo $room['available_from']; ?></span>
-                            <?php endif; ?>
-                        </td>
-                        <td>
-                            <a href="edit_room.php?id=<?php echo $room['room_id']; ?>" class="action-link edit">Edit</a>
-                            <?php if ($left > 0): ?>
-                                <a href="allocate_room.php?room_id=<?php echo $room['room_id']; ?>" class="action-link allocate">Allocate</a>
-                            <?php endif; ?>
-                            <a href="delete_room.php?id=<?php echo $room['room_id']; ?>" class="action-link delete">Delete</a>
-                        </td>
-                    </tr>
-                    <?php endforeach; ?>
-                </tbody>
-            </table>
-        <?php endif; ?>
-    </div>
+        </div>
+    <?php else: ?>
+        <?php foreach ($byFloor as $f => $floorRooms):
+            // Floor-level summary
+            $fTotal = count($floorRooms);
+            $fOcc   = array_sum(array_map(fn($r) => (int)$r['occupants'], $floorRooms));
+            $fCap   = array_sum(array_map(fn($r) => (int)$r['capacity'],  $floorRooms));
+            $fOpen  = max(0, $fCap - $fOcc);
+        ?>
+            <div class="card">
+                <div class="card-header">
+                    <h3>
+                        Floor <?php echo $f; ?>
+                        — <?php echo htmlspecialchars($floorNames[$f] ?? ''); ?>
+                    </h3>
+                    <span style="font-size:13px; color:#6b7280;">
+                        <?php echo $fTotal; ?> rooms ·
+                        <?php echo $fOcc; ?> / <?php echo $fCap; ?> beds occupied ·
+                        <strong style="color:#059669;"><?php echo $fOpen; ?> open</strong>
+                    </span>
+                </div>
+
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Room No.</th>
+                            <th>Type</th>
+                            <th>Capacity</th>
+                            <th>Occupied</th>
+                            <th>Spots Left</th>
+                            <th>Price / Month</th>
+                            <th>Ensuite</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php foreach ($floorRooms as $room):
+                            $occ  = (int)$room['occupants'];
+                            $cap  = (int)$room['capacity'];
+                            $left = max(0, $cap - $occ);
+                        ?>
+                        <tr>
+                            <td><strong><?php echo htmlspecialchars($room['room_number']); ?></strong></td>
+                            <td><?php echo ucfirst(htmlspecialchars($room['room_type'])); ?></td>
+                            <td><?php echo $cap; ?></td>
+                            <td><?php echo $occ; ?></td>
+                            <td>
+                                <?php if ($left === 0): ?>
+                                    <span class="badge badge-full">Full</span>
+                                <?php else: ?>
+                                    <span class="badge badge-spots"><?php echo $left; ?> open</span>
+                                <?php endif; ?>
+                            </td>
+                            <td><?php echo number_format($room['price_per_month'], 2); ?> kr.</td>
+                            <td>
+                                <?php if ($room['ensuite_facility']): ?>
+                                    <span class="badge badge-ensuite">Yes</span>
+                                <?php else: ?>
+                                    <span class="badge badge-shared">No</span>
+                                <?php endif; ?>
+                            </td>
+                            <td>
+                                <?php if ($room['available_from'] <= date('Y-m-d')): ?>
+                                    <span class="badge badge-available">Available</span>
+                                <?php else: ?>
+                                    <span class="badge badge-soon">From <?php echo $room['available_from']; ?></span>
+                                <?php endif; ?>
+                            </td>
+                            <td>
+                                <a href="edit_room.php?id=<?php echo $room['room_id']; ?>" class="action-link edit">Edit</a>
+                                <?php if ($left > 0): ?>
+                                    <a href="allocate_room.php?room_id=<?php echo $room['room_id']; ?>" class="action-link allocate">Allocate</a>
+                                <?php endif; ?>
+                                <a href="delete_room.php?id=<?php echo $room['room_id']; ?>" class="action-link delete">Delete</a>
+                            </td>
+                        </tr>
+                        <?php endforeach; ?>
+                    </tbody>
+                </table>
+            </div>
+        <?php endforeach; ?>
+    <?php endif; ?>
 
 </div>
 

@@ -56,7 +56,7 @@ $activeNav = 'rooms';
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>HostelHub — Room </title>
+    <title>HostelHub — Room Module</title>
     <link rel="stylesheet" href="style.css">
     <style>
         /* page-specific bits only */
@@ -145,7 +145,7 @@ $activeNav = 'rooms';
 <div class="container">
 
     <div class="page-title">
-        <h2>Room Module</h2>
+        <h2>Room </h2>
         <p>Manage hostel rooms — add, view, edit, and search rooms</p>
     </div>
 

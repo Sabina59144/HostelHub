@@ -143,7 +143,7 @@ $activeNav = 'rooms';
             </div>
             <div>
                 <div class="label">Price / Month</div>
-                <div class="value">£<?php echo number_format($room['price_per_month'], 2); ?></div>
+                <div class="value"><?php echo number_format($room['price_per_month'], 2); ?> kr.</div>
             </div>
             <div>
                 <div class="label">Ensuite</div>

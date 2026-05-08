@@ -279,7 +279,7 @@ $activeNav = 'rooms';
             out.type.textContent  = (opt.dataset.type  || '').replace(/^./, c => c.toUpperCase());
             out.cap.textContent   = opt.dataset.occupants + ' / ' + opt.dataset.capacity;
             out.left.textContent  = opt.dataset.left + ' spot(s)';
-            out.price.textContent = '£' + opt.dataset.price + ' (Ensuite: ' + opt.dataset.ensuite + ')';
+            out.price.textContent = opt.dataset.price + ' kr. (Ensuite: ' + opt.dataset.ensuite + ')';
             box.classList.add('show');
         }
         sel.addEventListener('change', update);

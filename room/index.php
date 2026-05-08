@@ -340,7 +340,7 @@ $activeNav = 'rooms';
                                 <span class="badge badge-spots"><?php echo $occ; ?> / <?php echo $cap; ?></span>
                             <?php endif; ?>
                         </td>
-                        <td>£<?php echo number_format($room['price_per_month'], 2); ?></td>
+                        <td><?php echo number_format($room['price_per_month'], 2); ?> kr.</td>
                         <td>
                             <?php if ($room['ensuite_facility']): ?>
                                 <span class="badge badge-ensuite">Yes</span>

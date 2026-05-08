@@ -207,7 +207,7 @@ $activeNav = 'rooms';
                     </div>
                 </div>
                 <div class="form-group">
-                    <label for="price_per_month">Price per Month (£) <span class="req">*</span></label>
+                    <label for="price_per_month">Price per Month (kr.) <span class="req">*</span></label>
                     <input type="number" id="price_per_month" name="price_per_month"
                            value="<?php echo htmlspecialchars($price_per_month); ?>"
                            step="0.01" min="0" required>

@@ -1,13 +1,16 @@
 <?php
+/* ── Auth & DB ─────────────────────────────────── */
 require_once '../includes/session.php';
-requireLogin();
+requireLogin();          // Redirect to login if not authenticated
 require_once '../includes/db.php';
 
+/* ── Stat card counts ──────────────────────────── */
 $totalStudents   = $db->query("SELECT COUNT(*) AS c FROM students")->fetch()['c'];
 $totalActive     = $db->query("SELECT COUNT(*) AS c FROM students WHERE status = 1")->fetch()['c'];
 $totalInactive   = $db->query("SELECT COUNT(*) AS c FROM students WHERE status = 0")->fetch()['c'];
 $totalUnassigned = $db->query("SELECT COUNT(*) AS c FROM students WHERE room_id IS NULL")->fetch()['c'];
 
+/* ── Last 5 students added, joined with room number ── */
 $recentStmt = $db->query(
     "SELECT s.student_id, s.student_number, s.full_name, s.email, s.status, r.room_number
      FROM students s
@@ -16,6 +19,7 @@ $recentStmt = $db->query(
 );
 $recentStudents = $recentStmt->fetchAll();
 
+/* ── Active enrolment % for progress bar ──────── */
 $pct = $totalStudents > 0 ? round(($totalActive / $totalStudents) * 100) : 0;
 ?>
 <!DOCTYPE html>
@@ -105,7 +109,7 @@ $pct = $totalStudents > 0 ? round(($totalActive / $totalStudents) * 100) : 0;
 </head>
 <body>
 
-<?php include '../includes/navbar.php'; ?>
+<?php include '../includes/navbar.php'; /* Shared navigation bar */ ?>
 
 <div class="container">
 
@@ -229,6 +233,6 @@ $pct = $totalStudents > 0 ? round(($totalActive / $totalStudents) * 100) : 0;
 
 </div>
 
-<?php $db = null; ?>
+<?php $db = null; /* Close DB connection */ ?>
 </body>
 </html>

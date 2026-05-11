@@ -1,8 +1,10 @@
 <?php
+/* ── Auth & DB ─────────────────────────────────── */
 require_once '../includes/session.php';
-requireLogin();
+requireLogin();          // Redirect to login if not authenticated
 require_once '../includes/db.php';
 
+/* ── Validate student ID from URL ──────────────── */
 if (!isset($_GET['id']) || !is_numeric($_GET['id'])) {
     header("Location: list_students.php");
     exit();
@@ -10,6 +12,7 @@ if (!isset($_GET['id']) || !is_numeric($_GET['id'])) {
 
 $student_id = (int)$_GET['id'];
 
+/* ── Fetch student with room details via LEFT JOIN ── */
 $stmt = $db->prepare(
     "SELECT s.*, r.room_number, r.room_type, r.price_per_month
      FROM students s
@@ -19,12 +22,13 @@ $stmt = $db->prepare(
 $stmt->execute([$student_id]);
 $student = $stmt->fetch();
 
+/* ── Redirect if student not found ─────────────── */
 if (!$student) {
     header("Location: list_students.php");
     exit();
 }
 
-// Get fee summary for this student
+/* ── Fee summary: total, paid, and outstanding ─── */
 $feeStmt = $db->prepare(
     "SELECT COUNT(*) AS total_fees,
             SUM(amount) AS total_amount,
@@ -115,7 +119,7 @@ $fees = $feeStmt->fetch();
 </head>
 <body>
 
-<?php include '../includes/navbar.php'; ?>
+<?php include '../includes/navbar.php'; /* Shared navigation bar */ ?>
 
 <div class="container">
 
@@ -202,4 +206,14 @@ $fees = $feeStmt->fetch();
             <span class="fee-lbl">Paid</span>
         </div>
         <div class="fee-card pending">
+            <span class="fee-num">£<?= number_format($fees['pending_amount'] ?? 0, 2) ?></span>
+            <span class="fee-lbl">Outstanding</span>
+        </div>
+    </div>
+
+</div>
+
+<?php $db = null; /* Close DB connection */ ?>
+</body>
+</html>
             <span 

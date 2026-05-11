@@ -1,23 +1,28 @@
 <?php
+/* ── Auth & DB ─────────────────────────────────── */
 require_once '../includes/session.php';
-requireLogin();
+requireLogin();          // Redirect to login if not authenticated
 require_once '../includes/db.php';
 
+/* ── Load rooms for the room assignment dropdown ── */
 $roomsResult = $db->query("SELECT room_id, room_number, room_type FROM rooms ORDER BY room_number")->fetchAll();
 
+/* ── Default empty form values ─────────────────── */
 $errors = [];
 $success = "";
 $student_number = $full_name = $email = $date_of_birth = "";
 $room_id = "";
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    /* ── Sanitise POST input ────────────────────── */
     $student_number = trim($_POST['student_number']);
     $full_name      = trim($_POST['full_name']);
     $email          = trim($_POST['email']);
     $date_of_birth  = trim($_POST['date_of_birth']);
     $room_id        = $_POST['room_id'] !== '' ? (int)$_POST['room_id'] : null;
-    $status         = 1;
+    $status         = 1; // New students default to active
 
+    /* ── Required field & format validation ─────── */
     if (empty($student_number)) {
         $errors[] = "Student number is required.";
     } elseif (!preg_match('/^STU-\d{4}-\d{3}$/', $student_number)) {
@@ -27,17 +32,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (empty($email))      $errors[] = "Email address is required.";
     elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) $errors[] = "Please enter a valid email address.";
 
+    /* ── Duplicate student number check ─────────── */
     if (empty($errors)) {
         $chk = $db->prepare("SELECT student_id FROM students WHERE student_number = ?");
         $chk->execute([$student_number]);
         if ($chk->rowCount() > 0) $errors[] = "This student number already exists.";
     }
+    /* ── Duplicate email check ──────────────────── */
     if (empty($errors)) {
         $chk = $db->prepare("SELECT student_id FROM students WHERE email = ?");
         $chk->execute([$email]);
         if ($chk->rowCount() > 0) $errors[] = "This email address is already registered.";
     }
 
+    /* ── Insert student & reset form on success ─── */
     if (empty($errors)) {
         $dob  = !empty($date_of_birth) ? $date_of_birth : null;
         $stmt = $db->prepare("INSERT INTO students (student_number, full_name, email, date_of_birth, room_id, status) VALUES (?,?,?,?,?,?)");
@@ -116,7 +124,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 </head>
 <body>
 
-<?php include '../includes/navbar.php'; ?>
+<?php include '../includes/navbar.php'; /* Shared navigation bar */ ?>
 
 <div class="container">
     <div class="page-header">
@@ -189,6 +197,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     </div>
 </div>
 
-<?php $db = null; ?>
+<?php $db = null; /* Close DB connection */ ?>
 </body>
 </html>

@@ -1,9 +1,10 @@
 <?php
+/* ── Auth & DB ─────────────────────────────────── */
 require_once '../includes/session.php';
-requireLogin();
+requireLogin();          // Redirect to login if not authenticated
 require_once '../includes/db.php';
 
-// ── Handle delete ──────────────────────────────────────────────
+/* ── Handle inline delete from action link ─────── */
 $deleteMsg = "";
 if (isset($_GET['delete'])) {
     $del_id = (int)$_GET['delete'];
@@ -13,7 +14,7 @@ if (isset($_GET['delete'])) {
         : "Could not delete student. Please try again.";
 }
 
-// ── Build query with filters ───────────────────────────────────
+/* ── Build dynamic WHERE clause from URL filters ── */
 $where  = [];
 $params = [];
 
@@ -22,7 +23,7 @@ if (isset($_GET['status']) && $_GET['status'] !== '') {
     $params[] = (int)$_GET['status'];
 }
 if (isset($_GET['room']) && $_GET['room'] === 'unassigned') {
-    $where[] = "s.room_id IS NULL";
+    $where[] = "s.room_id IS NULL";  // Filter students with no room
 }
 if (isset($_GET['search']) && $_GET['search'] !== '') {
     $search   = '%' . $_GET['search'] . '%';
@@ -32,6 +33,7 @@ if (isset($_GET['search']) && $_GET['search'] !== '') {
     $params[] = $search;
 }
 
+/* ── Fetch students joined with room number ─────── */
 $sql = "SELECT s.student_id, s.student_number, s.full_name, s.email,
                s.date_of_birth, s.status, r.room_number
         FROM students s
@@ -45,7 +47,7 @@ $stmt = $db->prepare($sql);
 $stmt->execute($params);
 $students = $stmt->fetchAll();
 
-// ── Active filter label ────────────────────────────────────────
+/* ── Page title label based on active filter ─────── */
 $filterLabel = "All Students";
 if (isset($_GET['status']) && $_GET['status'] == 1) $filterLabel = "Active Students";
 if (isset($_GET['status']) && $_GET['status'] == 0) $filterLabel = "Inactive Students";
@@ -128,7 +130,7 @@ if (isset($_GET['room']) && $_GET['room'] === 'unassigned') $filterLabel = "Unas
 </head>
 <body>
 
-<?php include '../includes/navbar.php'; ?>
+<?php include '../includes/navbar.php'; /* Shared navigation bar */ ?>
 
 <div class="container">
     <div class="page-header">
@@ -229,6 +231,6 @@ if (isset($_GET['room']) && $_GET['room'] === 'unassigned') $filterLabel = "Unas
     </div>
 </div>
 
-<?php $db = null; ?>
+<?php $db = null; /* Close DB connection */ ?>
 </body>
 </html>

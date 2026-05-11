@@ -3,13 +3,14 @@ require_once '../includes/session.php';
 requireLogin();
 require_once '../includes/db.php';
 
-// ── Load student ───────────────────────────────────────────────
+/* ── Validate student ID from URL ──────────────── */
 if (!isset($_GET['id']) || !is_numeric($_GET['id'])) {
     header("Location: list_students.php");
     exit();
 }
 $student_id = (int)$_GET['id'];
 
+/* ── Fetch student or redirect if not found ─────── */
 $stmt = $db->prepare("SELECT * FROM students WHERE student_id = ?");
 $stmt->execute([$student_id]);
 $student = $stmt->fetch();
@@ -19,14 +20,21 @@ if (!$student) {
     exit();
 }
 
-// ── Load rooms ─────────────────────────────────────────────────
-$roomsResult = $db->query("SELECT room_id, room_number, room_type FROM rooms ORDER BY room_number")->fetchAll();
+/* ── Load rooms with live occupancy count ────────── */
+$roomsResult = $db->query(
+    "SELECT r.room_id, r.room_number, r.room_type, r.capacity,
+            COUNT(s.student_id) AS occupants
+     FROM rooms r
+     LEFT JOIN students s ON s.room_id = r.room_id AND s.status = 1
+     GROUP BY r.room_id
+     ORDER BY r.room_number"
+)->fetchAll();
 
 $errors  = [];
 $success = "";
 
-// ── Handle form submit ─────────────────────────────────────────
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    /* ── Sanitise POST input ────────────────────── */
     $student_number = trim($_POST['student_number']);
     $full_name      = trim($_POST['full_name']);
     $email          = trim($_POST['email']);
@@ -34,6 +42,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $room_id        = $_POST['room_id'] !== '' ? (int)$_POST['room_id'] : null;
     $status         = (int)$_POST['status'];
 
+    /* ── Required field & format validation ─────── */
     if (empty($student_number)) {
         $errors[] = "Student number is required.";
     } elseif (!preg_match('/^STU-\d{4}-\d{3}$/', $student_number)) {
@@ -43,19 +52,40 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (empty($email))     $errors[] = "Email address is required.";
     elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) $errors[] = "Please enter a valid email address.";
 
-    // Check duplicate student_number (excluding current)
+    /* ── Duplicate student number check (exclude self) ── */
     if (empty($errors)) {
         $chk = $db->prepare("SELECT student_id FROM students WHERE student_number = ? AND student_id != ?");
         $chk->execute([$student_number, $student_id]);
         if ($chk->rowCount() > 0) $errors[] = "This student number is already in use.";
     }
-    // Check duplicate email (excluding current)
+    /* ── Duplicate email check (exclude self) ───── */
     if (empty($errors)) {
         $chk = $db->prepare("SELECT student_id FROM students WHERE email = ? AND student_id != ?");
         $chk->execute([$email, $student_id]);
         if ($chk->rowCount() > 0) $errors[] = "This email address is already registered.";
     }
 
+    // Check room capacity — block if full (exclude this student from occupant count)
+    if (empty($errors) && $room_id !== null) {
+        $cap = $db->prepare(
+            "SELECT r.room_number, r.room_type, r.capacity,
+                    COUNT(s.student_id) AS occupants
+             FROM rooms r
+             LEFT JOIN students s ON s.room_id = r.room_id
+                 AND s.status = 1
+                 AND s.student_id != ?
+             WHERE r.room_id = ?
+             GROUP BY r.room_id"
+        );
+        $cap->execute([$student_id, $room_id]);
+        $roomCheck = $cap->fetch();
+        if ($roomCheck && (int)$roomCheck['occupants'] >= (int)$roomCheck['capacity']) {
+            $errors[] = "Room " . $roomCheck['room_number'] . " (" . ucfirst($roomCheck['room_type']) . ") is already full — "
+                      . $roomCheck['occupants'] . "/" . $roomCheck['capacity'] . " students assigned. Please choose a different room.";
+        }
+    }
+
+    /* ── Update record & refresh data on success ─── */
     if (empty($errors)) {
         $dob  = !empty($date_of_birth) ? $date_of_birth : null;
         $upd  = $db->prepare(
@@ -63,16 +93,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         );
         if ($upd->execute([$student_number, $full_name, $email, $dob, $room_id, $status, $student_id])) {
             $success = "Student record updated successfully!";
-            // Refresh student data
             $stmt = $db->prepare("SELECT * FROM students WHERE student_id = ?");
             $stmt->execute([$student_id]);
-            $student = $stmt->fetch();
+            $student = $stmt->fetch();  // Refresh to reflect saved values
         } else {
             $errors[] = "Something went wrong. Please try again.";
         }
     }
 } else {
-    // Pre-fill from DB
+    /* ── Pre-fill form with existing DB values ──── */
     $student_number = $student['student_number'];
     $full_name      = $student['full_name'];
     $email          = $student['email'];
@@ -153,7 +182,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 </head>
 <body>
 
-<?php include '../includes/navbar.php'; ?>
+<?php include '../includes/navbar.php'; /* Shared navigation bar */ ?>
 
 <div class="container">
     <div class="page-header">
@@ -209,10 +238,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <label for="room_id">Assigned Room</label>
                 <select id="room_id" name="room_id">
                     <option value="">-- No room assigned --</option>
-                    <?php foreach ($roomsResult as $room): ?>
+                    <?php foreach ($roomsResult as $room):
+                        $occ = (int)$room['occupants'];
+                        $cap = (int)$room['capacity'];
+                        // A room counts as full only if this student isn't already in it
+                        $isCurrent = ($room_id == $room['room_id']);
+                        $effectiveOcc = $isCurrent ? $occ - 1 : $occ; // don't count self
+                        $isFull = !$isCurrent && ($occ >= $cap);
+                    ?>
                         <option value="<?= $room['room_id'] ?>"
-                            <?= ($room_id == $room['room_id']) ? 'selected' : '' ?>>
-                            <?= htmlspecialchars($room['room_number'] . ' (' . $room['room_type'] . ')') ?>
+                            <?= $isCurrent ? 'selected' : '' ?>
+                            <?= $isFull   ? 'disabled' : '' ?>>
+                            <?= htmlspecialchars($room['room_number'] . ' (' . ucfirst($room['room_type']) . ')') ?>
+                            — <?= $occ ?>/<?= $cap ?>
+                            <?= $isFull ? '[FULL]' : '' ?>
                         </option>
                     <?php endforeach; ?>
                 </select>
@@ -237,6 +276,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     </div>
 </div>
 
-<?php $db = null; ?>
+<?php $db = null; /* Close DB connection */ ?>
 </body>
 </html>

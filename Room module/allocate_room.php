@@ -46,7 +46,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (empty($errors)) {
         /* ── Re-verify room still has space (race-condition guard) ── */
         $chkRoom = $db->prepare(
-            "SELECT r.capacity, COUNT(s.student_id) AS occ
+            "SELECT r.room_number, r.room_type, r.capacity, COUNT(s.student_id) AS occ
              FROM rooms r
              LEFT JOIN students s ON s.room_id = r.room_id AND s.status = 1
              WHERE r.room_id = ?
@@ -57,7 +57,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if (!$roomData) {
             $errors[] = "Selected room does not exist.";
         } elseif ((int)$roomData['occ'] >= (int)$roomData['capacity']) {
-            $errors[] = "That room is now full. Please choose another.";
+            $errors[] = "Room " . $roomData['room_number'] . " (" . ucfirst($roomData['room_type']) . ") is already full — "
+                      . $roomData['occ'] . "/" . $roomData['capacity'] . " students assigned. Please select a different room.";
         }
 
         /* ── Re-verify student still unassigned ─── */
@@ -273,15 +274,4 @@ function updatePreview(id) {
             <div class="occupancy-bar"><div class="occupancy-fill ${pct>=100?'full':''}" style="width:${pct}%"></div></div>
         </div>
         <div class="preview-row"><div class="lbl">Price / Month</div><div class="val">£${r.price.toFixed(2)}</div></div>
-        <div class="preview-row"><div class="lbl">Bathroom</div><div class="val">${ensBadge}</div></div>
-    `;
-}
-
-// Trigger on load if room pre-selected
-window.addEventListener('DOMContentLoaded', function() {
-    const sel = document.getElementById('room_id');
-    if (sel && sel.value) updatePreview(sel.value);
-});
-</script>
-</body>
-</html>
+        <div class="preview-row"><div class="lbl">Bathroom</div><div cl

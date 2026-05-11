@@ -117,7 +117,7 @@ if (isset($_POST['confirm_delete'])) {
             </tr>
             <tr>
                 <td>Status</td>
-                <td><?= $fee['is_paid'] ? '✅ Paid on ' . (new DateTime($fee['is_paid']))->format('d M Y') : '❌ Unpaid' ?></td>
+                <?= $fee['paid_at'] ? date('d M Y', strtotime($fee['paid_at'])) : '—' ?>
             </tr>
         </table>
 

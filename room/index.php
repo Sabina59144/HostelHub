@@ -1,12 +1,12 @@
 <?php
-// session_start();
-// Temporarily disabled — uncomment when login.php is ready
-// if (!isset($_SESSION['user_id'])) {
-//     header("Location: ../login.php");
-//     exit();
-// }
+require_once __DIR__ . '/../includes/session.php';
+require_once __DIR__ . '/../includes/db.php';
 
-require_once '../includes/db.php';
+// Redirect to login if not authenticated
+if (!isLoggedIn()) {
+    header("Location: login.php");
+    exit();
+}
 
 // ── Stats ─────────────────────────────────────────────────────────────
 $totalRooms     = $db->query("SELECT COUNT(*) AS c FROM rooms")->fetch()['c'];

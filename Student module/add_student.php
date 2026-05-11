@@ -12,6 +12,7 @@ $errors = [];
 $success = "";
 $student_number = $full_name = $email = $date_of_birth = "";
 $room_id = "";
+$gender = "male";
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     /* ── Sanitise POST input ────────────────────── */
@@ -19,6 +20,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $full_name      = trim($_POST['full_name']);
     $email          = trim($_POST['email']);
     $date_of_birth  = trim($_POST['date_of_birth']);
+    $gender         = in_array($_POST['gender'], ['male','female']) ? $_POST['gender'] : 'male';
     $room_id        = $_POST['room_id'] !== '' ? (int)$_POST['room_id'] : null;
     $status         = 1; // New students default to active
 
@@ -45,13 +47,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if ($chk->rowCount() > 0) $errors[] = "This email address is already registered.";
     }
 
+    /* ── Gender vs room_gender compatibility check ── */
+    if (empty($errors) && $room_id !== null) {
+        $gChk = $db->prepare("SELECT room_number, room_gender FROM rooms WHERE room_id = ?");
+        $gChk->execute([$room_id]);
+        $rg = $gChk->fetch();
+        if ($rg && $rg['room_gender'] !== 'mixed' && $rg['room_gender'] !== $gender) {
+            $label = $rg['room_gender'] === 'male' ? 'male students only' : 'female students only';
+            $errors[] = "Room " . $rg['room_number'] . " is designated for " . $label . ". Please choose a compatible room.";
+        }
+    }
+
     /* ── Insert student & reset form on success ─── */
     if (empty($errors)) {
         $dob  = !empty($date_of_birth) ? $date_of_birth : null;
-        $stmt = $db->prepare("INSERT INTO students (student_number, full_name, email, date_of_birth, room_id, status) VALUES (?,?,?,?,?,?)");
-        if ($stmt->execute([$student_number, $full_name, $email, $dob, $room_id, $status])) {
+        $stmt = $db->prepare("INSERT INTO students (student_number, full_name, email, date_of_birth, gender, room_id, status) VALUES (?,?,?,?,?,?,?)");
+        if ($stmt->execute([$student_number, $full_name, $email, $dob, $gender, $room_id, $status])) {
             $success = "Student '{$full_name}' has been registered successfully!";
             $student_number = $full_name = $email = $date_of_birth = $room_id = "";
+            $gender = "male";
         } else {
             $errors[] = "Something went wrong. Please try again.";
         }
@@ -175,6 +189,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <input type="date" id="date_of_birth" name="date_of_birth"
                        value="<?= htmlspecialchars($date_of_birth) ?>">
                 <div class="hint">Optional</div>
+            </div>
+            <div class="form-group">
+                <label for="gender">Gender *</label>
+                <select id="gender" name="gender">
+                    <option value="male"   <?= $gender === 'male'   ? 'selected' : '' ?>>Male</option>
+                    <option value="female" <?= $gender === 'female' ? 'selected' : '' ?>>Female</option>
+                </select>
+                <div class="hint">Used to enforce gender-specific room assignments</div>
             </div>
             <div class="form-group">
                 <label for="room_id">Assign Room</label>

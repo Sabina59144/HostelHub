@@ -39,6 +39,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $full_name      = trim($_POST['full_name']);
     $email          = trim($_POST['email']);
     $date_of_birth  = trim($_POST['date_of_birth']);
+    $gender         = in_array($_POST['gender'], ['male','female']) ? $_POST['gender'] : 'male';
     $room_id        = $_POST['room_id'] !== '' ? (int)$_POST['room_id'] : null;
     $status         = (int)$_POST['status'];
 

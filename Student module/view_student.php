@@ -115,6 +115,24 @@ $fees = $feeStmt->fetch();
         .fee-card .fee-lbl { font-size:12px; color:#64748b; }
         .fee-card.pending .fee-num { color:#dc2626; }
         .fee-card.paid .fee-num    { color:#059669; }
+
+        /* Clickable fee card */
+        .fee-card a { text-decoration:none; color:inherit; display:block; }
+        .fee-card:hover { box-shadow:0 4px 16px rgba(0,0,0,0.1); transform:translateY(-2px); transition:all 0.15s; }
+
+        .btn-fees {
+            background:#7c3aed; color:#fff; text-decoration:none;
+            padding:9px 20px; border-radius:10px; font-size:13px; font-weight:600;
+            transition:background 0.2s;
+        }
+        .btn-fees:hover { background:#6d28d9; text-decoration:none; color:#fff; }
+
+        .btn-add-fee {
+            background:#059669; color:#fff; text-decoration:none;
+            padding:9px 20px; border-radius:10px; font-size:13px; font-weight:600;
+            transition:background 0.2s;
+        }
+        .btn-add-fee:hover { background:#047857; text-decoration:none; color:#fff; }
     </style>
 </head>
 <body>
@@ -141,6 +159,10 @@ $fees = $feeStmt->fetch();
         </div>
         <div class="profile-actions">
             <a href="edit_student.php?id=<?= $student_id ?>" class="btn-edit-profile">✏️ Edit</a>
+            <a href="../Fee%20module/index.php?student_id=<?= $student_id ?>" class="btn-fees">💷 View Fees</a>
+            <?php if (($_SESSION['role'] ?? '') === 'admin'): ?>
+            <a href="../Fee%20module/add.php?student_id=<?= $student_id ?>" class="btn-add-fee">+ Add Fee</a>
+            <?php endif; ?>
         </div>
     </div>
 
@@ -194,20 +216,32 @@ $fees = $feeStmt->fetch();
         </div>
     </div>
 
-    <!-- Fee Summary -->
-    <p style="font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:#94a3b8;margin-bottom:12px;">Fee Overview</p>
+    <!-- Fee Summary — cards link to filtered fee list -->
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+        <p style="font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:#94a3b8;margin:0;">Fee Overview</p>
+        <a href="../Fee%20module/index.php?student_id=<?= $student_id ?>"
+           style="font-size:12px;color:#7c3aed;font-weight:600;text-decoration:none;">
+            View all fee records →
+        </a>
+    </div>
     <div class="fee-summary">
         <div class="fee-card">
-            <span class="fee-num">£<?= number_format($fees['total_amount'] ?? 0, 2) ?></span>
-            <span class="fee-lbl">Total Charged</span>
+            <a href="../Fee%20module/index.php?student_id=<?= $student_id ?>">
+                <span class="fee-num">£<?= number_format($fees['total_amount'] ?? 0, 2) ?></span>
+                <span class="fee-lbl">Total Charged</span>
+            </a>
         </div>
         <div class="fee-card paid">
-            <span class="fee-num">£<?= number_format($fees['paid_amount'] ?? 0, 2) ?></span>
-            <span class="fee-lbl">Paid</span>
+            <a href="../Fee%20module/index.php?student_id=<?= $student_id ?>">
+                <span class="fee-num">£<?= number_format($fees['paid_amount'] ?? 0, 2) ?></span>
+                <span class="fee-lbl">Paid</span>
+            </a>
         </div>
         <div class="fee-card pending">
-            <span class="fee-num">£<?= number_format($fees['pending_amount'] ?? 0, 2) ?></span>
-            <span class="fee-lbl">Outstanding</span>
+            <a href="../Fee%20module/index.php?student_id=<?= $student_id ?>">
+                <span class="fee-num">£<?= number_format($fees['pending_amount'] ?? 0, 2) ?></span>
+                <span class="fee-lbl">Outstanding</span>
+            </a>
         </div>
     </div>
 

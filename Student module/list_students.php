@@ -209,7 +209,9 @@ if (isset($_GET['room']) && $_GET['room'] === 'unassigned') $filterLabel = "Unas
                         <?php endif; ?>
                     </td>
                     <td>
+                        <a href="view_student.php?id=<?= $row['student_id'] ?>" class="btn-edit" style="background:#f0fdf4;color:#059669;">👁 View</a>
                         <a href="edit_student.php?id=<?= $row['student_id'] ?>" class="btn-edit">✏️ Edit</a>
+                        <a href="../Fee%20module/index.php?student_id=<?= $row['student_id'] ?>" class="btn-edit" style="background:#faf5ff;color:#7c3aed;">💷 Fees</a>
                         <a href="list_students.php?delete=<?= $row['student_id'] ?>"
                            class="btn-delete"
                            onclick="return confirm('Delete <?= htmlspecialchars(addslashes($row['full_name'])) ?>? This cannot be undone.')">

@@ -59,8 +59,8 @@ $base        = $inSubdir ? '../' : '';
             </a>
         </li>
         <li>
-            <a href="<?= $base ?>pages/fees.php"
-               class="<?= $currentPage === 'fees.php' ? 'active' : '' ?>">
+            <a href="<?= $base ?>Fee%20module/index.php"
+               class="<?= strpos($_SERVER['SCRIPT_FILENAME'], 'Fee module') !== false ? 'active' : '' ?>">
                 Fees
             </a>
         </li>

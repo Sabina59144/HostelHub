@@ -1,133 +1,96 @@
 <?php
-/* ── Auth & DB ──────────────────────────────────────── */
 require_once __DIR__ . '/../includes/session.php';
 requireRole('admin');
 require_once __DIR__ . '/../includes/db.php';
 
-/* ── Validate request ───────────────────────────────── */
-if (empty($_GET['id'])) {
-    header("Location: index.php");
-    exit;
-}
+if (empty($_GET['id'])) { header("Location: index.php"); exit; }
 
 $id   = $_GET['id'];
 $stmt = $db->prepare("
-    SELECT fees.*, students.full_name
-    FROM fees
-    LEFT JOIN students ON students.student_id = fees.student_id
-    WHERE fees.receipt_number = ?
+    SELECT f.*, s.full_name FROM fees f
+    LEFT JOIN students s ON s.student_id = f.student_id
+    WHERE f.receipt_number = ?
 ");
 $stmt->execute([$id]);
 $fee = $stmt->fetch(PDO::FETCH_ASSOC);
+if (!$fee) { header("Location: index.php"); exit; }
 
-if (!$fee) {
-    header("Location: index.php");
-    exit;
-}
-
-/* ── Hard delete on confirm ─────────────────────────── */
-// Schema has no is_active / soft-delete columns, so we do a real DELETE
 if (isset($_POST['confirm_delete'])) {
-    $db->prepare("DELETE FROM fees WHERE receipt_number = ?")
-       ->execute([$id]);
-    header("Location: index.php");
+    // Soft delete (set is_active=0) to preserve records
+    $db->prepare("UPDATE fees SET is_active = 0, deleted_at = NOW(), deleted_reason = ? WHERE receipt_number = ?")
+       ->execute([$_POST['reason'] ?? 'Admin deleted', $id]);
+    header("Location: index.php?deleted=1");
     exit;
 }
 ?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Delete Fee — HostelHub</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="../css/style.css">
-    <style>
-        body { background: #f0f4f8; font-family: 'DM Sans', sans-serif; }
-        .container { padding: 32px 40px; max-width: 560px; margin: 0 auto; }
-
-        .page-header { margin-bottom: 24px; }
-        .page-header h2 { font-family: 'Playfair Display', serif; font-size: 26px; color: #dc2626; margin-bottom: 4px; }
-        .page-header p  { color: #64748b; font-size: 14px; }
-
-        .confirm-card {
-            background: #fff; border-radius: 16px; padding: 32px;
-            box-shadow: 0 2px 12px rgba(0,0,0,0.06); border: 1px solid #fecaca;
-        }
-
-        .warning-banner {
-            background: #fff5f5; border: 1px solid #fecaca; border-radius: 10px;
-            padding: 14px 18px; margin-bottom: 24px; font-size: 14px; color: #7f1d1d;
-        }
-        .warning-banner strong { display: block; margin-bottom: 4px; font-size: 15px; }
-
-        .detail-table { width: 100%; border-collapse: collapse; margin-bottom: 24px; }
-        .detail-table tr:nth-child(even) { background: #f9fafb; }
-        .detail-table td { padding: 10px 14px; font-size: 14px; border-bottom: 1px solid #f1f5f9; }
-        .detail-table td:first-child { font-weight: 600; color: #374151; width: 130px; }
-
-        .btn-delete {
-            width: 100%; padding: 12px; background: #dc2626; color: #fff;
-            border: none; border-radius: 10px; font-size: 15px; font-weight: 600;
-            cursor: pointer; font-family: 'DM Sans', sans-serif; transition: background 0.2s;
-        }
-        .btn-delete:hover { background: #b91c1c; }
-
-        .back-link { display: block; text-align: center; margin-top: 16px; font-size: 14px; color: #64748b; }
-        .back-link:hover { color: #1a56db; }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Delete Fee — HostelHub</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Mono:wght@400&family=Outfit:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0e1117;--surface:#161b27;--card:#1c2235;--border:#2a3148;--accent:#4f7aff;--danger:#f87171;--text:#e8eaf6;--muted:#8892b0;}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:var(--bg);color:var(--text);font-family:'Outfit',sans-serif;min-height:100vh;}
+.topnav{background:var(--surface);border-bottom:1px solid var(--border);padding:0 32px;height:60px;display:flex;align-items:center;justify-content:space-between;}
+.brand{font-family:'Syne',sans-serif;font-weight:800;font-size:20px;color:var(--text);}
+.brand span{color:var(--accent);}
+.page{max-width:540px;margin:0 auto;padding:36px 24px;}
+.page-hdr{margin-bottom:24px;}
+.page-hdr h2{font-family:'Syne',sans-serif;font-size:26px;font-weight:800;color:var(--danger);margin-bottom:4px;}
+.page-hdr p{color:var(--muted);font-size:13px;}
+.form-card{background:var(--card);border:1px solid rgba(248,113,113,0.3);border-radius:16px;padding:28px 30px;}
+.warn{background:rgba(248,113,113,0.08);border:1px solid rgba(248,113,113,0.25);border-radius:10px;padding:14px 18px;margin-bottom:22px;font-size:13px;color:var(--danger);}
+.warn strong{display:block;margin-bottom:4px;font-size:14px;}
+.detail-row{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid rgba(42,49,72,0.5);font-size:13px;}
+.detail-row:last-of-type{border-bottom:none;}
+.detail-row span:first-child{color:var(--muted);font-weight:600;}
+.form-group{margin:20px 0 0;}
+.form-group label{display:block;font-size:11px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);margin-bottom:6px;}
+.form-group input{width:100%;padding:10px 14px;border:1px solid var(--border);border-radius:9px;font-size:13px;font-family:'Outfit',sans-serif;background:var(--surface);color:var(--text);outline:none;}
+.form-group input:focus{border-color:var(--danger);box-shadow:0 0 0 3px rgba(248,113,113,0.15);}
+.btn-delete{width:100%;padding:13px;background:var(--danger);color:#fff;border:none;border-radius:11px;font-size:15px;font-weight:700;cursor:pointer;font-family:'Outfit',sans-serif;transition:background 0.2s;margin-top:16px;}
+.btn-delete:hover{background:#e85252;}
+.back-link{display:block;text-align:center;margin-top:14px;font-size:13px;color:var(--muted);text-decoration:none;}
+.back-link:hover{color:var(--accent);}
+</style>
 </head>
 <body>
-
-<?php include __DIR__ . '/../includes/navbar.php'; ?>
-
-<div class="container">
-    <div class="page-header">
+<nav class="topnav">
+    <div class="brand">🏠 Hostel<span>Hub</span></div>
+    <a href="index.php" style="color:var(--muted);font-size:13px;text-decoration:none;">← Fee Records</a>
+</nav>
+<div class="page">
+    <div class="page-hdr">
         <h2>Delete Fee Record</h2>
-        <p>This will permanently remove the record from the database.</p>
+        <p>This will archive the record and remove it from active views.</p>
     </div>
-
-    <div class="confirm-card">
-        <div class="warning-banner">
-            <strong>⚠️ This action cannot be undone.</strong>
-            Once deleted, this fee record is gone permanently.
+    <div class="form-card">
+        <div class="warn">
+            <strong>⚠️ Are you sure?</strong>
+            This fee record will be archived and no longer visible in the fee list. It can be restored by an administrator from the database.
         </div>
-
-        <table class="detail-table">
-            <tr>
-                <td>Receipt</td>
-                <td><?= htmlspecialchars($fee['receipt_number']) ?></td>
-            </tr>
-            <tr>
-                <td>Student</td>
-                <td><?= htmlspecialchars($fee['full_name'] ?? '—') ?></td>
-            </tr>
-            <tr>
-                <td>Fee Type</td>
-                <td><?= ucfirst(htmlspecialchars($fee['fee_type'])) ?></td>
-            </tr>
-            <tr>
-                <td>Amount</td>
-                <td>£<?= number_format($fee['amount'], 2) ?></td>
-            </tr>
-            <tr>
-                <td>Due Date</td>
-                <td><?= htmlspecialchars($fee['due_date']) ?></td>
-            </tr>
-            <tr>
-                <td>Status</td>
-                <?= $fee['paid_at'] ? date('d M Y', strtotime($fee['paid_at'])) : '—' ?>
-            </tr>
-        </table>
-
+        <div class="detail-row"><span>Receipt</span><span style="font-family:'DM Mono',monospace;font-size:12px;"><?= htmlspecialchars($fee['receipt_number']) ?></span></div>
+        <div class="detail-row"><span>Student</span><span><?= htmlspecialchars($fee['full_name'] ?? '—') ?></span></div>
+        <div class="detail-row"><span>Fee Type</span><span><?= ucfirst(htmlspecialchars($fee['fee_type'])) ?></span></div>
+        <div class="detail-row"><span>Amount</span><span style="font-family:'DM Mono',monospace;">£<?= number_format($fee['amount'], 2) ?></span></div>
+        <div class="detail-row"><span>Due Date</span><span><?= htmlspecialchars($fee['due_date']) ?></span></div>
+        <div class="detail-row"><span>Status</span>
+            <span><?= $fee['is_paid'] ? '✅ Paid' : '⏳ Unpaid' ?></span>
+        </div>
         <form method="POST">
+            <div class="form-group">
+                <label>Reason for deletion (optional)</label>
+                <input type="text" name="reason" placeholder="e.g. Entered in error, duplicate…">
+            </div>
             <button type="submit" name="confirm_delete" class="btn-delete"
-                    onclick="return confirm('Permanently delete this fee record?')">
+                    onclick="return confirm('Permanently archive this fee record?')">
                 🗑 Confirm Delete
             </button>
         </form>
-
         <a href="index.php" class="back-link">← Cancel, go back</a>
     </div>
 </div>

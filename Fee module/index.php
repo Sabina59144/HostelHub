@@ -45,7 +45,7 @@ if ($filterStudentId) {
         FROM fees
         LEFT JOIN students ON students.student_id = fees.student_id
         WHERE fees.student_id = ?
-        ORDER BY fees.fee_id DESC
+        ORDER BY fees.created_at DESC
     ");
     $stmt->execute([$filterStudentId]);
 } elseif (!empty($search)) {
@@ -56,7 +56,7 @@ if ($filterStudentId) {
         WHERE fees.receipt_number LIKE ?
            OR students.full_name  LIKE ?
            OR fees.student_id     LIKE ?
-        ORDER BY fees.fee_id DESC
+        ORDER BY fees.created_at DESC
     ");
     $stmt->execute(["%$search%", "%$search%", "%$search%"]);
 } else {
@@ -64,7 +64,7 @@ if ($filterStudentId) {
         SELECT fees.*, students.full_name
         FROM fees
         LEFT JOIN students ON students.student_id = fees.student_id
-        ORDER BY fees.fee_id DESC
+        ORDER BY fees.created_at DESC
     ");
     $stmt->execute();
 }
@@ -271,7 +271,7 @@ $isAdmin = ($_SESSION['role'] ?? '') === 'admin';
                 <td><?= $dueDate->format('d M Y') ?></td>
                 <td><span class="badge <?= $status ?>"><?= $statusLabel ?></span></td>
                 <td style="font-size:12px;color:#64748b;">
-                    <?= $fee['is_paid'] ? (new DateTime($fee['is_paid']))->format('d M Y') : '—' ?>
+                    <?= $fee['paid_at'] ? date('d M Y', strtotime($fee['paid_at'])) : '—' ?>
                 </td>
                 <td style="white-space:nowrap;">
                     <?php if ($isAdmin): ?>

@@ -1,17 +1,21 @@
 <?php
+/* ── Auth & DB ─────────────────────────────────── */
 require_once '../includes/session.php';
 requireLogin();
 require_once '../includes/db.php';
 
+/* ── Accept room ID from GET or POST ────────────── */
 $room_id = filter_input(INPUT_GET, 'id', FILTER_VALIDATE_INT)
         ?: filter_input(INPUT_POST, 'id', FILTER_VALIDATE_INT);
 if (!$room_id) { header("Location: index.php"); exit(); }
 
+/* ── Fetch room or redirect if not found ────────── */
 $stmt = $db->prepare("SELECT * FROM rooms WHERE room_id = ?");
 $stmt->execute([$room_id]);
 $room = $stmt->fetch();
 if (!$room) { header("Location: index.php"); exit(); }
 
+/* ── Check for students currently in this room ─── */
 $alloc = $db->prepare("SELECT student_id, student_number, full_name FROM students WHERE room_id = ? AND status = 1 ORDER BY full_name");
 $alloc->execute([$room_id]);
 $allocated = $alloc->fetchAll();
@@ -19,11 +23,13 @@ $hasAllocations = count($allocated) > 0;
 $errors = [];
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['confirm']) && $_POST['confirm'] === 'yes') {
+    /* ── Require checkbox if students are still allocated ── */
     if ($hasAllocations && empty($_POST['force'])) {
         $errors[] = "This room still has allocated students. Tick the confirmation box to proceed.";
     }
     if (empty($errors)) {
         try {
+            /* ── Transaction: unallocate students then delete room ── */
             $db->beginTransaction();
             $db->prepare("UPDATE students SET room_id = NULL WHERE room_id = ?")->execute([$room_id]);
             $db->prepare("DELETE FROM rooms WHERE room_id = ?")->execute([$room_id]);
@@ -72,7 +78,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['confirm']) && $_POST[
     </style>
 </head>
 <body>
-<?php include '../includes/navbar.php'; ?>
+<?php include '../includes/navbar.php'; /* Shared navigation */ ?>
 <div class="container">
     <div class="page-header">
         <h2>Delete Room</h2>
@@ -125,6 +131,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['confirm']) && $_POST[
         </form>
     </div>
 </div>
-<?php $db = null; ?>
+<?php $db = null; /* Close DB connection */ ?>
 </body>
 </html>

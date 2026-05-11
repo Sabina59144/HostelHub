@@ -1,8 +1,10 @@
 <?php
+/* ── Auth & DB ─────────────────────────────────── */
 require_once '../includes/session.php';
 requireLogin();
 require_once '../includes/db.php';
 
+/* ── Default empty form values ─────────────────── */
 $errors = [];
 $success = "";
 $room_number = $room_type = $available_from = "";
@@ -10,6 +12,7 @@ $capacity = $price_per_month = "";
 $is_ensuite = 0;
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    /* ── Sanitise POST input ────────────────────── */
     $room_number     = trim($_POST['room_number']);
     $room_type       = trim($_POST['room_type']);
     $capacity        = trim($_POST['capacity']);
@@ -17,6 +20,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $available_from  = trim($_POST['available_from']);
     $is_ensuite      = isset($_POST['is_ensuite']) ? 1 : 0;
 
+    /* ── Validation ─────────────────────────────── */
     if (empty($room_number)) $errors[] = "Room number is required.";
     $validTypes = ['single', 'double', 'triple'];
     if (empty($room_type) || !in_array($room_type, $validTypes)) $errors[] = "Please select a valid room type.";
@@ -26,12 +30,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     elseif (!is_numeric($price_per_month) || (float)$price_per_month < 0) $errors[] = "Price per month must be a valid positive number.";
     if (empty($available_from)) $errors[] = "Available from date is required.";
 
+    /* ── Duplicate room number check ────────────── */
     if (empty($errors)) {
         $chk = $db->prepare("SELECT room_id FROM rooms WHERE room_number = ?");
         $chk->execute([$room_number]);
         if ($chk->rowCount() > 0) $errors[] = "This room number already exists.";
     }
 
+    /* ── Insert & redirect on success ──────────── */
     if (empty($errors)) {
         $stmt = $db->prepare("INSERT INTO rooms (room_number, room_type, capacity, price_per_month, is_ensuite, available_from) VALUES (?,?,?,?,?,?)");
         if ($stmt->execute([$room_number, $room_type, (int)$capacity, (float)$price_per_month, $is_ensuite, $available_from])) {
@@ -78,7 +84,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     </style>
 </head>
 <body>
-<?php include '../includes/navbar.php'; ?>
+<?php include '../includes/navbar.php'; /* Shared navigation */ ?>
 <div class="container">
     <div class="page-header">
         <h2>Add New Room</h2>
@@ -136,6 +142,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         </form>
     </div>
 </div>
-<?php $db = null; ?>
+<?php $db = null; /* Close DB connection */ ?>
 </body>
 </html>

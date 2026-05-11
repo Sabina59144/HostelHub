@@ -184,7 +184,7 @@ $fees = $feeStmt->fetch();
             <?php else: ?>
             <div style="text-align:center;padding:24px 0;color:#94a3b8;font-size:13px;">
                 🛏️ No room assigned yet.<br>
-                <a href="../room/allocate_room.php" style="color:#1a56db;font-weight:600;font-size:13px;margin-top:8px;display:inline-block;">Allocate a room →</a>
+                <a href="../Room%20module/allocate_room.php?student_id=<?= $student_id ?>" style="color:#1a56db;font-weight:600;font-size:13px;margin-top:8px;display:inline-block;">Allocate a room →</a>
             </div>
             <?php endif; ?>
         </div>

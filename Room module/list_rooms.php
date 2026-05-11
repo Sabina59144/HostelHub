@@ -1,12 +1,15 @@
 <?php
+/* ── Auth & DB ─────────────────────────────────── */
 require_once '../includes/session.php';
 requireLogin();
 require_once '../includes/db.php';
 
-$search = trim($_GET['search'] ?? '');
-$type   = $_GET['type'] ?? '';
+/* ── Filters from URL params ────────────────────── */
+$search  = trim($_GET['search'] ?? '');
+$type    = $_GET['type'] ?? '';
 $ensuite = $_GET['ensuite'] ?? '';
 
+/* ── Build query with optional filters & occupant count ── */
 $sql    = "SELECT r.*, COUNT(s.student_id) AS occupants
            FROM rooms r
            LEFT JOIN students s ON s.room_id = r.room_id AND s.status = 1
@@ -71,7 +74,7 @@ $rooms = $stmt->fetchAll();
     </style>
 </head>
 <body>
-<?php include '../includes/navbar.php'; ?>
+<?php include '../includes/navbar.php'; /* Shared navigation */ ?>
 <div class="container">
     <div class="page-header">
         <div>
@@ -170,6 +173,6 @@ $rooms = $stmt->fetchAll();
         <?php endif; ?>
     </div>
 </div>
-<?php $db = null; ?>
+<?php $db = null; /* Close DB connection */ ?>
 </body>
 </html>

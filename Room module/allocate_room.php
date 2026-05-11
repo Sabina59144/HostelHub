@@ -1,4 +1,5 @@
 <?php
+/* ── Auth & DB ─────────────────────────────────── */
 require_once '../includes/session.php';
 requireLogin();
 require_once '../includes/db.php';
@@ -6,10 +7,11 @@ require_once '../includes/db.php';
 $errors  = [];
 $success = "";
 
-// Pre-select room if passed via GET
-$preRoom = filter_input(INPUT_GET, 'room_id', FILTER_VALIDATE_INT) ?: 0;
+/* ── Pre-select room/student if linked from elsewhere ─── */
+$preRoom    = filter_input(INPUT_GET, 'room_id',    FILTER_VALIDATE_INT) ?: 0;
+$preStu     = filter_input(INPUT_GET, 'student_id', FILTER_VALIDATE_INT) ?: 0;
 
-// Fetch all rooms that still have space (capacity > current occupants)
+/* ── Rooms with available space only ────────────── */
 $roomStmt = $db->query(
     "SELECT r.room_id, r.room_number, r.room_type, r.capacity, r.price_per_month, r.is_ensuite,
             COUNT(s.student_id) AS occupants
@@ -21,7 +23,7 @@ $roomStmt = $db->query(
 );
 $rooms = $roomStmt->fetchAll();
 
-// Fetch students who have no room yet
+/* ── Students without a room assigned ──────────── */
 $stuStmt = $db->query(
     "SELECT student_id, student_number, full_name
      FROM students
@@ -34,6 +36,7 @@ $selectedRoom    = null;
 $selectedStudent = null;
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    /* ── Validate both selections ────────────────── */
     $room_id    = filter_input(INPUT_POST, 'room_id',    FILTER_VALIDATE_INT);
     $student_id = filter_input(INPUT_POST, 'student_id', FILTER_VALIDATE_INT);
 
@@ -41,7 +44,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (!$student_id) $errors[] = "Please select a student.";
 
     if (empty($errors)) {
-        // Re-verify room still has space
+        /* ── Re-verify room still has space (race-condition guard) ── */
         $chkRoom = $db->prepare(
             "SELECT r.capacity, COUNT(s.student_id) AS occ
              FROM rooms r
@@ -57,7 +60,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $errors[] = "That room is now full. Please choose another.";
         }
 
-        // Re-verify student still unassigned
+        /* ── Re-verify student still unassigned ─── */
         $chkStu = $db->prepare("SELECT room_id FROM students WHERE student_id = ? AND status = 1");
         $chkStu->execute([$student_id]);
         $stuData = $chkStu->fetch();
@@ -68,6 +71,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
     }
 
+    /* ── Set room_id on student record ─────────── */
     if (empty($errors)) {
         $upd = $db->prepare("UPDATE students SET room_id = ? WHERE student_id = ?");
         if ($upd->execute([$room_id, $student_id])) {
@@ -78,8 +82,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
     }
 
-    // Retain selections on error
+    /* ── Keep selections visible on error ─── */
     $preRoom = $room_id;
+    $preStu  = $student_id;
 }
 
 // Load selected room details for the preview panel
@@ -142,7 +147,7 @@ if ($preRoom) {
     </style>
 </head>
 <body>
-<?php include '../includes/navbar.php'; ?>
+<?php include '../includes/navbar.php'; /* Shared navigation */ ?>
 <div class="container">
     <div class="page-header">
         <h2>Allocate Room</h2>
@@ -189,7 +194,8 @@ if ($preRoom) {
                     <select id="student_id" name="student_id" <?= empty($students)?'disabled':'' ?>>
                         <option value="">-- Choose a student --</option>
                         <?php foreach ($students as $st): ?>
-                            <option value="<?= $st['student_id'] ?>">
+                            <option value="<?= $st['student_id'] ?>"
+                                <?= ($preStu == $st['student_id']) ? 'selected' : '' ?>>
                                 <?= htmlspecialchars($st['full_name']) ?> (<?= htmlspecialchars($st['student_number']) ?>)
                             </option>
                         <?php endforeach; ?>
@@ -228,8 +234,9 @@ if ($preRoom) {
         </div>
     </div>
 </div>
-<?php $db = null; ?>
+<?php $db = null; /* Close DB connection */ ?>
 <script>
+/* ── JS: update preview panel when room dropdown changes ── */
 // Build room data map from PHP
 const roomData = {
     <?php foreach ($rooms as $r): ?>

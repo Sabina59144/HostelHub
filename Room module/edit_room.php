@@ -1,16 +1,20 @@
 <?php
+/* ── Auth & DB ─────────────────────────────────── */
 require_once '../includes/session.php';
 requireLogin();
 require_once '../includes/db.php';
 
+/* ── Validate room ID from URL ──────────────────── */
 $room_id = filter_input(INPUT_GET, 'id', FILTER_VALIDATE_INT);
 if (!$room_id) { header("Location: index.php"); exit(); }
 
+/* ── Fetch room or redirect if not found ────────── */
 $stmt = $db->prepare("SELECT * FROM rooms WHERE room_id = ?");
 $stmt->execute([$room_id]);
 $room = $stmt->fetch();
 if (!$room) { header("Location: index.php"); exit(); }
 
+/* ── Count active occupants (capacity floor guard) ── */
 $occStmt = $db->prepare("SELECT COUNT(*) AS c FROM students WHERE room_id = ? AND status = 1");
 $occStmt->execute([$room_id]);
 $currentOccupants = (int)$occStmt->fetch()['c'];
@@ -24,6 +28,7 @@ $available_from  = $room['available_from'];
 $is_ensuite      = (int)$room['is_ensuite'];
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    /* ── Sanitise POST input ────────────────────── */
     $room_number     = trim($_POST['room_number'] ?? '');
     $room_type       = trim($_POST['room_type'] ?? '');
     $capacity        = trim($_POST['capacity'] ?? '');
@@ -31,6 +36,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $available_from  = trim($_POST['available_from'] ?? '');
     $is_ensuite      = isset($_POST['is_ensuite']) ? 1 : 0;
 
+    /* ── Validation (capacity cannot go below occupants) ── */
     if (empty($room_number)) $errors[] = "Room number is required.";
     $validTypes = ['single', 'double', 'triple'];
     if (!in_array($room_type, $validTypes, true)) $errors[] = "Please select a valid room type.";
@@ -39,12 +45,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if ($price_per_month === '' || !is_numeric($price_per_month) || (float)$price_per_month < 0) $errors[] = "Price per month must be a valid positive number.";
     if (empty($available_from)) $errors[] = "Available from date is required.";
 
+    /* ── Duplicate room number check (exclude self) ── */
     if (empty($errors)) {
         $chk = $db->prepare("SELECT room_id FROM rooms WHERE room_number = ? AND room_id != ?");
         $chk->execute([$room_number, $room_id]);
         if ($chk->rowCount() > 0) $errors[] = "Another room is already using that room number.";
     }
 
+    /* ── Update & redirect on success ──────────── */
     if (empty($errors)) {
         $upd = $db->prepare("UPDATE rooms SET room_number=?, room_type=?, capacity=?, price_per_month=?, is_ensuite=?, available_from=? WHERE room_id=?");
         if ($upd->execute([$room_number, $room_type, (int)$capacity, (float)$price_per_month, $is_ensuite, $available_from, $room_id])) {
@@ -94,7 +102,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     </style>
 </head>
 <body>
-<?php include '../includes/navbar.php'; ?>
+<?php include '../includes/navbar.php'; /* Shared navigation */ ?>
 <div class="container">
     <div class="page-header">
         <h2>Edit Room</h2>
@@ -155,6 +163,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         </form>
     </div>
 </div>
-<?php $db = null; ?>
+<?php $db = null; /* Close DB connection */ ?>
 </body>
 </html>

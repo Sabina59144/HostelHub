@@ -220,8 +220,10 @@ if (isset($_GET['room']) && $_GET['room'] === 'unassigned') $filterLabel = "Unas
         </table>
         <?php else: ?>
         <div class="empty-state">
-            <p>No students found.</p>
-            <a href="add_student.php" class="btn-add">➕ Add your first student</a>
+            <p>No students found<?= (!empty($_GET['search']) || isset($_GET['status']) || isset($_GET['room'])) ? ' matching your search.' : '.' ?></p>
+            <?php if (empty($_GET['search']) && !isset($_GET['status']) && !isset($_GET['room'])): ?>
+                <a href="add_student.php" class="btn-add">➕ Add your first student</a>
+            <?php endif; ?>
         </div>
         <?php endif; ?>
     </div>

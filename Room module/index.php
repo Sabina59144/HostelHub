@@ -1,14 +1,17 @@
 <?php
+/* ── Auth & DB ─────────────────────────────────── */
 require_once '../includes/session.php';
-requireLogin();
+requireLogin();                          // Redirect to login if not authenticated
 require_once '../includes/db.php';
 
+/* ── Summary stats for stat cards ─────────────── */
 $totalRooms     = $db->query("SELECT COUNT(*) AS c FROM rooms")->fetch()['c'];
 $totalAvailable = $db->query("SELECT COUNT(*) AS c FROM rooms WHERE available_from <= CURDATE()")->fetch()['c'];
 $totalEnsuite   = $db->query("SELECT COUNT(*) AS c FROM rooms WHERE is_ensuite = 1")->fetch()['c'];
 $totalOccupied  = $db->query("SELECT COUNT(*) AS c FROM students WHERE room_id IS NOT NULL AND status = 1")->fetch()['c'];
 $availabilityRate = $totalRooms > 0 ? round(($totalAvailable / $totalRooms) * 100) : 0;
 
+/* ── Flash message after add / edit / delete / allocate ── */
 $msg = "";
 if (isset($_GET['msg'])) {
     if ($_GET['msg'] === 'added')     $msg = "Room added successfully!";
@@ -17,9 +20,11 @@ if (isset($_GET['msg'])) {
     if ($_GET['msg'] === 'allocated') $msg = "Student allocated successfully!";
 }
 
+/* ── Search & type filter ──────────────────────── */
 $search = trim($_GET['search'] ?? '');
 $type   = $_GET['type'] ?? '';
 
+/* ── Build room list with live occupant count ─── */
 $sql    = "SELECT r.*, COUNT(s.student_id) AS occupants
            FROM rooms r
            LEFT JOIN students s ON s.room_id = r.room_id AND s.status = 1
@@ -99,7 +104,7 @@ $rooms = $stmt->fetchAll();
     </style>
 </head>
 <body>
-<?php include '../includes/navbar.php'; ?>
+<?php include '../includes/navbar.php'; /* Shared navigation */ ?>
 <div class="container">
     <div class="page-header">
         <h2>Room Module</h2>
@@ -121,7 +126,7 @@ $rooms = $stmt->fetchAll();
         <a href="add_room.php" class="action-btn"><div class="btn-icon">➕</div><div class="btn-label">Add Room</div><div class="btn-desc">Register a new room</div></a>
         <a href="list_rooms.php" class="action-btn"><div class="btn-icon">📋</div><div class="btn-label">View All</div><div class="btn-desc">Browse all rooms</div></a>
         <a href="allocate_room.php" class="action-btn"><div class="btn-icon">🔑</div><div class="btn-label">Allocate Room</div><div class="btn-desc">Assign student to room</div></a>
-        <a href="list_rooms.php?type=single" class="action-btn"><div class="btn-icon">🚿</div><div class="btn-label">Ensuite Rooms</div><div class="btn-desc">Rooms with ensuite</div></a>
+        <a href="list_rooms.php?ensuite=1" class="action-btn"><div class="btn-icon">🚿</div><div class="btn-label">Ensuite Rooms</div><div class="btn-desc">Rooms with ensuite</div></a>
     </div>
     <p class="section-label">Room List</p>
     <form method="GET" action="">
@@ -167,6 +172,6 @@ $rooms = $stmt->fetchAll();
         <?php endif; ?>
     </div>
 </div>
-<?php $db = null; ?>
+<?php $db = null; /* Close DB connection */ ?>
 </body>
 </html>

@@ -5,7 +5,7 @@ require_once(__DIR__ . '/../config/auth.php');
 require_once(__DIR__ . '/../config/schema.php');
 $user = requireLoginJson();
 if (($user['role'] ?? '') !== 'admin') {
-    echo json_encode([ 'success' => false, 'errors' => [ 'Only admins can archive requests.' ] ]);
+    echo json_encode([ 'success' => false, 'errors' => [ 'Only admins can unarchive requests.' ] ]);
     exit;
 }
 
@@ -17,11 +17,11 @@ if ($maintenance_id === '' || !ctype_digit($maintenance_id)) {
 
 try {
     ensureMaintenanceArchiveSchema($db);
-    $stmt = $db->prepare("UPDATE maintenance SET is_deleted = 1, deleted_at = NOW() WHERE maintenance_id = :id AND is_deleted = 0");
+    $stmt = $db->prepare("UPDATE maintenance SET is_deleted = 0, deleted_at = NULL WHERE maintenance_id = :id AND is_deleted = 1");
     $stmt->bindValue(':id', (int)$maintenance_id, PDO::PARAM_INT);
     $stmt->execute();
     if ($stmt->rowCount() === 0) {
-        echo json_encode([ 'success' => false, 'errors' => [ 'Maintenance request not found or already archived.' ] ]);
+        echo json_encode([ 'success' => false, 'errors' => [ 'Archived maintenance request not found.' ] ]);
         exit;
     }
     echo json_encode([ 'success' => true ]);
@@ -29,4 +29,3 @@ try {
     echo json_encode([ 'success' => false, 'errors' => [ $e->getMessage() ] ]);
 }
 
-?>

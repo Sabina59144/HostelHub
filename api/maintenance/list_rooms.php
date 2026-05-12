@@ -1,6 +1,8 @@
 <?php
 header('Content-Type: application/json');
 require_once(__DIR__ . '/../config/db.php');
+require_once(__DIR__ . '/../config/auth.php');
+requireLoginJson();
 
 try {
     $stmt = $db->prepare("SELECT room_id, room_number, capacity FROM rooms ORDER BY room_number");

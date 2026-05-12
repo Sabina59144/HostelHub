@@ -1,5 +1,6 @@
 <?php
 require_once("../config/db.php");
+require_once(__DIR__ . "/../config/schema.php");
 try {
     // Rooms
     $db->exec("CREATE TABLE IF NOT EXISTS rooms (
@@ -14,6 +15,7 @@ try {
         name VARCHAR(100) NOT NULL,
         email VARCHAR(150) UNIQUE,
         room_id INT,
+        password VARCHAR(255) NULL,
         FOREIGN KEY (room_id) REFERENCES rooms(room_id) ON DELETE SET NULL
     ) ENGINE=InnoDB;");
 
@@ -39,6 +41,8 @@ try {
         is_resolved TINYINT(1) DEFAULT 0,
         status VARCHAR(20) DEFAULT 'Pending',
         resolution_note TEXT DEFAULT '',
+        is_deleted TINYINT(1) NOT NULL DEFAULT 0,
+        deleted_at DATETIME NULL,
         FOREIGN KEY (room_id) REFERENCES rooms(room_id) ON DELETE CASCADE,
         FOREIGN KEY (assigned_to) REFERENCES staffs(staff_id) ON DELETE SET NULL,
         FOREIGN KEY (reported_by) REFERENCES students(student_id) ON DELETE SET NULL
@@ -64,6 +68,9 @@ try {
         (2, 'Bob Williams', 'bob.w@example.com', 2),
         (3, 'Charlie Brown', 'charlie.b@example.com', 3)
     ;");
+
+    ensureMaintenanceArchiveSchema($db);
+    ensureAuthSchema($db);
 
 
     echo "DB tables created and seeded successfully ✅";

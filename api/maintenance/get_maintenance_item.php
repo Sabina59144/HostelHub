@@ -1,6 +1,9 @@
 <?php
 header('Content-Type: application/json; charset=UTF-8');
 require_once(__DIR__ . '/../config/db.php');
+require_once(__DIR__ . '/../config/auth.php');
+require_once(__DIR__ . '/../config/schema.php');
+$user = requireLoginJson();
 
 $id = isset($_GET['id']) ? trim($_GET['id']) : (isset($_POST['maintenance_id']) ? trim($_POST['maintenance_id']) : '');
 if ($id === '' || !ctype_digit($id)) {
@@ -9,14 +12,23 @@ if ($id === '' || !ctype_digit($id)) {
 }
 
 try {
+    ensureMaintenanceArchiveSchema($db);
+
     // Try to select including newer columns; if columns missing, fall back
     $sql = "SELECT m.*, r.room_number, s.name AS assigned_to_name, st.name AS reported_by_name FROM maintenance m
             LEFT JOIN staffs s ON m.assigned_to = s.staff_id
             LEFT JOIN students st ON m.reported_by = st.student_id
             LEFT JOIN rooms r ON m.room_id = r.room_id
-            WHERE m.maintenance_id = :id LIMIT 1";
+            WHERE m.maintenance_id = :id AND m.is_deleted = 0";
+    if (($user['role'] ?? '') === 'student') {
+        $sql .= " AND m.reported_by = :reported_by";
+    }
+    $sql .= " LIMIT 1";
     $stmt = $db->prepare($sql);
     $stmt->bindValue(':id', (int)$id, PDO::PARAM_INT);
+    if (($user['role'] ?? '') === 'student') {
+        $stmt->bindValue(':reported_by', (int)$user['id'], PDO::PARAM_INT);
+    }
     $stmt->execute();
     $row = $stmt->fetch(PDO::FETCH_ASSOC);
     if (!$row) {

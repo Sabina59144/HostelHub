@@ -16,7 +16,7 @@ $students = $db->query("
 function generateReceipt($db) {
     $row = $db->query("
         SELECT receipt_number FROM fees
-        ORDER BY fee_id DESC LIMIT 1
+        ORDER BY created_at DESC LIMIT 1
     ")->fetch(PDO::FETCH_ASSOC);
 
     if ($row && preg_match('/(\d+)$/', $row['receipt_number'], $m)) {

@@ -35,12 +35,9 @@ if ($date_reported !== '' && preg_match('/^\d{4}-\d{2}-\d{2}$/', $date_reported)
     }
 }
 
-// assigned_to and reported_by should be numeric IDs
-if ($assigned_to !== '' && !ctype_digit($assigned_to)) {
-    $errors[] = 'Assigned To must be a staff ID.';
-}
+// reported_by must be a numeric user id; assigned_to is stored as a text name
 if ($reported_by !== '' && !ctype_digit($reported_by)) {
-    $errors[] = 'Reported By must be a student ID.';
+    $errors[] = 'Reported By must be a valid user ID.';
 }
 $allowedStatuses = ['Resolved', 'Not Resolved', 'Pending', 'Inprogress', 'Completed'];
 if ($status !== '' && !in_array($status, $allowedStatuses, true)) {
@@ -62,18 +59,13 @@ try {
         $errors[] = 'Selected room does not exist.';
     }
 
-    $staffExistsStmt = $db->prepare("SELECT 1 FROM staffs WHERE staff_id = :staff_id LIMIT 1");
-    $staffExistsStmt->bindValue(':staff_id', (int)$assigned_to, PDO::PARAM_INT);
-    $staffExistsStmt->execute();
-    if (!$staffExistsStmt->fetchColumn()) {
-        $errors[] = 'Selected staff does not exist.';
-    }
-
-    $studentExistsStmt = $db->prepare("SELECT 1 FROM students WHERE student_id = :student_id LIMIT 1");
-    $studentExistsStmt->bindValue(':student_id', (int)$reported_by, PDO::PARAM_INT);
-    $studentExistsStmt->execute();
-    if (!$studentExistsStmt->fetchColumn()) {
-        $errors[] = 'Selected student does not exist.';
+    // assigned_to is a VARCHAR(100) text field — no FK check needed
+    // reported_by is INT FK → users(user_id)
+    $userExistsStmt = $db->prepare("SELECT 1 FROM users WHERE user_id = :user_id AND is_active = 1 LIMIT 1");
+    $userExistsStmt->bindValue(':user_id', (int)$reported_by, PDO::PARAM_INT);
+    $userExistsStmt->execute();
+    if (!$userExistsStmt->fetchColumn()) {
+        $errors[] = 'Selected user does not exist.';
     }
 
     if (!empty($errors)) {
@@ -85,7 +77,7 @@ try {
 
     $stmt->bindValue(':ticket', $ticket_number, PDO::PARAM_STR);
     $stmt->bindValue(':room', (int)$room_id, PDO::PARAM_INT);
-    $stmt->bindValue(':assigned', (int)$assigned_to, PDO::PARAM_INT);
+    $stmt->bindValue(':assigned', $assigned_to, PDO::PARAM_STR);
     $stmt->bindValue(':date_reported', $date_reported, PDO::PARAM_STR);
     $stmt->bindValue(':reported_by', (int)$reported_by, PDO::PARAM_INT);
     $is_resolved_val = ($status === 'Resolved' || $status === 'Completed') ? 1 : 0;

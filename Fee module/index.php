@@ -45,7 +45,7 @@ if ($filterStudentId) {
         FROM fees
         LEFT JOIN students ON students.student_id = fees.student_id
         WHERE fees.student_id = ?
-        ORDER BY fees.created_at DESC
+        ORDER BY fees.fee_id DESC
     ");
     $stmt->execute([$filterStudentId]);
 } elseif (!empty($search)) {
@@ -56,7 +56,7 @@ if ($filterStudentId) {
         WHERE fees.receipt_number LIKE ?
            OR students.full_name  LIKE ?
            OR fees.student_id     LIKE ?
-        ORDER BY fees.created_at DESC
+        ORDER BY fees.fee_id DESC
     ");
     $stmt->execute(["%$search%", "%$search%", "%$search%"]);
 } else {
@@ -64,7 +64,7 @@ if ($filterStudentId) {
         SELECT fees.*, students.full_name
         FROM fees
         LEFT JOIN students ON students.student_id = fees.student_id
-        ORDER BY fees.created_at DESC
+        ORDER BY fees.fee_id DESC
     ");
     $stmt->execute();
 }
@@ -290,10 +290,6 @@ $isAdmin = ($_SESSION['role'] ?? '') === 'admin';
         <?php endif; ?>
     </div>
 
-    <p style="margin-top:14px;font-size:12px;color:#94a3b8;text-align:center;">
-        Late fine policy: £0.50/day · maximum £15.00 per fee · calculated automatically on overdue fees.
-    </p>
-
-</div>
+</div><!-- /.container -->
 </body>
 </html>

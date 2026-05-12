@@ -6,7 +6,7 @@ requireLogin();
 
 $totalStudents   = $db->query("SELECT COUNT(*) FROM students")->fetchColumn();
 $availableRooms  = $db->query("SELECT COUNT(*) FROM rooms WHERE room_id NOT IN (SELECT room_id FROM students WHERE room_id IS NOT NULL)")->fetchColumn();
-$feesPending     = $db->query("SELECT COUNT(*) FROM fees WHERE is_paid IS NULL")->fetchColumn();
+$feesPending     = $db->query("SELECT COUNT(*) FROM fees WHERE is_paid = 0")->fetchColumn();
 $maintenanceOpen = $db->query("SELECT COUNT(*) FROM maintenance WHERE is_resolved = 0")->fetchColumn();
 
 $hour = (int) date('H');
@@ -417,52 +417,52 @@ $greeting = $hour < 12 ? 'Good morning' : ($hour < 17 ? 'Good afternoon' : 'Good
 
     <p class="section-label">Overview</p>
     <div class="stats-grid">
-        <div class="stat-card blue">
+        <a href="Student%20module/index.php" class="stat-card blue" style="text-decoration:none;display:block;">
             <div class="stat-icon-wrap">🎓</div>
             <span class="stat-number"><?= $totalStudents ?></span>
             <span class="stat-label">Total Students</span>
-            <a href="pages/students.php" class="stat-arrow">→</a>
-        </div>
-        <div class="stat-card green">
+            <span class="stat-arrow">→</span>
+        </a>
+        <a href="Room%20module/index.php" class="stat-card green" style="text-decoration:none;display:block;">
             <div class="stat-icon-wrap">🛏️</div>
             <span class="stat-number"><?= $availableRooms ?></span>
             <span class="stat-label">Rooms Available</span>
-            <a href="pages/rooms.php" class="stat-arrow">→</a>
-        </div>
-        <div class="stat-card amber">
-            <div class="stat-icon-wrap">💰</div>
+            <span class="stat-arrow">→</span>
+        </a>
+        <a href="Fee%20module/index.php" class="stat-card amber" style="text-decoration:none;display:block;">
+            <div class="stat-icon-wrap">💷</div>
             <span class="stat-number"><?= $feesPending ?></span>
-            <span class="stat-label">Fees Pending</span>
-            <a href="pages/fees.php" class="stat-arrow">→</a>
-        </div>
-        <div class="stat-card rose">
+            <span class="stat-label">Fees Unpaid</span>
+            <span class="stat-arrow">→</span>
+        </a>
+        <a href="Maintenace%20module/html/maintenance/index.php" class="stat-card rose" style="text-decoration:none;display:block;">
             <div class="stat-icon-wrap">🔧</div>
             <span class="stat-number"><?= $maintenanceOpen ?></span>
             <span class="stat-label">Maintenance Open</span>
-            <a href="pages/maintenance.php" class="stat-arrow">→</a>
-        </div>
+            <span class="stat-arrow">→</span>
+        </a>
     </div>
 
     <p class="section-label">Quick Actions</p>
     <div class="quick-links">
-        <a href="pages/students.php" class="quick-link">
+        <a href="Student%20module/index.php" class="quick-link">
             <div class="quick-link-icon">🎓</div> Manage Students
         </a>
-        <a href="pages/rooms.php" class="quick-link">
+        <a href="Room%20module/index.php" class="quick-link">
             <div class="quick-link-icon">🛏️</div> Manage Rooms
         </a>
-        <a href="pages/fees.php" class="quick-link">
-            <div class="quick-link-icon">💰</div> View Fees
+        <a href="Fee%20module/index.php" class="quick-link">
+            <div class="quick-link-icon">💷</div> View Fees
         </a>
-        <a href="pages/maintenance.php" class="quick-link">
+        <a href="Maintenace%20module/html/maintenance/index.php" class="quick-link">
             <div class="quick-link-icon">🔧</div> Maintenance
         </a>
         <?php if ($_SESSION['role'] === 'admin'): ?>
         <a href="pages/users.php" class="quick-link">
-            <div class="quick-link-icon">👥</div> Staff Management
+            <div class="quick-link-icon">👥</div> Manage Users
         </a>
-        <a href="pages/register_staff.php" class="quick-link">
-            <div class="quick-link-icon">➕</div> Add Staff
+        <a href="Fee%20module/add.php" class="quick-link">
+            <div class="quick-link-icon">➕</div> Add Fee Record
         </a>
         <?php endif; ?>
     </div>

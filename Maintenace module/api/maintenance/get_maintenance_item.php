@@ -10,10 +10,12 @@ if ($id === '' || !ctype_digit($id)) {
 
 try {
     // Try to select including newer columns; if columns missing, fall back
-    $sql = "SELECT m.*, r.room_number, s.name AS assigned_to_name, st.name AS reported_by_name FROM maintenance m
-            LEFT JOIN staffs s ON m.assigned_to = s.staff_id
-            LEFT JOIN students st ON m.reported_by = st.student_id
-            LEFT JOIN rooms r ON m.room_id = r.room_id
+    $sql = "SELECT m.*, r.room_number,
+                   m.assigned_to       AS assigned_to_name,
+                   u.full_name         AS reported_by_name
+            FROM maintenance m
+            LEFT JOIN rooms r ON m.room_id    = r.room_id
+            LEFT JOIN users u ON m.reported_by = u.user_id
             WHERE m.maintenance_id = :id LIMIT 1";
     $stmt = $db->prepare($sql);
     $stmt->bindValue(':id', (int)$id, PDO::PARAM_INT);

@@ -3,11 +3,14 @@
 $user        = currentUser();
 $currentPage = basename($_SERVER['PHP_SELF']);
 
-// Use real filesystem paths — avoids URL encoding issues with folder names containing spaces
-$projectRoot = dirname(__DIR__); // navbar.php is in includes/, so dirname gives HostelHub root
-$scriptDir   = dirname($_SERVER['SCRIPT_FILENAME']);
-$inSubdir    = (realpath($scriptDir) !== realpath($projectRoot));
-$base        = $inSubdir ? '../' : '';
+// Allow pages deep in subfolders (e.g. Maintenance module 3 levels deep)
+// to pre-set $base before including this file, otherwise auto-detect.
+if (!isset($base)) {
+    $projectRoot = dirname(__DIR__);
+    $scriptDir   = dirname($_SERVER['SCRIPT_FILENAME']);
+    $inSubdir    = (realpath($scriptDir) !== realpath($projectRoot));
+    $base        = $inSubdir ? '../' : '';
+}
 ?>
 
 <nav class="navbar">
@@ -65,8 +68,8 @@ $base        = $inSubdir ? '../' : '';
             </a>
         </li>
         <li>
-            <a href="<?= $base ?>pages/maintenance.php"
-               class="<?= $currentPage === 'maintenance.php' ? 'active' : '' ?>">
+            <a href="<?= $base ?>Maintenace%20module/html/maintenance/index.php"
+               class="<?= strpos($_SERVER['SCRIPT_FILENAME'], 'Maintenace module') !== false ? 'active' : '' ?>">
                 Maintenance
             </a>
         </li>

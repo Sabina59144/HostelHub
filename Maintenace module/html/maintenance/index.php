@@ -1,17 +1,26 @@
+<?php
+$base = '../../../';
+require_once $base . 'includes/session.php';
+requireLogin();
+require_once $base . 'includes/db.php';
+?>
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Maintenance Module</title>
+    <title>Maintenance – HostelHub</title>
+    <link rel="stylesheet" href="<?= $base ?>css/style.css">
     <link rel="stylesheet" href="../../css/styles.css?v=20260501a">
 </head>
 <body>
+<?php require_once $base . 'includes/navbar.php'; ?>
+
 <main class="app-shell">
     <header class="app-header">
         <h1>Maintenance Requests</h1>
         <p>Monitor all maintenance tickets and their current status.</p>
         <nav>
             <ul class="top-nav">
-                <li><a href="plan.html">Add Request</a></li>
+                <li><a href="plan.php">Add Request</a></li>
                 <li><a class="active" href="index.php">View Requests</a></li>
             </ul>
         </nav>
@@ -29,7 +38,7 @@
                         <th>Reported By</th>
                         <th>Date Reported</th>
                         <th>Status</th>
-                                <th>Actions</th>
+                        <th>Actions</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -38,33 +47,33 @@
         </div>
         <div id="tableMessage"></div>
     </section>
-    
-            <!-- Edit modal -->
-            <div id="editModal" class="modal" style="display:none;">
-                <div class="modal-content">
-                    <h3>Edit Maintenance Request</h3>
-                    <form id="editForm">
-                        <input type="hidden" name="maintenance_id" id="maintenance_id">
-                        <div>
-                            <label for="status">Status</label>
-                            <select name="status" id="status">
-                                <option value="Pending">Pending</option>
-                                <option value="Inprogress">Inprogress</option>
-                                <option value="Completed">Completed</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label for="resolution_note">Resolution Note</label>
-                            <textarea name="resolution_note" id="resolution_note" rows="4"></textarea>
-                        </div>
-                        <div class="modal-actions">
-                            <button type="button" id="saveEdit">Save</button>
-                            <button type="button" id="cancelEdit">Cancel</button>
-                        </div>
-                        <div id="editErrors" class="alert error" style="display:none;margin-top:8px;"></div>
-                    </form>
+
+    <!-- Edit modal -->
+    <div id="editModal" class="modal" style="display:none;">
+        <div class="modal-content">
+            <h3>Edit Maintenance Request</h3>
+            <form id="editForm">
+                <input type="hidden" name="maintenance_id" id="maintenance_id">
+                <div>
+                    <label for="status">Status</label>
+                    <select name="status" id="status">
+                        <option value="Pending">Pending</option>
+                        <option value="Inprogress">Inprogress</option>
+                        <option value="Completed">Completed</option>
+                    </select>
                 </div>
-            </div>
+                <div>
+                    <label for="resolution_note">Resolution Note</label>
+                    <textarea name="resolution_note" id="resolution_note" rows="4"></textarea>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" id="saveEdit">Save</button>
+                    <button type="button" id="cancelEdit">Cancel</button>
+                </div>
+                <div id="editErrors" class="alert error" style="display:none;margin-top:8px;"></div>
+            </form>
+        </div>
+    </div>
 </main>
 
 <script>
@@ -137,7 +146,6 @@ async function loadMaintenance() {
                 tr.appendChild(createCell(row.assigned_to_name));
                 tr.appendChild(createCell(row.reported_by_name));
                 tr.appendChild(createCell(row.date_reported));
-                // prefer explicit status if provided, otherwise derive from is_resolved
                 const status = row.status !== undefined ? row.status : (row.is_resolved == 1 ? 'Completed' : 'Pending');
                 tr.appendChild(createStatusCell(status));
                 tr.appendChild(createActionsCell(row.maintenance_id));
@@ -153,9 +161,7 @@ async function loadMaintenance() {
 
 loadMaintenance();
 
-// Modal logic
 function openEditModal(id) {
-    // fetch details
     fetch(`../../api/maintenance/get_maintenance_item.php?id=${encodeURIComponent(id)}`)
         .then(r => r.json())
         .then(json => {

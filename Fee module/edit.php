@@ -26,17 +26,17 @@ $students = $db->query("
     WHERE status = 1 ORDER BY full_name ASC
 ")->fetchAll(PDO::FETCH_ASSOC);
 
-/* ── Mark as paid (set is_paid = today's date) ──────── */
+/* ── Mark as paid (set is_paid flag to 1) ───────────── */
 if (isset($_POST['mark_paid'])) {
-    $db->prepare("UPDATE fees SET is_paid = CURDATE() WHERE receipt_number = ?")
+    $db->prepare("UPDATE fees SET is_paid = 1 WHERE receipt_number = ?")
        ->execute([$id]);
     header("Location: index.php");
     exit;
 }
 
-/* ── Mark as unpaid ─────────────────────────────────── */
+/* ── Mark as unpaid (set is_paid flag to 0) ─────────── */
 if (isset($_POST['mark_unpaid'])) {
-    $db->prepare("UPDATE fees SET is_paid = NULL WHERE receipt_number = ?")
+    $db->prepare("UPDATE fees SET is_paid = 0 WHERE receipt_number = ?")
        ->execute([$id]);
     header("Location: index.php");
     exit;
@@ -149,7 +149,7 @@ if (isset($_POST['update'])) {
         <h3>💳 Payment Status</h3>
         <?php if ($fee['is_paid']): ?>
             <div class="paid-notice">
-                ✅ Paid on <strong><?= (new DateTime($fee['is_paid']))->format('d M Y') ?></strong>
+                ✅ This fee has been marked as <strong>Paid</strong>
             </div>
             <form method="POST" style="margin-top:12px;">
                 <button type="submit" name="mark_unpaid" class="btn-amber"
@@ -192,11 +192,9 @@ if (isset($_POST['update'])) {
                 <div class="form-group">
                     <label>Fee Type</label>
                     <select name="fee_type">
-                        <?php foreach (['rent','deposit','utility','fine','other'] as $type): ?>
-                            <option value="<?= $type ?>" <?= $fee['fee_type'] === $type ? 'selected' : '' ?>>
-                                <?= ucfirst($type) ?>
-                            </option>
-                        <?php endforeach; ?>
+                        <option value="tuition" <?= $fee['fee_type']==='tuition' ? 'selected':'' ?>>Tuition</option>
+                        <option value="hostel"  <?= $fee['fee_type']==='hostel'  ? 'selected':'' ?>>Hostel</option>
+                        <option value="other"   <?= $fee['fee_type']==='other'   ? 'selected':'' ?>>Other</option>
                     </select>
                 </div>
 

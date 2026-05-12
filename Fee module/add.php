@@ -160,12 +160,9 @@ if (isset($_POST['submit'])) {
                 <div class="form-group">
                     <label>Fee Type</label>
                     <select name="fee_type" required>
-                        <?php foreach (['rent','deposit','utility','fine','other'] as $type): ?>
-                            <option value="<?= $type ?>"
-                                <?= (isset($_POST['fee_type']) && $_POST['fee_type'] === $type) ? 'selected' : '' ?>>
-                                <?= ucfirst($type) ?>
-                            </option>
-                        <?php endforeach; ?>
+                        <option value="tuition" <?= (isset($_POST['fee_type']) && $_POST['fee_type']==='tuition') ? 'selected':'' ?>>Tuition</option>
+                        <option value="hostel"  <?= (isset($_POST['fee_type']) && $_POST['fee_type']==='hostel')  ? 'selected':'' ?>>Hostel</option>
+                        <option value="other"   <?= (isset($_POST['fee_type']) && $_POST['fee_type']==='other')   ? 'selected':'' ?>>Other</option>
                     </select>
                 </div>
 

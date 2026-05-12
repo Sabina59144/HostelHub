@@ -14,11 +14,11 @@ if (isset($_GET['toggle_pay'])) {
 
     if ($row) {
         if ($row['is_paid']) {
-            // Mark as unpaid — set is_paid back to NULL
-            $db->prepare("UPDATE fees SET is_paid = NULL WHERE receipt_number = ?")->execute([$id]);
+            // Mark as unpaid — set flag back to 0
+            $db->prepare("UPDATE fees SET is_paid = 0 WHERE receipt_number = ?")->execute([$id]);
         } else {
-            // Mark as paid — store today's date
-            $db->prepare("UPDATE fees SET is_paid = CURDATE() WHERE receipt_number = ?")->execute([$id]);
+            // Mark as paid — set flag to 1
+            $db->prepare("UPDATE fees SET is_paid = 1 WHERE receipt_number = ?")->execute([$id]);
         }
     }
     header("Location: index.php");
@@ -229,7 +229,6 @@ $isAdmin = ($_SESSION['role'] ?? '') === 'admin';
                     <th>Total Due</th>
                     <th>Due Date</th>
                     <th>Status</th>
-                    <th>Paid On</th>
                     <th>Actions</th>
                 </tr>
             </thead>
@@ -270,9 +269,6 @@ $isAdmin = ($_SESSION['role'] ?? '') === 'admin';
                 <td class="total-due">£<?= number_format($totalDue, 2) ?></td>
                 <td><?= $dueDate->format('d M Y') ?></td>
                 <td><span class="badge <?= $status ?>"><?= $statusLabel ?></span></td>
-                <td style="font-size:12px;color:#64748b;">
-                    <?= $fee['is_paid'] ? (new DateTime($fee['is_paid']))->format('d M Y') : '—' ?>
-                </td>
                 <td style="white-space:nowrap;">
                     <?php if ($isAdmin): ?>
                         <a class="btn-action btn-edit"

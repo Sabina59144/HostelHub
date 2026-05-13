@@ -1,4 +1,17 @@
 <?php
+/**
+ * Room module/edit_room.php
+ * ─────────────────────────────────────────────────────────────
+ * Edit an existing room's details.
+ *
+ * Key constraint: capacity cannot be reduced below the current
+ * number of active occupants — prevents leaving students homeless.
+ * The capacity input's min attribute is set to max(1, occupants).
+ *
+ * On success: redirects to index.php?msg=updated
+ * ─────────────────────────────────────────────────────────────
+ */
+
 /* ── Auth & DB ─────────────────────────────────── */
 require_once '../includes/session.php';
 requireLogin();

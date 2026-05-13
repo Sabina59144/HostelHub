@@ -1,4 +1,21 @@
 <?php
+/**
+ * Room module/index.php
+ * ─────────────────────────────────────────────────────────────
+ * Room module overview dashboard.
+ *
+ * Shows:
+ *   • Stat cards: total rooms / available / ensuite / students housed
+ *   • Availability rate progress bar
+ *   • Quick-action buttons (add, view all, allocate, ensuite filter)
+ *   • Room list table with search and type filter
+ *   • Flash message support (?msg=added|updated|deleted|allocated)
+ *
+ * Occupant counts are calculated live via LEFT JOIN + COUNT,
+ * only counting students with status=1 (active/enrolled).
+ * ─────────────────────────────────────────────────────────────
+ */
+
 /* ── Auth & DB ─────────────────────────────────── */
 require_once '../includes/session.php';
 requireLogin();                          // Redirect to login if not authenticated

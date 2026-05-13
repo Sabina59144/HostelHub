@@ -1,7 +1,22 @@
 <?php
+/**
+ * login.php
+ * ─────────────────────────────────────────────────────────────
+ * Login page — the entry point for all authenticated users.
+ *
+ * Flow:
+ *   1. If already logged in → redirect to dashboard immediately
+ *   2. On POST: validate credentials against the users table
+ *   3. Passwords are stored as bcrypt hashes (password_verify)
+ *   4. Only active users (is_active = 1) can log in
+ *   5. On success → store user info in session, redirect to dashboard
+ *   6. On failure → show error message, re-display form
+ * ─────────────────────────────────────────────────────────────
+ */
 require_once("includes/session.php");
 require_once("includes/db.php");
 
+// Redirect already-authenticated users away from the login page
 if (isLoggedIn()) {
     header("Location: dashboard.php");
     exit();
@@ -16,11 +31,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (empty($username) || empty($password)) {
         $error = "Please enter both username and password.";
     } else {
+        // Fetch only active users matching the given username
         $stmt = $db->prepare("SELECT * FROM users WHERE username = ? AND is_active = 1 LIMIT 1");
         $stmt->execute([$username]);
         $user = $stmt->fetch();
 
+        // password_verify compares plaintext against the stored bcrypt hash
         if ($user && password_verify($password, $user['password'])) {
+            // Store key user info in session — available across all pages
             $_SESSION['user_id']   = $user['user_id'];
             $_SESSION['username']  = $user['username'];
             $_SESSION['full_name'] = $user['full_name'];

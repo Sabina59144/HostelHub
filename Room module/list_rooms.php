@@ -1,4 +1,19 @@
 <?php
+/**
+ * Room module/list_rooms.php
+ * ─────────────────────────────────────────────────────────────
+ * Full room list with search and filter options.
+ *
+ * URL params:
+ *   ?search=X      — filter by room number
+ *   ?type=X        — filter by room type (single/double/triple)
+ *   ?ensuite=1|0   — filter by ensuite availability
+ *
+ * Occupant count is a live COUNT(*) joined from students (status=1).
+ * The Allocate button only appears for rooms that are not yet full.
+ * ─────────────────────────────────────────────────────────────
+ */
+
 /* ── Auth & DB ─────────────────────────────────── */
 require_once '../includes/session.php';
 requireLogin();

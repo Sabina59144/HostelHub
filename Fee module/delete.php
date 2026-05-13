@@ -1,7 +1,20 @@
 <?php
+/**
+ * Fee module/delete.php
+ * ─────────────────────────────────────────────────────────────
+ * Delete a fee record permanently (admin only).
+ *
+ * Shows a confirmation page with full record details before
+ * performing a hard DELETE (the fees table has no soft-delete
+ * columns such as is_active or deleted_at).
+ *
+ * Reached via: index.php → Delete button (passes ?id=receipt_number)
+ * ─────────────────────────────────────────────────────────────
+ */
+
 /* ── Auth & DB ──────────────────────────────────────── */
 require_once __DIR__ . '/../includes/session.php';
-requireRole('admin');
+requireRole('admin'); // Only admins can delete fee records
 require_once __DIR__ . '/../includes/db.php';
 
 /* ── Validate request ───────────────────────────────── */
@@ -125,11 +138,4 @@ if (isset($_POST['confirm_delete'])) {
             <button type="submit" name="confirm_delete" class="btn-delete"
                     onclick="return confirm('Permanently delete this fee record?')">
                 🗑 Confirm Delete
-            </button>
-        </form>
-
-        <a href="index.php" class="back-link">← Cancel, go back</a>
-    </div>
-</div>
-</body>
-</html>
+            </bu

@@ -1,4 +1,20 @@
 <?php
+/**
+ * Student module/view_student.php
+ * ─────────────────────────────────────────────────────────────
+ * Read-only profile view for a single student.
+ *
+ * Shows:
+ *   • Profile header with avatar, name, status badge
+ *   • Personal details and room assignment cards
+ *   • Fee summary (total charged / paid / outstanding)
+ *     — fee cards link to the filtered fee list for this student
+ *   • Links to Edit, View Fees, Add Fee (admin only)
+ *
+ * URL param: ?id=student_id
+ * ─────────────────────────────────────────────────────────────
+ */
+
 /* ── Auth & DB ─────────────────────────────────── */
 require_once '../includes/session.php';
 requireLogin();          // Redirect to login if not authenticated
@@ -29,11 +45,12 @@ if (!$student) {
 }
 
 /* ── Fee summary: total, paid, and outstanding ─── */
+// is_paid is tinyint(1): 1 = paid, 0 = unpaid (never NULL)
 $feeStmt = $db->prepare(
     "SELECT COUNT(*) AS total_fees,
             SUM(amount) AS total_amount,
-            SUM(CASE WHEN is_paid IS NOT NULL THEN amount ELSE 0 END) AS paid_amount,
-            SUM(CASE WHEN is_paid IS NULL THEN amount ELSE 0 END) AS pending_amount
+            SUM(CASE WHEN is_paid = 1 THEN amount ELSE 0 END) AS paid_amount,
+            SUM(CASE WHEN is_paid = 0 THEN amount ELSE 0 END) AS pending_amount
      FROM fees WHERE student_id = ?"
 );
 $feeStmt->execute([$student_id]);

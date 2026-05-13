@@ -1,18 +1,39 @@
 <?php
+/**
+ * Student module/add_student.php
+ * ─────────────────────────────────────────────────────────────
+ * Register a new student into the system.
+ *
+ * Validations:
+ *   - Student number format must be STU-YYYY-XXX
+ *   - Duplicate student number check
+ *   - Duplicate email check
+ *
+ * New students default to status=1 (Active/Enrolled).
+ * Room assignment is optional and can be done later.
+ * ─────────────────────────────────────────────────────────────
+ */
+
 /* ── Auth & DB ─────────────────────────────────── */
 require_once '../includes/session.php';
 requireLogin();          // Redirect to login if not authenticated
 require_once '../includes/db.php';
 
-/* ── Load rooms for the room assignment dropdown ── */
-$roomsResult = $db->query("SELECT room_id, room_number, room_type FROM rooms ORDER BY room_number")->fetchAll();
+/* ── Load rooms with live occupancy for the dropdown ── */
+$roomsResult = $db->query(
+    "SELECT r.room_id, r.room_number, r.room_type, r.capacity,
+            COUNT(s.student_id) AS occupants
+     FROM rooms r
+     LEFT JOIN students s ON s.room_id = r.room_id AND s.status = 1
+     GROUP BY r.room_id
+     ORDER BY r.room_number"
+)->fetchAll();
 
 /* ── Default empty form values ─────────────────── */
 $errors = [];
 $success = "";
 $student_number = $full_name = $email = $date_of_birth = "";
 $room_id = "";
-$gender = "male";
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     /* ── Sanitise POST input ────────────────────── */
@@ -20,7 +41,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $full_name      = trim($_POST['full_name']);
     $email          = trim($_POST['email']);
     $date_of_birth  = trim($_POST['date_of_birth']);
-    $gender         = in_array($_POST['gender'], ['male','female']) ? $_POST['gender'] : 'male';
     $room_id        = $_POST['room_id'] !== '' ? (int)$_POST['room_id'] : null;
     $status         = 1; // New students default to active
 
@@ -47,25 +67,32 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if ($chk->rowCount() > 0) $errors[] = "This email address is already registered.";
     }
 
-    /* ── Gender vs room_gender compatibility check ── */
+    /* ── Room capacity check ────────────────────── */
     if (empty($errors) && $room_id !== null) {
-        $gChk = $db->prepare("SELECT room_number, room_gender FROM rooms WHERE room_id = ?");
-        $gChk->execute([$room_id]);
-        $rg = $gChk->fetch();
-        if ($rg && $rg['room_gender'] !== 'mixed' && $rg['room_gender'] !== $gender) {
-            $label = $rg['room_gender'] === 'male' ? 'male students only' : 'female students only';
-            $errors[] = "Room " . $rg['room_number'] . " is designated for " . $label . ". Please choose a compatible room.";
+        $cap = $db->prepare(
+            "SELECT r.room_number, r.capacity,
+                    COUNT(s.student_id) AS occupants
+             FROM rooms r
+             LEFT JOIN students s ON s.room_id = r.room_id AND s.status = 1
+             WHERE r.room_id = ?
+             GROUP BY r.room_id"
+        );
+        $cap->execute([$room_id]);
+        $roomCheck = $cap->fetch();
+        if ($roomCheck && (int)$roomCheck['occupants'] >= (int)$roomCheck['capacity']) {
+            $errors[] = "Room " . $roomCheck['room_number'] . " is already full ("
+                      . $roomCheck['occupants'] . "/" . $roomCheck['capacity']
+                      . " students). Please choose a different room.";
         }
     }
 
     /* ── Insert student & reset form on success ─── */
     if (empty($errors)) {
         $dob  = !empty($date_of_birth) ? $date_of_birth : null;
-        $stmt = $db->prepare("INSERT INTO students (student_number, full_name, email, date_of_birth, gender, room_id, status) VALUES (?,?,?,?,?,?,?)");
-        if ($stmt->execute([$student_number, $full_name, $email, $dob, $gender, $room_id, $status])) {
+        $stmt = $db->prepare("INSERT INTO students (student_number, full_name, email, date_of_birth, room_id, status) VALUES (?,?,?,?,?,?)");
+        if ($stmt->execute([$student_number, $full_name, $email, $dob, $room_id, $status])) {
             $success = "Student '{$full_name}' has been registered successfully!";
             $student_number = $full_name = $email = $date_of_birth = $room_id = "";
-            $gender = "male";
         } else {
             $errors[] = "Something went wrong. Please try again.";
         }
@@ -191,25 +218,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <div class="hint">Optional</div>
             </div>
             <div class="form-group">
-                <label for="gender">Gender *</label>
-                <select id="gender" name="gender">
-                    <option value="male"   <?= $gender === 'male'   ? 'selected' : '' ?>>Male</option>
-                    <option value="female" <?= $gender === 'female' ? 'selected' : '' ?>>Female</option>
-                </select>
-                <div class="hint">Used to enforce gender-specific room assignments</div>
-            </div>
-            <div class="form-group">
                 <label for="room_id">Assign Room</label>
                 <select id="room_id" name="room_id">
                     <option value="">-- No room assigned yet --</option>
-                    <?php foreach ($roomsResult as $room): ?>
+                    <?php foreach ($roomsResult as $room):
+                        $occ    = (int)$room['occupants'];
+                        $cap    = (int)$room['capacity'];
+                        $isFull = ($occ >= $cap);
+                    ?>
                         <option value="<?= $room['room_id'] ?>"
-                            <?= ($room_id == $room['room_id']) ? 'selected' : '' ?>>
+                            <?= ($room_id == $room['room_id']) ? 'selected' : '' ?>
+                            <?= $isFull ? 'disabled' : '' ?>>
                             <?= htmlspecialchars($room['room_number'] . ' (' . $room['room_type'] . ')') ?>
+                            — <?= $occ ?>/<?= $cap ?><?= $isFull ? ' [FULL]' : '' ?>
                         </option>
                     <?php endforeach; ?>
                 </select>
-                <div class="hint">Optional — can be assigned later</div>
+                <div class="hint">Optional — can be assigned later. Full rooms are disabled.</div>
             </div>
             <div class="btn-row">
                 <button type="submit" class="btn-submit">➕ Register Student</button>

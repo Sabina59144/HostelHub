@@ -1,6 +1,21 @@
 <?php
+/**
+ * includes/session.php
+ * ─────────────────────────────────────────────────────────────
+ * Central session helper — included by every page in the system.
+ *
+ * Provides:
+ *   isLoggedIn()     — checks whether a user session is active
+ *   requireLogin()   — redirects to login.php if not authenticated
+ *   requireRole($r)  — redirects to dashboard if role doesn't match
+ *   currentUser()    — returns the logged-in user's session data
+ *
+ * Session keys stored at login (see login.php):
+ *   $_SESSION['user_id'], ['username'], ['full_name'], ['role']
+ * ─────────────────────────────────────────────────────────────
+ */
 if (session_status() === PHP_SESSION_NONE) {
-    session_start();
+    session_start(); // Only start if not already active (safe for includes)
 }
 
 function isLoggedIn() {

@@ -1,4 +1,17 @@
 <?php
+/**
+ * Student module/index.php
+ * ─────────────────────────────────────────────────────────────
+ * Student module overview dashboard.
+ *
+ * Shows:
+ *   • Stat cards: total / active / inactive / unassigned students
+ *   • Active enrolment progress bar
+ *   • Quick-action buttons (add, view all, filter by status/room)
+ *   • Table of the 5 most recently added students
+ * ─────────────────────────────────────────────────────────────
+ */
+
 /* ── Auth & DB ─────────────────────────────────── */
 require_once '../includes/session.php';
 requireLogin();          // Redirect to login if not authenticated

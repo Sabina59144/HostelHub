@@ -1,14 +1,35 @@
 <?php
-// dashboard.php
+/**
+ * dashboard.php
+ * ─────────────────────────────────────────────────────────────
+ * Main dashboard — the home page after login.
+ *
+ * Shows:
+ *   • Overview stat cards (students, rooms, fees, maintenance)
+ *   • Quick-action links to each module
+ *   • Animated city hero banner
+ *
+ * All stat cards and quick-action links point to the real module
+ * index pages (e.g. "Student module/index.php").
+ * ─────────────────────────────────────────────────────────────
+ */
 require_once("includes/session.php");
 require_once("includes/db.php");
-requireLogin();
+requireLogin(); // Must be logged in to see the dashboard
 
+// ── Stat card counts ─────────────────────────────────────────
 $totalStudents   = $db->query("SELECT COUNT(*) FROM students")->fetchColumn();
+
+// Available rooms = rooms not assigned to any student
 $availableRooms  = $db->query("SELECT COUNT(*) FROM rooms WHERE room_id NOT IN (SELECT room_id FROM students WHERE room_id IS NOT NULL)")->fetchColumn();
+
+// Unpaid fees — is_paid is tinyint(1): 0 = unpaid, 1 = paid
 $feesPending     = $db->query("SELECT COUNT(*) FROM fees WHERE is_paid = 0")->fetchColumn();
+
+// Open maintenance tickets — is_resolved: 0 = open, 1 = resolved
 $maintenanceOpen = $db->query("SELECT COUNT(*) FROM maintenance WHERE is_resolved = 0")->fetchColumn();
 
+// Time-based greeting for the hero banner
 $hour = (int) date('H');
 $greeting = $hour < 12 ? 'Good morning' : ($hour < 17 ? 'Good afternoon' : 'Good evening');
 ?>

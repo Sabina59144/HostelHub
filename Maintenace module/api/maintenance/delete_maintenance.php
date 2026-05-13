@@ -1,4 +1,14 @@
 <?php
+/**
+ * api/maintenance/delete_maintenance.php
+ * ─────────────────────────────────────────────────────────────
+ * REST endpoint — permanently deletes a maintenance request.
+ *
+ * Method: POST
+ * Input:  maintenance_id (integer, required)
+ * Response: { success: true } or { success: false, errors: [...] }
+ * ─────────────────────────────────────────────────────────────
+ */
 header('Content-Type: application/json; charset=UTF-8');
 require_once(__DIR__ . '/../config/db.php');
 

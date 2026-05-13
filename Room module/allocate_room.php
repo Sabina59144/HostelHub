@@ -1,4 +1,24 @@
 <?php
+/**
+ * Room module/allocate_room.php
+ * ─────────────────────────────────────────────────────────────
+ * Assign an unhoused student to an available room.
+ *
+ * Dropdowns only show:
+ *   - Rooms that still have space (occupants < capacity)
+ *   - Students with no room assigned (room_id IS NULL, status=1)
+ *
+ * On submit, the capacity and student's availability are re-checked
+ * server-side to guard against race conditions (two admins allocating
+ * the same room simultaneously).
+ *
+ * Can be pre-linked with ?room_id=X or ?student_id=X to pre-select
+ * a room or student (e.g. from the room list or student list).
+ *
+ * On success: redirects to index.php?msg=allocated
+ * ─────────────────────────────────────────────────────────────
+ */
+
 /* ── Auth & DB ─────────────────────────────────── */
 require_once '../includes/session.php';
 requireLogin();

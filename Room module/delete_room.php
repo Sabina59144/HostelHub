@@ -1,4 +1,18 @@
 <?php
+/**
+ * Room module/delete_room.php
+ * ─────────────────────────────────────────────────────────────
+ * Permanently delete a room from the system.
+ *
+ * If students are still allocated to the room, a confirmation
+ * checkbox is required before proceeding. Deletion runs inside
+ * a transaction: students are unallocated (room_id = NULL) first,
+ * then the room row is deleted — rolled back if either step fails.
+ *
+ * On success: redirects to index.php?msg=deleted
+ * ─────────────────────────────────────────────────────────────
+ */
+
 /* ── Auth & DB ─────────────────────────────────── */
 require_once '../includes/session.php';
 requireLogin();

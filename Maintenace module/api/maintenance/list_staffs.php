@@ -1,6 +1,18 @@
 <?php
-// Returns active users to populate the "Assigned To" dropdown.
-// assigned_to in maintenance table is VARCHAR(100), so we return full_name as the stored value.
+/**
+ * api/maintenance/list_staffs.php
+ * ─────────────────────────────────────────────────────────────
+ * REST endpoint — returns active users to populate the
+ * "Assigned To" dropdown on the Add Maintenance Request form.
+ *
+ * Important: maintenance.assigned_to is VARCHAR(100), so the
+ * dropdown value in plan.php must be full_name (text), not user_id.
+ * That text is what gets stored directly in the maintenance row.
+ *
+ * Method: GET
+ * Response: { success: true, data: [ {user_id, full_name, role}, ... ] }
+ * ─────────────────────────────────────────────────────────────
+ */
 header('Content-Type: application/json');
 require_once(__DIR__ . '/../config/db.php');
 

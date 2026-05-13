@@ -1,7 +1,20 @@
 <?php
+/**
+ * Room module/add_room.php
+ * ─────────────────────────────────────────────────────────────
+ * Add a new room to the hostel.
+ *
+ * Fields: room_number (unique), room_type (single/double/triple),
+ *         capacity, price_per_month, available_from date,
+ *         is_ensuite (checkbox → 0 or 1)
+ *
+ * On success: redirects to index.php?msg=added
+ * ─────────────────────────────────────────────────────────────
+ */
+
 /* ── Auth & DB ─────────────────────────────────── */
 require_once '../includes/session.php';
-requireLogin();
+requireLogin(); // Any logged-in user can add rooms
 require_once '../includes/db.php';
 
 /* ── Default empty form values ─────────────────── */

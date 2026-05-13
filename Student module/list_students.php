@@ -1,4 +1,19 @@
 <?php
+/**
+ * Student module/list_students.php
+ * ─────────────────────────────────────────────────────────────
+ * Full student list with search and filter capabilities.
+ *
+ * URL params:
+ *   ?search=X          — filter by name, student number, or email
+ *   ?status=1|0        — filter by active (1) or inactive (0)
+ *   ?room=unassigned   — show students with no room assigned
+ *   ?delete=ID         — inline delete (GET, with JS confirm)
+ *
+ * Actions per row: View profile, Edit, View Fees, Delete
+ * ─────────────────────────────────────────────────────────────
+ */
+
 /* ── Auth & DB ─────────────────────────────────── */
 require_once '../includes/session.php';
 requireLogin();          // Redirect to login if not authenticated
@@ -106,6 +121,7 @@ if (isset($_GET['room']) && $_GET['room'] === 'unassigned') $filterLabel = "Unas
         tbody tr { border-bottom:1px solid #f0f4f8; }
         tbody tr:hover td { background:#f8fafc; }
         tbody td { padding:13px 16px; font-size:13px; vertical-align:middle; }
+        tbody td:last-child { white-space:nowrap; }
 
         .badge { display:inline-block; padding:3px 10px; border-radius:20px; font-size:11px; font-weight:600; }
         .badge-active   { background:#ecfdf5; color:#059669; }

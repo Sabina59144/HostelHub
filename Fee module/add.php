@@ -1,10 +1,26 @@
 <?php
+/**
+ * Fee module/add.php
+ * ─────────────────────────────────────────────────────────────
+ * Add a new fee record (admin only).
+ *
+ * Schema columns used:
+ *   receipt_number (varchar, unique), student_id (FK → students),
+ *   fee_type (varchar: 'tuition'|'hostel'|'other'),
+ *   amount (decimal), due_date (date), is_paid (tinyint: 0=unpaid)
+ *
+ * Can be reached from the Student module with ?student_id=X to
+ * pre-select the student in the dropdown.
+ * ─────────────────────────────────────────────────────────────
+ */
+
 /* ── Auth & DB ──────────────────────────────────────── */
 require_once __DIR__ . '/../includes/session.php';
-requireRole('admin');
+requireRole('admin'); // Only admins can add fee records
 require_once __DIR__ . '/../includes/db.php';
 
 /* ── Load active students for dropdown ─────────────── */
+// Only status=1 (enrolled) students appear in the dropdown
 $students = $db->query("
     SELECT student_id, full_name
     FROM students
@@ -13,16 +29,19 @@ $students = $db->query("
 ")->fetchAll(PDO::FETCH_ASSOC);
 
 /* ── Auto-generate next receipt number ─────────────── */
+// Format: RCP-YYYY-0001  (increments from the highest existing number)
+// NOTE: fees table has no created_at column — order by fee_id instead
 function generateReceipt($db) {
     $row = $db->query("
         SELECT receipt_number FROM fees
-        ORDER BY created_at DESC LIMIT 1
+        ORDER BY fee_id DESC LIMIT 1
     ")->fetch(PDO::FETCH_ASSOC);
 
+    // Extract the trailing number from the last receipt, then add 1
     if ($row && preg_match('/(\d+)$/', $row['receipt_number'], $m)) {
         $next = (int)$m[1] + 1;
     } else {
-        $next = 1;
+        $next = 1; // First fee record in the system
     }
     return "RCP-" . date("Y") . "-" . str_pad($next, 4, "0", STR_PAD_LEFT);
 }
@@ -46,9 +65,10 @@ if (isset($_POST['submit'])) {
     if (empty($due_date))       $errors[] = "Please enter a due date.";
 
     if (empty($errors)) {
+        // is_paid is tinyint(1): insert 0 (unpaid) for all new fee records
         $stmt = $db->prepare("
             INSERT INTO fees (receipt_number, student_id, fee_type, amount, due_date, is_paid)
-            VALUES (?, ?, ?, ?, ?, NULL)
+            VALUES (?, ?, ?, ?, ?, 0)
         ");
         $stmt->execute([$receipt_number, $student_id, $fee_type, $amount, $due_date]);
         header("Location: index.php");
@@ -184,11 +204,4 @@ if (isset($_POST['submit'])) {
         </form>
 
         <?php if ($preselectedStudent): ?>
-            <a href="index.php?student_id=<?= $preselectedStudent ?>" class="back-link">← Back to student's fees</a>
-        <?php else: ?>
-            <a href="index.php" class="back-link">← Back to Fee Records</a>
-        <?php endif; ?>
-    </div>
-</div>
-</body>
-</html>
+            <a href="index.php?student_id=<?= $preselectedStudent ?>" class="back-link">

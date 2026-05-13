@@ -1,7 +1,21 @@
 <?php
+/**
+ * Fee module/edit.php
+ * ─────────────────────────────────────────────────────────────
+ * Edit an existing fee record (admin only).
+ *
+ * Actions available on this page:
+ *   mark_paid    — sets is_paid = 1 (tinyint flag)
+ *   mark_unpaid  — sets is_paid = 0
+ *   update       — saves changes to student, fee_type, amount, due_date
+ *
+ * Reached via: index.php → Edit button (passes ?id=receipt_number)
+ * ─────────────────────────────────────────────────────────────
+ */
+
 /* ── Auth & DB ──────────────────────────────────────── */
 require_once __DIR__ . '/../includes/session.php';
-requireRole('admin');
+requireRole('admin'); // Only admins can edit fee records
 require_once __DIR__ . '/../includes/db.php';
 
 /* ── Load fee record ────────────────────────────────── */
@@ -210,11 +224,4 @@ if (isset($_POST['update'])) {
                 <input type="date" name="due_date" value="<?= htmlspecialchars($fee['due_date']) ?>">
             </div>
 
-            <button type="submit" name="update" class="btn-blue">💾 Save Changes</button>
-        </form>
-    </div>
-
-    <a href="index.php" class="back-link">← Back to Fee Records</a>
-</div>
-</body>
-</html>
+ 

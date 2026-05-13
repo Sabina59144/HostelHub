@@ -1,6 +1,21 @@
 <?php
+/**
+ * Student module/edit_student.php
+ * ─────────────────────────────────────────────────────────────
+ * Edit an existing student record.
+ *
+ * Validations (same as add, but excludes self from duplicate checks):
+ *   - Student number format: STU-YYYY-XXX
+ *   - Duplicate student number / email (excluding this student's ID)
+ *   - Room capacity check (excludes this student from occupant count
+ *     so they don't block themselves from re-selecting their own room)
+ *
+ * After a successful save, the student data is re-fetched from the
+ * database so the form reflects the newly saved values.
+ * ─────────────────────────────────────────────────────────────
+ */
 require_once '../includes/session.php';
-requireLogin();
+requireLogin(); // Redirect to login if not authenticated
 require_once '../includes/db.php';
 
 /* ── Validate student ID from URL ──────────────── */
@@ -39,7 +54,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $full_name      = trim($_POST['full_name']);
     $email          = trim($_POST['email']);
     $date_of_birth  = trim($_POST['date_of_birth']);
-    $gender         = in_array($_POST['gender'], ['male','female']) ? $_POST['gender'] : 'male';
     $room_id        = $_POST['room_id'] !== '' ? (int)$_POST['room_id'] : null;
     $status         = (int)$_POST['status'];
 

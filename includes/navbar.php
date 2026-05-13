@@ -3,8 +3,11 @@
 $user        = currentUser();
 $currentPage = basename($_SERVER['PHP_SELF']);
 
-$inSubdir = strpos($_SERVER['PHP_SELF'], '/pages/') !== false;
-$base     = $inSubdir ? '../' : '';
+// Use real filesystem paths — avoids URL encoding issues with folder names containing spaces
+$projectRoot = dirname(__DIR__); // navbar.php is in includes/, so dirname gives HostelHub root
+$scriptDir   = dirname($_SERVER['SCRIPT_FILENAME']);
+$inSubdir    = (realpath($scriptDir) !== realpath($projectRoot));
+$base        = $inSubdir ? '../' : '';
 ?>
 
 <nav class="navbar">
@@ -44,20 +47,20 @@ $base     = $inSubdir ? '../' : '';
             </a>
         </li>
         <li>
-            <a href="<?= $base ?>pages/students.php"
-               class="<?= $currentPage === 'students.php' ? 'active' : '' ?>">
+            <a href="<?= $base ?>Student%20module/index.php"
+               class="<?= $currentPage === 'index.php' && strpos($_SERVER['PHP_SELF'], 'Student') !== false ? 'active' : '' ?>">
                 Students
             </a>
         </li>
         <li>
-            <a href="<?= $base ?>pages/rooms.php"
-               class="<?= $currentPage === 'rooms.php' ? 'active' : '' ?>">
+            <a href="<?= $base ?>Room%20module/index.php"
+               class="<?= strpos($_SERVER['SCRIPT_FILENAME'], 'Room module') !== false ? 'active' : '' ?>">
                 Rooms
             </a>
         </li>
         <li>
-            <a href="<?= $base ?>pages/fees.php"
-               class="<?= $currentPage === 'fees.php' ? 'active' : '' ?>">
+            <a href="<?= $base ?>Fee%20module/index.php"
+               class="<?= strpos($_SERVER['SCRIPT_FILENAME'], 'Fee module') !== false ? 'active' : '' ?>">
                 Fees
             </a>
         </li>

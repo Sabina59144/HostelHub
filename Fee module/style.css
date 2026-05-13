@@ -263,3 +263,53 @@ button:hover {
         min-width: 1000px;
     }
 }
+/* =========================
+   FEE MODULE NAVBAR
+========================= */
+.fee-nav-wrap {
+    width: 95%;
+    margin: 0 auto 20px auto;
+}
+
+.fee-nav {
+    background: white;
+    border-radius: 12px;
+    padding: 14px 18px;
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    align-items: center;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+    border: 1px solid #e5e7eb;
+}
+
+.fee-nav a {
+    text-decoration: none;
+    color: #374151;
+    padding: 10px 14px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    transition: 0.2s ease;
+}
+
+.fee-nav a:hover {
+    background: #eff6ff;
+    color: #2563eb;
+}
+
+.fee-nav a.active {
+    background: #2563eb;
+    color: white;
+}
+
+@media (max-width: 768px) {
+    .fee-nav {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .fee-nav a {
+        text-align: center;
+    }
+}

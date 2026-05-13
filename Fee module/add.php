@@ -113,6 +113,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit'])) {
 <title>Add Fee — HostelHub</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Mono:wght@400&family=Outfit:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 <style>
 :root{--bg:#0e1117;--surface:#161b27;--card:#1c2235;--border:#2a3148;--accent:#4f7aff;--success:#22d3a5;--warning:#fbbf24;--danger:#f87171;--text:#e8eaf6;--muted:#8892b0;}
 *{box-sizing:border-box;margin:0;padding:0;}
@@ -142,6 +144,27 @@ body{background:var(--bg);color:var(--text);font-family:'Outfit',sans-serif;min-
 .btn-submit:hover{background:#3d68e8;}
 .back-link{display:block;text-align:center;margin-top:16px;font-size:13px;color:var(--muted);text-decoration:none;}
 .back-link:hover{color:var(--accent);}
+
+/* ── FLATPICKR DARK THEME ───────────────────────────── */
+.flatpickr-calendar{background:var(--card)!important;border:1px solid var(--border)!important;
+  box-shadow:0 12px 40px rgba(0,0,0,.55)!important;border-radius:12px!important;}
+.flatpickr-day{color:var(--text)!important;border-radius:7px!important;}
+.flatpickr-day:hover{background:rgba(79,122,255,.2)!important;border-color:transparent!important;}
+.flatpickr-day.selected,.flatpickr-day.selected:hover{background:var(--accent)!important;border-color:var(--accent)!important;}
+.flatpickr-day.today{border-color:var(--success)!important;color:var(--success)!important;}
+.flatpickr-day.today.selected{color:#fff!important;}
+.flatpickr-months .flatpickr-month,.flatpickr-weekdays,.flatpickr-weekday{
+  background:var(--surface)!important;color:var(--muted)!important;border-radius:12px 12px 0 0!important;}
+.flatpickr-current-month{color:var(--text)!important;font-family:'Outfit',sans-serif!important;font-weight:600!important;}
+.flatpickr-current-month input.cur-year,.numInput{color:var(--text)!important;background:transparent!important;}
+.flatpickr-prev-month svg,.flatpickr-next-month svg{fill:var(--muted)!important;}
+.flatpickr-prev-month:hover svg,.flatpickr-next-month:hover svg{fill:var(--accent)!important;}
+
+/* Calendar input wrapper with icon */
+.cal-wrap{position:relative;}
+.cal-wrap input{padding-right:36px!important;cursor:pointer;}
+.cal-wrap::after{content:'📅';position:absolute;right:11px;top:50%;transform:translateY(-50%);
+  font-size:14px;pointer-events:none;opacity:.6;}
 </style>
 </head>
 <body>
@@ -215,11 +238,14 @@ body{background:var(--bg);color:var(--text);font-family:'Outfit',sans-serif;min-
                 </div>
             </div>
 
-            <!-- Due Date: Calendar picker -->
+            <!-- Due Date: Flatpickr calendar picker -->
             <div class="form-group">
                 <label>Due Date *</label>
-                <input type="date" name="due_date" required
-                       value="<?= htmlspecialchars($_POST['due_date'] ?? '') ?>">
+                <div class="cal-wrap">
+                    <input type="text" id="due_date" name="due_date" required
+                           value="<?= htmlspecialchars($_POST['due_date'] ?? '') ?>"
+                           placeholder="Pick a date…" autocomplete="off" readonly>
+                </div>
             </div>
 
             <!-- SECTION: Payment -->
@@ -272,5 +298,16 @@ body{background:var(--bg);color:var(--text);font-family:'Outfit',sans-serif;min-
         <a href="<?= $preselectedStudent ? 'index.php?student_id='.$preselectedStudent : 'index.php' ?>" class="back-link">← Back to Fee Records</a>
     </div>
 </div>
+
+<script>
+/* ── FLATPICKR: Due Date calendar ───────────────────── */
+flatpickr("#due_date", {
+    dateFormat: "Y-m-d",       // matches DB/PHP format
+    allowInput: false,         // force calendar selection only
+    disableMobile: false,      // native picker on mobile
+    minDate: "today",          // can't set a due date in the past
+    defaultDate: document.getElementById("due_date").value || null,
+});
+</script>
 </body>
 </html>

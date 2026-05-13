@@ -279,19 +279,32 @@ body { background: var(--bg); color: var(--text); font-family: 'Outfit', sans-se
 /* RECEIPT MONO */
 .rcpt { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--muted); }
 
-/* TOGGLE LINKS */
-.toggle-paid-link {
-    display: inline-block; padding: 4px 10px; border-radius: 6px;
-    font-size: 11px; font-weight: 600; text-decoration: none;
-    background: rgba(34,211,165,0.1); color: var(--success);
-    transition: background 0.15s;
+/* TOGGLE BUTTONS (AJAX) */
+.btn-pay-toggle {
+    display: inline-flex; align-items: center; gap: 5px;
+    padding: 4px 10px; border-radius: 20px; font-size: 11px;
+    font-weight: 700; cursor: pointer; border: none;
+    font-family: 'Outfit', sans-serif; transition: all 0.2s; outline: none;
 }
-.toggle-paid-link:hover { background: rgba(34,211,165,0.2); }
-.toggle-unpaid-link {
-    display: inline-block; padding: 4px 10px; border-radius: 6px;
-    font-size: 11px; font-weight: 600; text-decoration: none;
-    background: rgba(251,191,36,0.1); color: var(--warning);
-}
+.btn-pay-toggle.state-pay   { background: rgba(34,211,165,0.15); color: var(--success); }
+.btn-pay-toggle.state-pay:hover { background: rgba(34,211,165,0.3); }
+.btn-pay-toggle.state-unpay { background: rgba(251,191,36,0.15);  color: var(--warning); }
+.btn-pay-toggle.state-unpay:hover { background: rgba(251,191,36,0.3); }
+.btn-pay-toggle:disabled { opacity: 0.5; cursor: not-allowed; }
+.spinner { display: inline-block; width: 9px; height: 9px; border: 2px solid currentColor;
+  border-top-color: transparent; border-radius: 50%; animation: spin 0.5s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* TOAST */
+#toast { position: fixed; bottom: 28px; right: 28px; background: var(--card);
+  border: 1px solid var(--border); border-radius: 12px; padding: 13px 20px;
+  font-size: 13px; font-weight: 500; color: var(--text);
+  box-shadow: 0 8px 32px rgba(0,0,0,0.4); z-index: 999;
+  transform: translateY(80px); opacity: 0;
+  transition: all 0.3s cubic-bezier(0.34,1.56,0.64,1); }
+#toast.show { transform: translateY(0); opacity: 1; }
+#toast.t-green { border-color: rgba(34,211,165,0.4); color: var(--success); }
+#toast.t-amber { border-color: rgba(251,191,36,0.4);  color: var(--warning); }
 
 @media (max-width: 1024px) {
     .main-grid { grid-template-columns: 1fr; }
@@ -447,23 +460,27 @@ body { background: var(--bg); color: var(--text); font-family: 'Outfit', sans-se
                         $status = $f['is_paid'] ? 'paid' : ($isOverdue ? 'overdue' : 'unpaid');
                         $labels = ['paid' => '✅ Paid', 'unpaid' => '⏳ Unpaid', 'overdue' => '⚠ Overdue'];
                         $bclass = ['paid' => 'b-paid', 'unpaid' => 'b-unpaid', 'overdue' => 'b-overdue'];
+                        $rcpt   = htmlspecialchars($f['receipt_number']);
                     ?>
-                    <tr>
-                        <td><span class="rcpt"><?= htmlspecialchars($f['receipt_number']) ?></span></td>
+                    <tr id="dash-row-<?= $rcpt ?>" data-is-paid="<?= $f['is_paid'] ? '1' : '0' ?>">
+                        <td><span class="rcpt"><?= $rcpt ?></span></td>
                         <td><?= htmlspecialchars($f['full_name'] ?? '—') ?></td>
                         <td><span class="type-pill"><?= ucfirst($f['fee_type']) ?></span></td>
                         <td class="amount-val">£<?= number_format($f['amount'], 2) ?></td>
                         <td style="font-size:12px;color:var(--muted);"><?= $due->format('d M Y') ?></td>
-                        <td><span class="badge <?= $bclass[$status] ?>"><?= $labels[$status] ?></span></td>
+                        <td id="dash-status-<?= $rcpt ?>"><span class="badge <?= $bclass[$status] ?>"><?= $labels[$status] ?></span></td>
                         <td style="white-space:nowrap;">
                             <?php if ($isAdmin): ?>
                             <a href="edit.php?id=<?= urlencode($f['receipt_number']) ?>" style="font-size:11px;color:var(--accent);text-decoration:none;margin-right:6px;">Edit</a>
                             <?php endif; ?>
-                            <a href="index.php?toggle_pay=<?= urlencode($f['receipt_number']) ?>"
-                               onclick="return confirm('<?= $f['is_paid'] ? 'Mark unpaid?' : 'Mark as paid?' ?>')"
-                               class="toggle-<?= $f['is_paid'] ? 'unpaid' : 'paid' ?>-link">
-                               <?= $f['is_paid'] ? 'Unmark' : 'Mark Paid' ?>
-                            </a>
+                            <button
+                                class="btn-pay-toggle <?= $f['is_paid'] ? 'state-unpay' : 'state-pay' ?>"
+                                id="dash-btn-<?= $rcpt ?>"
+                                data-receipt="<?= $rcpt ?>"
+                                onclick="dashToggle(this)"
+                                title="<?= $f['is_paid'] ? 'Mark as unpaid' : 'Mark as paid' ?>">
+                                <?= $f['is_paid'] ? '↩ Unmark' : '✓ Mark Paid' ?>
+                            </button>
                         </td>
                     </tr>
                     <?php endforeach; ?>
@@ -580,5 +597,65 @@ body { background: var(--bg); color: var(--text); font-family: 'Outfit', sans-se
         HostelHub Fee Management · Late fines auto-calculated: £0.50/day, max £15.00
     </p>
 </div>
+
+<!-- Toast notification -->
+<div id="toast"></div>
+
+<script>
+/* ════════════════════════════════════════════════════
+   TOAST HELPER
+════════════════════════════════════════════════════ */
+function showToast(msg, type = 'green') {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.className = 'show t-' + type;
+    clearTimeout(t._timer);
+    t._timer = setTimeout(() => { t.className = ''; }, 2800);
+}
+
+/* ════════════════════════════════════════════════════
+   DASHBOARD TOGGLE — AJAX pay/unmark
+   Calls the same index.php?ajax_toggle= endpoint
+   Updates badge + button without page reload
+════════════════════════════════════════════════════ */
+async function dashToggle(btn) {
+    const receipt = btn.dataset.receipt;
+    const row     = document.getElementById('dash-row-' + receipt);
+    const statEl  = document.getElementById('dash-status-' + receipt);
+
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner"></span>';
+
+    try {
+        const res  = await fetch('index.php?ajax_toggle=' + encodeURIComponent(receipt));
+        const data = await res.json();
+
+        if (!data.ok) throw new Error('fail');
+
+        if (data.now_paid) {
+            statEl.innerHTML = '<span class="badge b-paid">✅ Paid</span>';
+            btn.className    = 'btn-pay-toggle state-unpay';
+            btn.textContent  = '↩ Unmark';
+            btn.title        = 'Mark as unpaid';
+            row.dataset.isPaid = '1';
+            showToast('✅ Fee marked as paid', 'green');
+        } else {
+            statEl.innerHTML = '<span class="badge b-unpaid">⏳ Unpaid</span>';
+            btn.className    = 'btn-pay-toggle state-pay';
+            btn.textContent  = '✓ Mark Paid';
+            btn.title        = 'Mark as paid';
+            row.dataset.isPaid = '0';
+            showToast('↩ Fee unmarked', 'amber');
+        }
+    } catch (e) {
+        showToast('❌ Something went wrong', 'amber');
+        const isPaid = row.dataset.isPaid === '1';
+        btn.className   = 'btn-pay-toggle ' + (isPaid ? 'state-unpay' : 'state-pay');
+        btn.textContent = isPaid ? '↩ Unmark' : '✓ Mark Paid';
+    }
+
+    btn.disabled = false;
+}
+</script>
 </body>
 </html>

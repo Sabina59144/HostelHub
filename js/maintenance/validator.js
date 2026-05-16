@@ -43,6 +43,7 @@ export function validateMaintenanceForm(data) {
     return errors;
 }
 
+//function to submit maintenance request
 export async function submitMaintenance(url, data) {
     try {
         const resp = await fetch(url, {
@@ -57,6 +58,7 @@ export async function submitMaintenance(url, data) {
     }
 }
 
+//fetch staff
 export async function fetchStaffs(url) {
     try {
         const r = await fetch(url);
@@ -69,6 +71,7 @@ export async function fetchStaffs(url) {
     }
 }
 
+//fetch students for dropdown
 export async function fetchStudents(url) {
     try {
         const r = await fetch(url);
@@ -79,6 +82,7 @@ export async function fetchStudents(url) {
     }
 }
 
+// Fetch rooms for dropdown, expects JSON array of { id, name }
 export async function fetchRooms(url) {
     try {
         const r = await fetch(url);

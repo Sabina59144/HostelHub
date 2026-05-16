@@ -1,5 +1,17 @@
 <?php
 require_once(__DIR__ . '/../api/config/auth.php');
+/*
+ * Login Page
+ *
+ * Purpose:
+ * - Provides the sign-in UI for admin and student users.
+ * - Redirects already-authenticated users to `maintenance/index.php`.
+ * - Submits credentials to `api/auth/login.php` via AJAX POST.
+ *
+ * Notes for maintainers:
+ * - Client-side behavior lives in the <script> block at the end of this file.
+ * - Server-side authentication helpers are in `api/config/auth.php` and `api/auth/`.
+ */
 $user = authCurrentUser();
 if ($user !== null) {
     header('Location: maintenance/index.php');
@@ -47,11 +59,13 @@ if ($user !== null) {
 </main>
 
 <script>
+// DOM references used by the login UI
 const roleSelect = document.getElementById('role');
 const identifierLabel = document.getElementById('identifierLabel');
 const identifierInput = document.getElementById('identifier');
 const loginMessage = document.getElementById('loginMessage');
 
+// Update the identifier label & placeholder based on selected role
 function setIdentifierMeta() {
     if (roleSelect.value === 'admin') {
         identifierLabel.textContent = 'Admin Username';
@@ -62,14 +76,17 @@ function setIdentifierMeta() {
     }
 }
 
+// Show a transient status message in the login form
 function showMessage(type, text) {
     loginMessage.className = 'alert ' + type;
     loginMessage.textContent = text;
 }
 
+// Initialize role UI and listen for changes
 roleSelect.addEventListener('change', setIdentifierMeta);
 setIdentifierMeta();
 
+// Login form submission: sends credentials to server via AJAX and handles response
 document.getElementById('loginForm').addEventListener('submit', async (event) => {
     event.preventDefault();
     showMessage('info', 'Signing in...');
@@ -86,6 +103,7 @@ document.getElementById('loginForm').addEventListener('submit', async (event) =>
         });
         const json = await resp.json();
         if (json.success) {
+            // Redirect on success
             window.location.href = 'maintenance/index.php';
             return;
         }

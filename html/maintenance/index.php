@@ -3,6 +3,21 @@ require_once(__DIR__ . '/../../api/config/auth.php');
 requireLoginPage('../login.php');
 $authUser = authCurrentUser();
 ?>
+
+/*
+ * Maintenance Module - index page
+ *
+ * Purpose:
+ * - Presents the maintenance requests UI for students and admins.
+ * - Requires authentication via api/config/auth.php and redirects to login when needed.
+ * - Uses AJAX calls to api/maintenance/* endpoints to list, create, update,
+ *   archive and restore maintenance requests.
+ *
+ * Notes for maintainers:
+ * - Client-side logic lives in the <script> block at the end of this file.
+ * - Keep UI-only changes here; API behavior is implemented under api/maintenance/.
+ */
+
 <!DOCTYPE html>
 <html>
 <head>
@@ -139,10 +154,13 @@ $authUser = authCurrentUser();
 </main>
 
 <script>
+// Authenticated user data injected from PHP
 const authUser = <?php echo json_encode($authUser, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES); ?>;
+// Role helpers used to show/hide UI and actions
 const isAdmin = authUser && authUser.role === 'admin';
 const isStudent = authUser && authUser.role === 'student';
 
+// DOM references
 const tableMessage = document.getElementById('tableMessage');
 const tableHeading = document.getElementById('tableHeading');
 const actionsHeader = document.getElementById('actionsHeader');
@@ -177,6 +195,7 @@ if (!isAdmin && archivedTabLink) {
     archivedTabLink.style.display = 'none';
 }
 
+// Modal helpers
 function openModal(modal) {
     modal.classList.add('is-open');
 }
@@ -185,6 +204,7 @@ function closeModal(modal) {
     modal.classList.remove('is-open');
 }
 
+// DOM cell factories for table rows
 function createCell(value) {
     const td = document.createElement('td');
     td.textContent = value ?? '';
@@ -226,6 +246,7 @@ function createStatusCell(status) {
     return td;
 }
 
+// Create the actions cell depending on view and role
 function createActionsCell(row) {
     const td = document.createElement('td');
     if (currentView === 'archived') {
@@ -259,6 +280,7 @@ function createActionsCell(row) {
     return td;
 }
 
+// Normalize status strings coming from the API to consistent labels
 function normalizeStatus(status, isResolved) {
     const value = (status || '').toString().trim();
     const lower = value.toLowerCase();
@@ -269,6 +291,7 @@ function normalizeStatus(status, isResolved) {
     return isResolved == 1 ? 'Completed' : 'Pending';
 }
 
+// Table message helpers
 function showTableMessage(type, text) {
     tableMessage.className = 'alert ' + type;
     tableMessage.textContent = text;
@@ -279,6 +302,7 @@ function clearTableMessage() {
     tableMessage.textContent = '';
 }
 
+// Filtering logic for search and status dropdown
 function matchesFilters(row, query, statusValue) {
     const statusText = normalizeStatus(row.status, row.is_resolved);
     if (statusValue !== 'all' && statusText.toLowerCase() !== statusValue) return false;
@@ -295,6 +319,7 @@ function matchesFilters(row, query, statusValue) {
     return haystack.includes(query);
 }
 
+// Render table rows based on `maintenanceData` and current filters
 function renderMaintenance() {
     tbody.innerHTML = '';
     if (!maintenanceData.length) {
@@ -327,6 +352,7 @@ function renderMaintenance() {
     });
 }
 
+// Load maintenance list from API (active or archived)
 async function loadMaintenance() {
     try {
         const resp = await fetch(`../../api/maintenance/get_maintenance.php?view=${encodeURIComponent(currentView)}`, { cache: 'no-store' });
@@ -346,6 +372,7 @@ async function loadMaintenance() {
     }
 }
 
+// Helpers to try multiple candidate URLs (local relative, project root, absolute)
 function candidateUrls(endpointPath) {
     const path = endpointPath.startsWith('/') ? endpointPath : '/' + endpointPath;
     return [
@@ -355,6 +382,7 @@ function candidateUrls(endpointPath) {
     ];
 }
 
+// Fetch JSON from several candidate URLs until one succeeds
 async function fetchJsonWithFallback(endpointFile) {
     const urls = candidateUrls(endpointFile);
     for (const url of urls) {
@@ -370,6 +398,7 @@ async function fetchJsonWithFallback(endpointFile) {
     return { success: false, errors: ['Failed to connect to API endpoint: ' + endpointFile] };
 }
 
+// Submit a new maintenance request (tries candidate URLs)
 async function submitMaintenance(data) {
     const urls = candidateUrls('submit_maintenance.php');
     for (const url of urls) {
@@ -389,6 +418,7 @@ async function submitMaintenance(data) {
     return { success: false, errors: ['Failed to submit maintenance request.'] };
 }
 
+// Utility to preserve placeholder option and clear remaining options
 function resetSelectOptions(select) {
     const placeholder = select.querySelector('option') ? select.querySelector('option').cloneNode(true) : null;
     select.innerHTML = '';
@@ -405,6 +435,7 @@ function clearCreateError() {
     createErrors.textContent = '';
 }
 
+// Populate room dropdown from API
 async function populateRoomOptions(selectElement) {
     resetSelectOptions(selectElement);
     const roomsResp = await fetchJsonWithFallback('list_rooms.php');
@@ -420,6 +451,7 @@ async function populateRoomOptions(selectElement) {
     return null;
 }
 
+// Populate all selects used in the create form (rooms + staffs)
 async function populateSelects() {
     try {
         clearCreateError();
@@ -452,12 +484,14 @@ async function populateSelects() {
     }
 }
 
+// Populate rooms for the edit form (student-only edit)
 async function populateEditRooms() {
     const roomErr = await populateRoomOptions(editRoomSelect);
     if (roomErr) return false;
     return true;
 }
 
+// Form helpers
 function resetCreateForm() {
     createForm.reset();
     if (dateInput) {
@@ -465,6 +499,7 @@ function resetCreateForm() {
     }
 }
 
+// Open create modal (students only in active view) and load selects lazily
 async function openCreateModal() {
     if (currentView !== 'active' || !isStudent) return;
     resetCreateForm();
@@ -486,6 +521,7 @@ addRequestLink.addEventListener('click', (event) => {
 
 document.getElementById('cancelCreate').addEventListener('click', closeCreateModal);
 
+// Validate create form data on the client before submission
 function validateMaintenanceForm(data) {
     const errors = [];
     if (!data.room_id || !String(data.room_id).trim()) errors.push('Room ID is required.');
@@ -497,6 +533,7 @@ function validateMaintenanceForm(data) {
     return errors;
 }
 
+// Create form submission handler
 createForm.addEventListener('submit', async (event) => {
     event.preventDefault();
     clearCreateError();
@@ -535,6 +572,7 @@ if (statusFilter) {
     statusFilter.addEventListener('change', renderMaintenance);
 }
 
+// Switch between active and archived views (archived only for admins)
 function setActiveView(view) {
     currentView = (view === 'archived' && isAdmin) ? 'archived' : 'active';
     tabLinks.forEach(link => {
@@ -556,6 +594,7 @@ tabLinks.forEach(link => {
 
 loadMaintenance();
 
+// Open edit modal and populate fields for the given item id
 async function openEditModal(id) {
     if (currentView !== 'active') return;
     try {

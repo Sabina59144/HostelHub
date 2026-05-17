@@ -4,6 +4,7 @@ requireLoginPage('../login.php');
 $authUser = authCurrentUser();
 ?>
 
+<?php
 /*
  * Maintenance Module - index page
  *
@@ -17,6 +18,7 @@ $authUser = authCurrentUser();
  * - Client-side logic lives in the <script> block at the end of this file.
  * - Keep UI-only changes here; API behavior is implemented under api/maintenance/.
  */
+?>
 
 <!DOCTYPE html>
 <html>

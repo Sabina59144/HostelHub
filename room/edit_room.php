@@ -1,30 +1,48 @@
 <?php
+// ─────────────────────────────────────────────────────────────────────────────
+// room/edit_room.php  –  Edit an Existing Room
+//
+// This page does two things:
+//   GET  request  → loads the room from the database and shows a pre-filled form
+//   POST request  → validates the submitted form and saves the changes
+//
+// Usage: edit_room.php?id=5  (where 5 is the room_id to edit)
+// ─────────────────────────────────────────────────────────────────────────────
+
+// NOTE: The session login check is commented out because the page relies on the
+// shared room module authentication. Uncomment when needed.
 // session_start();
 // if (!isset($_SESSION['user_id'])) {
 //     header("Location: ../login.php");
 //     exit();
 // }
 
+// Load the shared database connection.
 require_once '../includes/db.php';
 
-// ── Validate room id ──────────────────────────────────────────────────
+// ── Validate the room_id from the URL ─────────────────────────────────────────
+// FILTER_VALIDATE_INT makes sure the id is a real integer (not a random string).
 $room_id = filter_input(INPUT_GET, 'id', FILTER_VALIDATE_INT);
 if (!$room_id) {
+    // No valid id? Redirect to the rooms list and stop.
     header("Location: index.php");
     exit();
 }
 
-// ── Load existing room ────────────────────────────────────────────────
+// ── Load the existing room from the database ──────────────────────────────────
 $stmt = $db->prepare("SELECT * FROM rooms WHERE room_id = ?");
 $stmt->execute([$room_id]);
 $room = $stmt->fetch();
 
+// If the room doesn't exist (maybe it was deleted already), redirect away.
 if (!$room) {
     header("Location: index.php?msg=notfound");
     exit();
 }
 
-// Count current occupants — used for capacity warnings
+// ── Count current occupants ────────────────────────────────────────────────────
+// This is used to prevent reducing capacity below the number of students
+// who are already living in this room (status = 1 means active student).
 $occStmt = $db->prepare(
     "SELECT COUNT(*) AS c FROM students
      WHERE room_id = ? AND status = 1"
@@ -32,7 +50,8 @@ $occStmt = $db->prepare(
 $occStmt->execute([$room_id]);
 $currentOccupants = (int)$occStmt->fetch()['c'];
 
-// ── Initialise form values from DB ────────────────────────────────────
+// ── Pre-fill form variables from the database row ─────────────────────────────
+// These are used as the default values in the HTML form fields.
 $errors          = [];
 $room_number     = $room['room_number'];
 $room_type       = $room['room_type'];
@@ -41,9 +60,10 @@ $price_per_month = $room['price_per_month'];
 $available_from  = $room['available_from'];
 $ensuite_facility = (int)$room['ensuite_facility'];
 
-// ── Handle form submission ────────────────────────────────────────────
+// ── Handle the form submission (user clicked "Save Changes") ──────────────────
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
+    // Read the submitted values and clean up whitespace.
     $room_number      = trim($_POST['room_number']      ?? '');
     $room_type        = trim($_POST['room_type']        ?? '');
     $capacity         = trim($_POST['capacity']         ?? '');
@@ -51,45 +71,49 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $available_from   = trim($_POST['available_from']   ?? '');
     $ensuite_facility = isset($_POST['ensuite_facility']) ? 1 : 0;
 
-    // Required: room number — must follow the A01..E20 pattern.
-    // Floor letter A–E (1st to 5th floor) + 2-digit room 01–20.
+    // ── Validation ─────────────────────────────────────────────────────────
+    // Room number: required AND must match the pattern A01 – E20.
+    // A–E = floors 1 to 5; 01–20 = room number within the floor.
     if ($room_number === '') {
         $errors[] = "Room number is required.";
     } elseif (!preg_match('/^[A-E](0[1-9]|1[0-9]|20)$/', strtoupper($room_number))) {
         $errors[] = "Room number must be in the format A01–E20 (floor letter A–E, then 01–20).";
     } else {
-        // Normalise to uppercase so lookups & uniqueness behave consistently
+        // Normalise to uppercase so A01 and a01 are treated the same.
         $room_number = strtoupper($room_number);
     }
 
-    // Room type — must be one of the enum options
+    // Room type: must be one of the three allowed enum values.
     $validTypes = ['single', 'double', 'triple'];
     if (!in_array($room_type, $validTypes, true)) {
         $errors[] = "Please select a valid room type.";
     }
 
-    // Capacity — positive integer 1–10
+    // Capacity: positive integer between 1 and 10.
+    // Also cannot be reduced below the current number of occupants.
     if ($capacity === '' || !ctype_digit((string)$capacity)) {
         $errors[] = "Capacity must be a whole number.";
     } elseif ((int)$capacity < 1 || (int)$capacity > 10) {
         $errors[] = "Capacity must be between 1 and 10.";
     } elseif ((int)$capacity < $currentOccupants) {
+        // Protect occupied rooms: don't allow shrinking capacity below occupancy.
         $errors[] = "Capacity ($capacity) cannot be lower than the current number of occupants ($currentOccupants). Move students out first.";
     }
 
-    // Price — non-negative number
+    // Price: must be a valid non-negative number.
     if ($price_per_month === '' || !is_numeric($price_per_month)) {
         $errors[] = "Price per month must be a valid number.";
     } elseif ((float)$price_per_month < 0) {
         $errors[] = "Price per month cannot be negative.";
     }
 
-    // Available date — required, parsable
+    // Available date: must be present and parseable by PHP.
     if ($available_from === '' || !strtotime($available_from)) {
         $errors[] = "Please enter a valid 'available from' date.";
     }
 
-    // Room number unique (excluding this room)
+    // Uniqueness check: no other room (not this one) can have the same room_number.
+    // We exclude the current room's own ID using "room_id <> ?".
     if (empty($errors)) {
         $check = $db->prepare(
             "SELECT room_id FROM rooms WHERE room_number = ? AND room_id <> ?"
@@ -100,7 +124,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
     }
 
-    // ── Update on success ─────────────────────────────────────────────
+    // ── Save changes to the database (only if all checks passed) ───────────
     if (empty($errors)) {
         $upd = $db->prepare(
             "UPDATE rooms
@@ -120,10 +144,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             (float)$price_per_month,
             $ensuite_facility,
             $available_from,
-            $room_id
+            $room_id   // the WHERE clause — ensures we update the correct room
         ]);
 
         if ($ok) {
+            // Redirect with a success code so the index page shows a message.
             header("Location: index.php?msg=updated");
             exit();
         } else {
@@ -132,6 +157,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
+// Tell the navbar which link to highlight.
 $activeNav = 'rooms';
 ?>
 <!DOCTYPE html>
@@ -144,6 +170,7 @@ $activeNav = 'rooms';
 </head>
 <body>
 
+<!-- Include the room module navigation bar -->
 <?php include '_navbar.php'; ?>
 
 <div class="container">
@@ -153,6 +180,7 @@ $activeNav = 'rooms';
         <p>Update the details for room <strong><?php echo htmlspecialchars($room['room_number']); ?></strong></p>
     </div>
 
+    <!-- Show all validation errors if any were found -->
     <?php if (!empty($errors)): ?>
         <div class="alert-error">
             Please fix the following:
@@ -164,6 +192,7 @@ $activeNav = 'rooms';
         </div>
     <?php endif; ?>
 
+    <!-- Warning banner: tells the admin not to reduce capacity below current occupancy -->
     <?php if ($currentOccupants > 0): ?>
         <div class="alert-warning">
             This room currently has <strong><?php echo $currentOccupants; ?></strong>
@@ -178,10 +207,12 @@ $activeNav = 'rooms';
             <a href="index.php">Back to Rooms</a>
         </div>
 
+        <!-- novalidate: we rely on PHP-side validation, not browser's built-in -->
         <form method="POST" action="" novalidate>
             <div class="form-row">
                 <div class="form-group">
                     <label for="room_number">Room Number <span class="req">*</span></label>
+                    <!-- htmlspecialchars() prevents XSS if the room number contains special characters -->
                     <input type="text" id="room_number" name="room_number"
                            value="<?php echo htmlspecialchars($room_number); ?>"
                            pattern="[A-E](0[1-9]|1[0-9]|20)"
@@ -192,6 +223,7 @@ $activeNav = 'rooms';
                 <div class="form-group">
                     <label for="room_type">Room Type <span class="req">*</span></label>
                     <select id="room_type" name="room_type" required>
+                        <!-- "selected" keeps the current choice when the form is re-shown after an error -->
                         <option value="single" <?php echo $room_type==='single' ? 'selected' : ''; ?>>Single</option>
                         <option value="double" <?php echo $room_type==='double' ? 'selected' : ''; ?>>Double</option>
                         <option value="triple" <?php echo $room_type==='triple' ? 'selected' : ''; ?>>Triple</option>
@@ -202,6 +234,7 @@ $activeNav = 'rooms';
             <div class="form-row">
                 <div class="form-group">
                     <label for="capacity">Capacity <span class="req">*</span></label>
+                    <!-- min is dynamically set to the higher of 1 or the current occupant count -->
                     <input type="number" id="capacity" name="capacity"
                            value="<?php echo htmlspecialchars($capacity); ?>"
                            min="<?php echo max(1, $currentOccupants); ?>" max="10" required>
@@ -228,6 +261,7 @@ $activeNav = 'rooms';
                 </div>
                 <div class="form-group">
                     <label>Ensuite Facility</label>
+                    <!-- Checkbox: the "checked" attribute is added if ensuite_facility is 1 (true) -->
                     <div class="checkbox-wrap">
                         <input type="checkbox" id="ensuite_facility" name="ensuite_facility" value="1"
                                <?php echo $ensuite_facility ? 'checked' : ''; ?>>
@@ -247,4 +281,4 @@ $activeNav = 'rooms';
 
 </body>
 </html>
-<?php $db = null; ?>
+<?php $db = null; // Close the database connection ?>

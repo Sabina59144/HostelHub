@@ -1,138 +1,214 @@
-/* ─────────────────────────────────────────────────────────────
-   HostelHub — shared styles for the Room module
-   Used by: index.php, edit_room.php, delete_room.php,
-            list_rooms.php, allocate_room.php
-   ───────────────────────────────────────────────────────────── */
+/* ─────────────────────────────────────────────────────────────────────────────
+   room/style.css  –  Shared Stylesheet for the Room Module
+   ─────────────────────────────────────────────────────────────────────────────
+   This CSS file is used by EVERY page in the room/ folder:
+     index.php, edit_room.php, delete_room.php, list_rooms.php,
+     allocate_room.php, remove_allocation.php
 
+   It covers:
+     1. CSS Reset
+     2. Navigation bar
+     3. Layout containers and headings
+     4. Alert / notification boxes
+     5. Cards
+     6. Forms and inputs
+     7. Buttons
+     8. Search bar
+     9. Tables
+    10. Badges (colour-coded status labels)
+    11. Action links (Edit / Delete / Allocate)
+    12. Info / detail grids
+    13. Responsive breakpoint
+   ───────────────────────────────────────────────────────────────────────────── */
+
+
+/* ══════════════════════════════════════════════════════════
+   1. CSS RESET
+   Makes every element use consistent sizing and removes
+   default browser margin/padding so we control everything.
+══════════════════════════════════════════════════════════ */
 * { box-sizing: border-box; margin: 0; padding: 0; }
 
 body {
     font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
-    background: #f3f4f6;
-    color: #1f2937;
+    background: #f3f4f6;  /* light grey page background */
+    color: #1f2937;       /* dark charcoal default text */
 }
 
-/* ── Navbar ── */
+
+/* ══════════════════════════════════════════════════════════
+   2. NAVIGATION BAR
+   The dark top bar shown on every room module page.
+   Includes: brand icon + name, nav links, user info + logout.
+══════════════════════════════════════════════════════════ */
 .navbar {
-    background: #0f172a; color: white;
-    padding: 14px 36px; display: flex;
-    justify-content: space-between; align-items: center;
+    background: #0f172a;  /* very dark navy */
+    color: white;
+    padding: 14px 36px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
 }
+
+/* Left side: icon box + brand text */
 .navbar-left  { display: flex; align-items: center; gap: 14px; }
 .brand-icon   {
     width: 44px; height: 44px; border-radius: 10px;
-    background: #1e293b; display: flex;
-    align-items: center; justify-content: center;
-    color: #3b82f6;
+    background: #1e293b;                          /* slightly lighter dark box */
+    display: flex; align-items: center; justify-content: center;
+    color: #3b82f6;                               /* blue icon colour */
 }
 .brand-text h1 {
     font-size: 22px; font-weight: 700;
-    font-family: Georgia, 'Times New Roman', serif;
+    font-family: Georgia, 'Times New Roman', serif; /* serif for brand feel */
     line-height: 1;
 }
 .brand-text small {
     display: block; font-size: 10px; letter-spacing: 1.5px;
-    color: #94a3b8; margin-top: 4px;
+    color: #94a3b8;   /* muted grey sub-text */
+    margin-top: 4px;
 }
 
+/* Centre: module navigation links */
 .nav-links { display: flex; gap: 6px; margin: 0 30px; }
 .nav-links a {
-    color: #cbd5e1; text-decoration: none;
+    color: #cbd5e1;               /* light grey text */
+    text-decoration: none;
     font-size: 15px; font-weight: 500;
     padding: 9px 16px; border-radius: 8px;
     transition: all 0.15s;
 }
-.nav-links a:hover  { color: white; background: #1e293b; }
-.nav-links a.active { background: #2563eb; color: white; }
+.nav-links a:hover  { color: white; background: #1e293b; }   /* darken on hover */
+.nav-links a.active { background: #2563eb; color: white; }   /* blue highlight for current page */
 
+/* Right side: logged-in user info + logout button */
 .navbar-right { display: flex; align-items: center; gap: 18px; }
 .user-info    { text-align: right; line-height: 1.3; }
 .user-info .name { font-size: 14px; font-weight: 600; color: white; }
 .user-info .role { font-size: 12px; color: #94a3b8; }
 .logout-btn {
     color: white; text-decoration: none;
-    border: 1px solid #334155;
+    border: 1px solid #334155;                    /* subtle border */
     padding: 8px 18px; border-radius: 8px;
     font-size: 14px; transition: all 0.15s;
 }
 .logout-btn:hover { background: #1e293b; }
 
-/* ── Container & headings ── */
+
+/* ══════════════════════════════════════════════════════════
+   3. LAYOUT — CONTAINER, HEADINGS, SECTION LABELS
+══════════════════════════════════════════════════════════ */
+
+/* Main content wrapper — limits max width and adds padding */
 .container { padding: 32px 36px; max-width: 1280px; margin: 0 auto; }
 
+/* Large page title shown at the top of each page */
 .page-title { margin-bottom: 28px; }
 .page-title h2 {
     font-size: 38px; color: #111827; font-weight: 700;
-    font-family: Georgia, 'Times New Roman', serif;
+    font-family: Georgia, 'Times New Roman', serif;  /* matches brand text */
 }
 .page-title p { font-size: 15px; color: #6b7280; margin-top: 6px; }
 
+/* Small ALL-CAPS label used as a sub-section heading */
 .section-title {
     font-size: 12px; font-weight: 700; color: #6b7280;
     text-transform: uppercase; letter-spacing: 1.2px;
     margin-bottom: 14px;
 }
 
-/* ── Alerts ── */
+
+/* ══════════════════════════════════════════════════════════
+   4. ALERT / NOTIFICATION BOXES
+   Three colour-coded variants: success (green), error (red),
+   warning (amber).
+══════════════════════════════════════════════════════════ */
 .alert-success {
     background: #ecfdf5; border: 1px solid #a7f3d0;
-    color: #065f46; padding: 12px 16px;
+    color: #065f46;                               /* dark green text */
+    padding: 12px 16px;
     border-radius: 8px; margin-bottom: 20px; font-size: 14px;
 }
 .alert-error {
     background: #fef2f2; border: 1px solid #fecaca;
-    color: #991b1b; padding: 12px 16px;
+    color: #991b1b;                               /* dark red text */
+    padding: 12px 16px;
     border-radius: 8px; margin-bottom: 20px; font-size: 14px;
 }
-.alert-error ul { padding-left: 20px; margin-top: 6px; }
+.alert-error ul { padding-left: 20px; margin-top: 6px; }  /* indent list of errors */
 .alert-warning {
     background: #fffbeb; border: 1px solid #fde68a;
-    color: #92400e; padding: 14px 16px;
+    color: #92400e;                               /* dark amber text */
+    padding: 14px 16px;
     border-radius: 8px; margin-bottom: 20px; font-size: 14px;
 }
 
-/* ── Generic card ── */
+
+/* ══════════════════════════════════════════════════════════
+   5. CARDS
+   White rounded boxes used to group related content.
+══════════════════════════════════════════════════════════ */
 .card {
     background: white; border-radius: 12px;
     padding: 28px;
+    /* Subtle layered shadow for depth */
     box-shadow: 0 1px 3px rgba(0,0,0,0.04), 0 1px 2px rgba(0,0,0,0.06);
     margin-bottom: 24px;
 }
+
+/* Top row inside a card: heading on the left, a link on the right */
 .card-header {
     display: flex; justify-content: space-between; align-items: center;
     margin-bottom: 18px;
 }
 .card-header h3 { font-size: 17px; color: #111827; font-weight: 700; }
 .card-header a {
-    font-size: 14px; color: #2563eb; text-decoration: none; font-weight: 600;
+    font-size: 14px; color: #2563eb;             /* blue link */
+    text-decoration: none; font-weight: 600;
 }
 .card-header a:hover { text-decoration: underline; }
 
-/* ── Form fields ── */
+
+/* ══════════════════════════════════════════════════════════
+   6. FORMS — FIELDS, LABELS, INPUTS
+══════════════════════════════════════════════════════════ */
+
+/* Two-column layout for pairs of form fields */
 .form-row    { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+
+/* Wrapper for each label + input pair */
 .form-group  { margin-bottom: 18px; }
 .form-group label {
     display: block; font-size: 13px; font-weight: 600;
     color: #374151; margin-bottom: 7px;
 }
-.req         { color: #dc2626; }
+
+/* Red asterisk (*) on required fields */
+.req { color: #dc2626; }
+
+/* Shared styles for all input types: text, number, date, select, textarea */
 .form-group input,
 .form-group select,
 .form-group textarea {
     width: 100%; padding: 10px 14px;
-    border: 1px solid #d1d5db; border-radius: 8px;
+    border: 1px solid #d1d5db;   /* light grey border */
+    border-radius: 8px;
     font-size: 14px; font-family: inherit;
     color: #111827; background: white;
     transition: border-color 0.15s, box-shadow 0.15s;
 }
+/* Blue focus ring when the user clicks into a field */
 .form-group input:focus,
 .form-group select:focus,
 .form-group textarea:focus {
     outline: none; border-color: #2563eb;
     box-shadow: 0 0 0 3px rgba(37,99,235,0.1);
 }
+
+/* Tiny help text shown below a field */
 .hint { font-size: 12px; color: #6b7280; margin-top: 5px; }
 
+/* Styled checkbox row (used for "Ensuite Facility" toggle) */
 .checkbox-wrap {
     display: flex; align-items: center; gap: 10px;
     padding: 12px 14px;
@@ -140,12 +216,20 @@ body {
     background: #f9fafb; cursor: pointer;
 }
 .checkbox-wrap input[type="checkbox"] {
-    width: 16px; height: 16px; accent-color: #2563eb;
+    width: 16px; height: 16px; accent-color: #2563eb; /* blue tick */
 }
 .checkbox-wrap label { margin: 0; font-weight: 500; cursor: pointer; }
 
-/* ── Buttons ── */
+
+/* ══════════════════════════════════════════════════════════
+   7. BUTTONS
+   Three variants: primary (blue), danger (red), secondary (white).
+══════════════════════════════════════════════════════════ */
+
+/* Row container that spaces buttons apart */
 .btn-row { display: flex; gap: 10px; margin-top: 24px; align-items: center; }
+
+/* Base button styles shared by all variants */
 .btn {
     display: inline-flex; align-items: center; gap: 7px;
     padding: 10px 20px; border-radius: 8px;
@@ -153,26 +237,39 @@ body {
     text-decoration: none; cursor: pointer; border: 1px solid transparent;
     transition: all 0.15s;
 }
+
+/* Blue "Save" / "Submit" button */
 .btn-primary { background: #2563eb; color: white; }
 .btn-primary:hover { background: #1d4ed8; }
 
+/* Red "Delete" / destructive action button */
 .btn-danger { background: #dc2626; color: white; }
 .btn-danger:hover { background: #b91c1c; }
 
+/* White "Cancel" / secondary action button */
 .btn-secondary {
     background: white; color: #4b5563; border-color: #d1d5db;
 }
 .btn-secondary:hover { background: #f9fafb; }
 
-/* ── Search bar ── */
+
+/* ══════════════════════════════════════════════════════════
+   8. SEARCH BAR
+   The white bar at the top of list pages that contains
+   the text input and filter dropdowns.
+══════════════════════════════════════════════════════════ */
 .search-card {
     background: white; border-radius: 12px;
     padding: 18px 22px;
     box-shadow: 0 1px 3px rgba(0,0,0,0.04), 0 1px 2px rgba(0,0,0,0.06);
     margin-bottom: 22px;
 }
+
+/* Horizontal row of inputs/selects/buttons inside the search card */
 .search-row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
-.search-row input { flex: 1; min-width: 220px; }
+.search-row input { flex: 1; min-width: 220px; }  /* text input stretches to fill space */
+
+/* Shared styles for search inputs and selects */
 .search-row input,
 .search-row select {
     padding: 10px 14px; border: 1px solid #d1d5db;
@@ -185,54 +282,95 @@ body {
     box-shadow: 0 0 0 3px rgba(37,99,235,0.1);
 }
 
-/* ── Table ── */
+
+/* ══════════════════════════════════════════════════════════
+   9. TABLES
+   Used on: index.php, list_rooms.php, delete_room.php, etc.
+══════════════════════════════════════════════════════════ */
 table { width: 100%; border-collapse: collapse; }
+
+/* Column headers: small caps, muted grey */
 th {
     text-align: left; font-size: 11px; color: #6b7280;
     text-transform: uppercase; letter-spacing: 0.6px; font-weight: 600;
     padding: 10px 14px; border-bottom: 1px solid #e5e7eb;
 }
+
+/* Data cells */
 td {
     padding: 12px 14px; font-size: 14px; color: #1f2937;
-    border-bottom: 1px solid #f3f4f6; vertical-align: middle;
+    border-bottom: 1px solid #f3f4f6;  /* very light separator */
+    vertical-align: middle;
 }
-tr:last-child td { border-bottom: none; }
-tr:hover td { background: #f9fafb; }
+tr:last-child td { border-bottom: none; }  /* no border after the last row */
+tr:hover td { background: #f9fafb; }       /* light grey row highlight on hover */
 
+
+/* ══════════════════════════════════════════════════════════
+   10. BADGES
+   Small pill-shaped coloured labels used to show status.
+   Used for: room status, ensuite flag, occupancy state.
+══════════════════════════════════════════════════════════ */
 .badge {
     display: inline-block; padding: 3px 12px;
     border-radius: 999px; font-size: 12px; font-weight: 600;
 }
-.badge-available { background: #d1fae5; color: #065f46; }
-.badge-soon      { background: #fef3c7; color: #92400e; }
-.badge-ensuite   { background: #ede9fe; color: #5b21b6; }
-.badge-shared    { background: #f3f4f6; color: #4b5563; }
-.badge-full      { background: #fee2e2; color: #991b1b; }
-.badge-spots     { background: #dbeafe; color: #1e40af; }
+.badge-available { background: #d1fae5; color: #065f46; }  /* green: ready now */
+.badge-soon      { background: #fef3c7; color: #92400e; }  /* amber: future date */
+.badge-ensuite   { background: #ede9fe; color: #5b21b6; }  /* purple: ensuite yes */
+.badge-shared    { background: #f3f4f6; color: #4b5563; }  /* grey: shared bathroom */
+.badge-full      { background: #fee2e2; color: #991b1b; }  /* red: fully occupied */
+.badge-spots     { background: #dbeafe; color: #1e40af; }  /* blue: spaces available */
 
-.action-link { font-size: 13px; text-decoration: none; margin-right: 10px; font-weight: 600; }
-.action-link.edit     { color: #2563eb; }
-.action-link.delete   { color: #dc2626; }
-.action-link.allocate { color: #059669; }
+
+/* ══════════════════════════════════════════════════════════
+   11. ACTION LINKS
+   Small inline links inside table rows for Edit / Delete / Allocate.
+══════════════════════════════════════════════════════════ */
+.action-link {
+    font-size: 13px; text-decoration: none;
+    margin-right: 10px; font-weight: 600;
+}
+.action-link.edit     { color: #2563eb; }  /* blue for edit */
+.action-link.delete   { color: #dc2626; }  /* red for delete */
+.action-link.allocate { color: #059669; }  /* green for allocate */
 .action-link:hover    { text-decoration: underline; }
 
-.no-data { text-align: center; padding: 36px; color: #9ca3af; font-size: 14px; }
-.no-data a { color: #2563eb; text-decoration: none; font-weight: 600; }
-.results-count { font-size: 13px; color: #6b7280; margin-bottom: 12px; }
 
-/* ── Info / detail rows (shown on delete + allocate) ── */
+/* ══════════════════════════════════════════════════════════
+   12. INFO / DETAIL GRIDS
+   Two-column key-value layout used on delete_room.php
+   and similar confirmation pages.
+══════════════════════════════════════════════════════════ */
 .info-list {
     display: grid; grid-template-columns: 1fr 1fr; gap: 14px 22px;
     margin-bottom: 22px;
 }
+/* Label row (e.g. "Room Number") */
 .info-list .label {
     font-size: 11px; font-weight: 700; color: #6b7280;
     text-transform: uppercase; letter-spacing: 0.6px; margin-bottom: 4px;
 }
+/* Value row (e.g. "A01") */
 .info-list .value { font-size: 15px; color: #111827; font-weight: 600; }
 
+/* ── Empty-state message shown when no rows are found ── */
+.no-data { text-align: center; padding: 36px; color: #9ca3af; font-size: 14px; }
+.no-data a { color: #2563eb; text-decoration: none; font-weight: 600; }
+
+/* Small "N room(s) found" text above tables */
+.results-count { font-size: 13px; color: #6b7280; margin-bottom: 12px; }
+
+
+/* ══════════════════════════════════════════════════════════
+   13. RESPONSIVE — SMALL SCREENS
+   On screens narrower than 1000 px (tablets, large phones):
+     • Hide the centre nav links (too cramped)
+     • Stack two-column form rows into a single column
+     • Stack the info detail grid into a single column
+══════════════════════════════════════════════════════════ */
 @media (max-width: 1000px) {
-    .nav-links  { display: none; }
-    .form-row   { grid-template-columns: 1fr; }
-    .info-list  { grid-template-columns: 1fr; }
+    .nav-links  { display: none; }            /* hide nav links on small screens */
+    .form-row   { grid-template-columns: 1fr; }  /* stack form pairs vertically */
+    .info-list  { grid-template-columns: 1fr; }  /* stack info pairs vertically */
 }

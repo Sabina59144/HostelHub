@@ -1,22 +1,39 @@
 <?php
+// ─────────────────────────────────────────────────────────────────────────────
+// room/remove_allocation.php  –  Remove a Student from Their Room
+//
+// This page shows a confirmation screen before unlinking a student from a room.
+// The student record itself is NOT deleted — only their room_id is set to NULL.
+// They can be re-allocated to any room afterwards.
+//
+// Usage: remove_allocation.php?student_id=12  (shows the confirmation screen)
+//        Then POST with confirm=yes to actually remove the allocation.
+// ─────────────────────────────────────────────────────────────────────────────
+
+// NOTE: Session check commented out — room module auth handles this.
 // session_start();
 // if (!isset($_SESSION['user_id'])) {
 //     header("Location: ../login.php");
 //     exit();
 // }
 
+// Load the shared database connection.
 require_once '../includes/db.php';
 
-// ── Validate student_id ───────────────────────────────────────────────
+// ── Validate student_id from URL or form ──────────────────────────────────────
+// Accept from GET (page load) or POST (form submit).
 $student_id = filter_input(INPUT_GET,  'student_id', FILTER_VALIDATE_INT)
            ?: filter_input(INPUT_POST, 'student_id', FILTER_VALIDATE_INT);
 
 if (!$student_id) {
+    // No valid student id — redirect to the rooms list.
     header("Location: list_rooms.php");
     exit();
 }
 
-// ── Load student (must be active and currently allocated) ─────────────
+// ── Load the student and their current room ────────────────────────────────────
+// We JOIN with `rooms` so we can show the room details on the confirmation page.
+// The student must be active (status = 1) AND currently in a room (room_id IS NOT NULL).
 $sStmt = $db->prepare(
     "SELECT s.student_id, s.student_number, s.full_name, s.email,
             s.room_id,
@@ -29,8 +46,8 @@ $sStmt = $db->prepare(
 $sStmt->execute([$student_id]);
 $student = $sStmt->fetch();
 
+// Guard: if student doesn't exist, is inactive, or has no room — redirect.
 if (!$student || !$student['room_id']) {
-    // Student not found, inactive, or not in any room
     header("Location: list_rooms.php");
     exit();
 }
@@ -38,9 +55,12 @@ if (!$student || !$student['room_id']) {
 $errors  = [];
 $success = "";
 
-// ── Handle confirmed removal (POST) ──────────────────────────────────
+// ── Handle the confirmed removal ──────────────────────────────────────────────
+// Only runs when the admin submits the form with confirm=yes.
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['confirm']) && $_POST['confirm'] === 'yes') {
 
+    // Double-check the student_id in the POST body matches the one from the URL.
+    // This prevents a tampered form from removing the wrong student.
     $postedStudentId = filter_input(INPUT_POST, 'student_id', FILTER_VALIDATE_INT);
 
     if ((int)$postedStudentId !== (int)$student_id) {
@@ -49,24 +69,27 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['confirm']) && $_POST[
 
     if (empty($errors)) {
         try {
+            // Transaction: if anything fails, roll back all changes.
             $db->beginTransaction();
 
-            // Remove student from the room
+            // Remove the room assignment by setting room_id to NULL.
+            // The student record stays intact — just no longer linked to a room.
             $db->prepare("UPDATE students SET room_id = NULL WHERE student_id = ?")
                ->execute([$student_id]);
 
-            // Close any open allocation history row for this student
+            // Close any open allocation history row for this student.
+            // (Catches the case where the allocations table doesn't exist.)
             try {
                 $db->prepare(
                     "UPDATE allocations
                      SET end_date = CURDATE()
                      WHERE student_id = ? AND end_date IS NULL"
                 )->execute([$student_id]);
-            } catch (PDOException $ignored) { /* allocations table may not exist */ }
+            } catch (PDOException $ignored) { /* allocations table may not exist — safe to skip */ }
 
             $db->commit();
 
-            // Redirect back with success message
+            // Redirect to the rooms list with a success flash message.
             header("Location: list_rooms.php?msg=removed");
             exit();
 
@@ -77,6 +100,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['confirm']) && $_POST[
     }
 }
 
+// Tell the navbar which link to highlight.
 $activeNav = 'rooms';
 ?>
 <!DOCTYPE html>
@@ -87,13 +111,15 @@ $activeNav = 'rooms';
     <title>HostelHub — Remove Student from Room</title>
     <link rel="stylesheet" href="style.css">
     <style>
+        /* Amber top border to signal a warning action */
         .warning-card { border-top: 4px solid #f59e0b; }
 
+        /* ── Student info summary (3 columns) ── */
         .student-summary {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
             gap: 20px;
-            background: #fffbeb;
+            background: #fffbeb;        /* light amber background */
             border: 1px solid #fde68a;
             border-radius: 10px;
             padding: 20px 24px;
@@ -103,11 +129,9 @@ $activeNav = 'rooms';
             font-size: 11px; font-weight: 700; color: #92400e;
             text-transform: uppercase; letter-spacing: 0.5px;
         }
-        .student-summary .s-value {
-            font-size: 15px; color: #1f2937; font-weight: 600;
-            margin-top: 4px;
-        }
+        .student-summary .s-value { font-size: 15px; color: #1f2937; font-weight: 600; margin-top: 4px; }
 
+        /* ── Room info summary (4 columns) ── */
         .room-summary {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
@@ -122,11 +146,9 @@ $activeNav = 'rooms';
             font-size: 11px; font-weight: 700; color: #6b7280;
             text-transform: uppercase; letter-spacing: 0.5px;
         }
-        .room-summary .r-value {
-            font-size: 15px; color: #1f2937; font-weight: 600;
-            margin-top: 4px;
-        }
+        .room-summary .r-value { font-size: 15px; color: #1f2937; font-weight: 600; margin-top: 4px; }
 
+        /* ── Red information notice above the action buttons ── */
         .confirm-note {
             font-size: 14px; color: #374151;
             background: #fef2f2; border: 1px solid #fecaca;
@@ -136,6 +158,7 @@ $activeNav = 'rooms';
         }
         .confirm-note svg { flex-shrink: 0; color: #dc2626; margin-top: 2px; }
 
+        /* ── Red danger button ── */
         .btn-danger {
             background: #dc2626; color: white;
             border: none; padding: 10px 22px;
@@ -147,6 +170,7 @@ $activeNav = 'rooms';
 </head>
 <body>
 
+<!-- Shared room module navigation bar -->
 <?php include '_navbar.php'; ?>
 
 <div class="container">
@@ -156,6 +180,7 @@ $activeNav = 'rooms';
         <p>You are about to unallocate a student from their current room. Please review the details below.</p>
     </div>
 
+    <!-- Show any errors (e.g. student ID mismatch or DB error) -->
     <?php if (!empty($errors)): ?>
         <div class="alert-error">
             <?php foreach ($errors as $e): ?>
@@ -164,13 +189,14 @@ $activeNav = 'rooms';
         </div>
     <?php endif; ?>
 
+    <!-- Amber-bordered confirmation card -->
     <div class="card warning-card">
         <div class="card-header">
             <h3>Allocation to Remove</h3>
             <a href="list_rooms.php">Back to Rooms</a>
         </div>
 
-        <!-- Student details -->
+        <!-- ── Student details ── -->
         <div class="section-title" style="margin-bottom: 10px;">Student</div>
         <div class="student-summary">
             <div>
@@ -187,7 +213,7 @@ $activeNav = 'rooms';
             </div>
         </div>
 
-        <!-- Current room details -->
+        <!-- ── Current room details ── -->
         <div class="section-title" style="margin-bottom: 10px;">Current Room</div>
         <div class="room-summary">
             <div>
@@ -196,6 +222,7 @@ $activeNav = 'rooms';
             </div>
             <div>
                 <div class="r-label">Floor</div>
+                <!-- Fallback to "—" if the floor column is missing -->
                 <div class="r-value">Floor <?php echo htmlspecialchars($student['floor'] ?? '—'); ?></div>
             </div>
             <div>
@@ -208,7 +235,7 @@ $activeNav = 'rooms';
             </div>
         </div>
 
-        <!-- Warning note -->
+        <!-- ── Warning notice ── -->
         <div class="confirm-note">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none"
                  stroke="currentColor" stroke-width="2.4"
@@ -225,9 +252,12 @@ $activeNav = 'rooms';
             </span>
         </div>
 
-        <!-- Confirmation form -->
+        <!-- ── Confirmation form ── -->
+        <!-- onsubmit shows a browser confirm() dialog as a final safety check -->
         <form method="POST" action=""
               onsubmit="return confirm('Remove <?php echo htmlspecialchars($student['full_name'], ENT_QUOTES); ?> from Room <?php echo htmlspecialchars($student['room_number'], ENT_QUOTES); ?>?');">
+
+            <!-- Hidden fields: student_id (which student) and confirm=yes (signal to execute) -->
             <input type="hidden" name="student_id" value="<?php echo (int)$student_id; ?>">
             <input type="hidden" name="confirm"    value="yes">
 
@@ -245,4 +275,4 @@ $activeNav = 'rooms';
 
 </body>
 </html>
-<?php $db = null; ?>
+<?php $db = null; // Close the database connection ?>

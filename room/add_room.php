@@ -1,5 +1,18 @@
 <?php
-session_start();  
+// ─────────────────────────────────────────────────────────────────────────────
+// room/add_room.php  –  Add a New Room
+//
+// This page shows a form to register a new hostel room.
+// When the form is submitted it:
+//   1. Validates all inputs (required fields, correct types, unique room number)
+//   2. Inserts the new room into the `rooms` table
+//   3. Redirects back to index.php with ?msg=added on success
+// ─────────────────────────────────────────────────────────────────────────────
+
+// NOTE: This file calls session_start() directly because it was built before
+// the shared session.php helper was fully integrated. The commented-out block
+// below shows the original login check.
+session_start();
 // ── Start session and check login ─────────────────────────────
 //session_start();
 //if (!isset($_SESSION['user_id'])) {
@@ -7,62 +20,69 @@ session_start();
 //    exit();
 //}
 
-// ── Connect to database ───────────────────────────────────────
+// Load the database connection ($db PDO object).
 require_once '../includes/db.php';
 
-// ── Initialise variables ──────────────────────────────────────
+// ── Initialise form variables ──────────────────────────────────────────────
+// These hold what the user typed. They start empty so the form is blank
+// on first load, and are re-filled if there are validation errors.
 $errors          = [];
 $success         = "";
 $room_number     = $room_type = $available_from = "";
 $capacity        = $price_per_month = "";
-$ensuite_facility = 0;
+$ensuite_facility = 0;   // 0 = no ensuite (checkbox unchecked by default)
 
-// ── Handle form submission ────────────────────────────────────
+// ── Handle form submission ─────────────────────────────────────────────────
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
-    // ── Get and sanitise inputs ───────────────────────────────
+    // Read and clean each form field.
+    // trim() removes extra spaces the user may have typed.
     $room_number      = trim($_POST['room_number']);
     $room_type        = trim($_POST['room_type']);
     $capacity         = trim($_POST['capacity']);
     $price_per_month  = trim($_POST['price_per_month']);
     $available_from   = trim($_POST['available_from']);
+    // Checkbox: if the box is ticked $_POST contains the key, otherwise it doesn't exist.
     $ensuite_facility = isset($_POST['ensuite_facility']) ? 1 : 0;
 
-    // ── Validation ────────────────────────────────────────────
+    // ── Validation ────────────────────────────────────────────────────────
+    // Every error found is added to the $errors array.
+    // We show them all at once so the user can fix everything in one go.
 
-    // Room number — required
+    // Room number must not be blank.
     if (empty($room_number)) {
         $errors[] = "Room number is required.";
     }
 
-    // Room type — must be a valid option
+    // Room type must be one of the three allowed values.
     $validTypes = ['single', 'double', 'triple'];
     if (empty($room_type) || !in_array($room_type, $validTypes)) {
         $errors[] = "Please select a valid room type.";
     }
 
-    // Capacity — required, must be a positive integer
+    // Capacity must be a whole number greater than 0.
     if ($capacity === '') {
         $errors[] = "Capacity is required.";
     } elseif (!ctype_digit($capacity) || (int)$capacity < 1) {
         $errors[] = "Capacity must be a whole number greater than 0.";
     }
 
-    // Price — required, must be a valid positive number
+    // Price must be a valid positive number (can have decimals like 450.50).
     if ($price_per_month === '') {
         $errors[] = "Price per month is required.";
     } elseif (!is_numeric($price_per_month) || (float)$price_per_month < 0) {
         $errors[] = "Price per month must be a valid positive number.";
     }
 
-    // Available from — required, must be a valid date
+    // Available-from date must exist and be parseable.
     if (empty($available_from)) {
         $errors[] = "Available from date is required.";
     } elseif (!strtotime($available_from)) {
         $errors[] = "Please enter a valid date for available from.";
     }
 
-    // Check room number is unique
+    // Only check uniqueness if there are no other errors yet
+    // (avoids an unnecessary DB query when obvious fields are missing).
     if (empty($errors)) {
         $checkRoom = $db->prepare("SELECT room_id FROM rooms WHERE room_number = ?");
         $checkRoom->execute([$room_number]);
@@ -71,14 +91,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
     }
 
-    // ── Insert into database if no errors ─────────────────────
+    // ── Insert into database ───────────────────────────────────────────────
+    // Only runs if the $errors array is still empty (all checks passed).
     if (empty($errors)) {
         $stmt = $db->prepare(
             "INSERT INTO rooms (room_number, room_type, capacity, price_per_month, ensuite_facility, available_from)
              VALUES (?, ?, ?, ?, ?, ?)"
         );
 
+        // Cast values to the correct types before inserting.
         if ($stmt->execute([$room_number, $room_type, (int)$capacity, (float)$price_per_month, $ensuite_facility, $available_from])) {
+            // Success: redirect so a page-refresh won't re-submit the form.
             header("Location: index.php?msg=added");
             exit();
         } else {
@@ -93,8 +116,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>HostelHub — Add Room</title>
+    <!-- Google Fonts for a clean, modern look -->
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Serif+Display&display=swap" rel="stylesheet">
     <style>
+        /* ── CSS Variables (design tokens) ──────────────────────────────────
+           Defined once here so colours / shadows are easy to change in one place. */
         :root {
             --blue:        #1a56db;
             --blue-dark:   #1341b0;
@@ -125,9 +151,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             min-height: 100vh;
         }
 
-        /* ════════════════════════════
-           NAVBAR
-        ════════════════════════════ */
+        /* ── Top navigation bar ── */
         .navbar {
             position: relative; z-index: 100;
             height: 72px;
@@ -138,15 +162,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             box-shadow: 0 2px 16px rgba(0,0,0,0.25);
         }
 
+        /* Logo image inside the navbar */
         .navbar-logo img {
             height: 44px;
-            filter: brightness(0) invert(1);
+            filter: brightness(0) invert(1); /* makes logo white on dark background */
             object-fit: contain;
         }
 
-        .navbar-center {
-            display: flex; align-items: center; gap: 8px;
-        }
+        /* Centre nav: pill-shaped module links */
+        .navbar-center { display: flex; align-items: center; gap: 8px; }
 
         .nav-pill {
             display: inline-flex; flex-direction: column; align-items: center; gap: 2px;
@@ -167,6 +191,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             border-color: rgba(255,255,255,0.22);
         }
 
+        /* Highlighted pill showing the logged-in user's name */
         .nav-guest {
             display: inline-flex; flex-direction: column; align-items: center; gap: 2px;
             color: #fff;
@@ -179,23 +204,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
         .nav-guest .icon { font-size: 17px; line-height: 1; }
 
-        .navbar-right { width: 100px; }
+        .navbar-right { width: 100px; } /* spacer to balance the 3-column flex layout */
 
-        /* ════════════════════════════
-           HERO BANNER
-        ════════════════════════════ */
+        /* ── Hero banner with background photo ── */
         .hero {
             position: relative;
             height: 260px;
             overflow: hidden;
             display: flex; align-items: center;
         }
+        /* Background photo (loaded from Unsplash) */
         .hero-img {
             position: absolute; inset: 0;
             background:
                 url('https://images.unsplash.com/photo-1555854877-bab0e564b8d5?w=1600&q=80&fit=crop')
                 center/cover no-repeat;
         }
+        /* Dark gradient overlay so the white text is easy to read */
         .hero-overlay {
             position: absolute; inset: 0;
             background: linear-gradient(
@@ -211,6 +236,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             margin-top: -40px;
             animation: fadeUp 0.5s ease both;
         }
+        /* Small "Room Management" label above the heading */
         .hero-badge {
             display: inline-flex; align-items: center; gap: 6px;
             font-size: 11px; font-weight: 600; letter-spacing: 0.8px;
@@ -229,36 +255,28 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             color: #fff; line-height: 1.1;
             letter-spacing: -0.3px;
         }
-        .hero-content p {
-            font-size: 14px; color: rgba(255,255,255,0.62);
-            margin-top: 6px;
-        }
+        .hero-content p { font-size: 14px; color: rgba(255,255,255,0.62); margin-top: 6px; }
 
-        /* ════════════════════════════
-           PAGE LAYOUT
-        ════════════════════════════ */
+        /* ── Two-column page layout: sidebar + main form ── */
         .page-layout {
             display: grid;
-            grid-template-columns: 260px 1fr;
+            grid-template-columns: 260px 1fr; /* fixed sidebar, flexible form column */
             gap: 28px;
             max-width: 1040px;
-            margin: -40px auto 60px;
+            margin: -40px auto 60px; /* negative top margin overlaps the hero banner */
             padding: 0 28px;
             position: relative; z-index: 10;
             animation: fadeUp 0.55s 0.1s ease both;
         }
 
+        /* Slide-up animation reused by hero and page-layout */
         @keyframes fadeUp {
             from { opacity: 0; transform: translateY(18px); }
             to   { opacity: 1; transform: translateY(0); }
         }
 
-        /* ════════════════════════════
-           SIDE PANEL
-        ════════════════════════════ */
-        .side-panel {
-            display: flex; flex-direction: column; gap: 16px;
-        }
+        /* ── Left sidebar (info cards + tips) ── */
+        .side-panel { display: flex; flex-direction: column; gap: 16px; }
 
         .info-card {
             background: var(--white);
@@ -268,21 +286,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             border: 1px solid rgba(221,227,240,0.6);
         }
 
+        /* Section heading inside an info card */
         .info-card-title {
             font-size: 11px; font-weight: 700;
             letter-spacing: 0.8px; text-transform: uppercase;
             color: var(--blue); margin-bottom: 14px;
             display: flex; align-items: center; gap: 7px;
         }
-        .info-card-title::after {
-            content: ''; flex: 1; height: 1px;
-            background: var(--blue-soft);
-        }
+        /* Horizontal rule after the title */
+        .info-card-title::after { content: ''; flex: 1; height: 1px; background: var(--blue-soft); }
 
-        .tip-item {
-            display: flex; gap: 10px; align-items: flex-start;
-            margin-bottom: 12px;
-        }
+        /* Each tip row: icon + text */
+        .tip-item { display: flex; gap: 10px; align-items: flex-start; margin-bottom: 12px; }
         .tip-item:last-child { margin-bottom: 0; }
         .tip-icon {
             width: 32px; height: 32px; border-radius: 8px;
@@ -293,28 +308,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         .tip-text strong { display: block; font-size: 12px; font-weight: 600; color: var(--text); }
         .tip-text span   { font-size: 11px; color: var(--muted); line-height: 1.4; }
 
-        .stat-grid {
-            display: grid; grid-template-columns: 1fr 1fr; gap: 10px;
-        }
-        .stat-box {
-            background: var(--blue-soft);
-            border-radius: 10px;
-            padding: 14px 12px;
-            text-align: center;
-        }
-        .stat-box .val {
-            font-size: 22px; font-weight: 700; color: var(--blue);
-            font-family: 'DM Serif Display', serif;
-        }
-        .stat-box .lbl {
-            font-size: 10px; font-weight: 600;
-            color: var(--muted); text-transform: uppercase;
-            letter-spacing: 0.5px; margin-top: 2px;
-        }
+        /* Small 2-column stat grid (shows "3 Room Types" etc.) */
+        .stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .stat-box { background: var(--blue-soft); border-radius: 10px; padding: 14px 12px; text-align: center; }
+        .stat-box .val { font-size: 22px; font-weight: 700; color: var(--blue); font-family: 'DM Serif Display', serif; }
+        .stat-box .lbl { font-size: 10px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; margin-top: 2px; }
 
-        /* ════════════════════════════
-           FORM CARD
-        ════════════════════════════ */
+        /* ── Main form card ── */
         .form-card {
             background: var(--white);
             border-radius: var(--radius);
@@ -323,6 +323,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             overflow: hidden;
         }
 
+        /* Coloured header strip at the top of the form card */
         .form-card-header {
             padding: 22px 32px;
             background: linear-gradient(to right, #f8f9ff, #eef3ff);
@@ -335,18 +336,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             display: flex; align-items: center; justify-content: center;
             font-size: 20px;
         }
-        .form-card-header h2 {
-            font-size: 17px; font-weight: 700; color: var(--text);
-        }
-        .form-card-header p {
-            font-size: 12px; color: var(--muted); margin-top: 1px;
-        }
+        .form-card-header h2 { font-size: 17px; font-weight: 700; color: var(--text); }
+        .form-card-header p  { font-size: 12px; color: var(--muted); margin-top: 1px; }
 
         .form-body { padding: 28px 32px 32px; }
 
-        /* ════════════════════════════
-           SECTION LABELS
-        ════════════════════════════ */
+        /* ── Section heading dividers inside the form ── */
+        /* e.g. "Room Identity", "Capacity & Pricing" */
         .section-label {
             display: flex; align-items: center; gap: 8px;
             font-size: 10px; font-weight: 700;
@@ -355,18 +351,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             margin-bottom: 16px; margin-top: 24px;
         }
         .section-label:first-child { margin-top: 0; }
-        .section-label::before {
-            content: ''; width: 3px; height: 14px;
-            background: var(--blue); border-radius: 2px;
-        }
-        .section-label::after {
-            content: ''; flex: 1; height: 1px;
-            background: var(--border);
-        }
+        /* Blue vertical bar on the left */
+        .section-label::before { content: ''; width: 3px; height: 14px; background: var(--blue); border-radius: 2px; }
+        /* Thin line stretching to the right */
+        .section-label::after  { content: ''; flex: 1; height: 1px; background: var(--border); }
 
-        /* ════════════════════════════
-           FORM FIELDS
-        ════════════════════════════ */
+        /* Two equal columns for pairs of form fields */
         .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
 
         .form-group { margin-bottom: 18px; }
@@ -376,14 +366,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             font-size: 13px; font-weight: 600;
             color: var(--text); margin-bottom: 7px;
         }
-        .req { color: var(--blue); font-size: 15px; line-height: 1; }
+        .req { color: var(--blue); font-size: 15px; line-height: 1; } /* asterisk (*) colour */
 
+        /* Wrapper for inputs that have a prefix (like "kr.") */
         .input-wrap { position: relative; }
         .input-prefix {
             position: absolute; left: 13px; top: 50%; transform: translateY(-50%);
             font-size: 14px; color: var(--muted); pointer-events: none;
         }
 
+        /* Shared styles for text inputs and selects */
         .form-group input,
         .form-group select {
             width: 100%; padding: 10px 14px;
@@ -394,9 +386,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             transition: border-color 0.18s, box-shadow 0.18s, background 0.18s;
             appearance: auto;
         }
+        /* Extra left padding when a prefix ("kr.") is shown inside the input */
         .form-group input.has-prefix { padding-left: 34px; }
         .form-group input:hover,
         .form-group select:hover { border-color: #b0bfe0; }
+        /* Blue outline on focus */
         .form-group input:focus,
         .form-group select:focus {
             outline: none;
@@ -406,14 +400,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
         .form-group input::placeholder { color: #c0c8db; }
 
-        .hint {
-            font-size: 11px; color: var(--muted);
-            margin-top: 5px; line-height: 1.4;
-        }
+        /* Small helper text below a field */
+        .hint { font-size: 11px; color: var(--muted); margin-top: 5px; line-height: 1.4; }
 
-        /* ════════════════════════════
-           CHECKBOX
-        ════════════════════════════ */
+        /* ── Ensuite checkbox with styled wrapper ── */
         .checkbox-wrap {
             display: flex; align-items: center; gap: 12px;
             padding: 13px 16px;
@@ -428,14 +418,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             width: 17px; height: 17px;
             accent-color: var(--blue); cursor: pointer; flex-shrink: 0;
         }
-        .checkbox-wrap label {
-            font-size: 13px; color: var(--text);
-            font-weight: 500; cursor: pointer; margin: 0;
-        }
+        .checkbox-wrap label { font-size: 13px; color: var(--text); font-weight: 500; cursor: pointer; margin: 0; }
 
-        /* ════════════════════════════
-           ERROR ALERT
-        ════════════════════════════ */
+        /* ── Error alert box shown at the top of the form ── */
         .alert-error {
             background: var(--error-bg);
             border: 1.5px solid #fca5a5;
@@ -446,11 +431,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         .alert-error ul { padding-left: 16px; margin-top: 6px; }
         .alert-error li { margin-top: 3px; }
 
-        /* ════════════════════════════
-           BUTTONS
-        ════════════════════════════ */
+        /* ── Form action buttons ── */
         .btn-row { display: flex; gap: 10px; margin-top: 28px; align-items: center; }
 
+        /* Primary submit button (blue gradient) */
         .btn-submit {
             display: inline-flex; align-items: center; gap: 8px;
             background: linear-gradient(135deg, var(--blue) 0%, var(--blue-mid) 100%);
@@ -462,12 +446,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             box-shadow: 0 4px 16px rgba(26,86,219,0.30);
             transition: all 0.2s;
         }
-        .btn-submit:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 24px rgba(26,86,219,0.40);
-        }
+        .btn-submit:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(26,86,219,0.40); }
         .btn-submit:active { transform: translateY(0); }
 
+        /* Secondary "Back" link styled as a button */
         .btn-back {
             display: inline-flex; align-items: center; gap: 6px;
             background: transparent; color: var(--muted);
@@ -477,23 +459,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             text-decoration: none; font-weight: 600;
             transition: all 0.18s;
         }
-        .btn-back:hover {
-            border-color: var(--blue);
-            color: var(--blue);
-            background: var(--blue-soft);
-        }
+        .btn-back:hover { border-color: var(--blue); color: var(--blue); background: var(--blue-soft); }
 
-        /* ════════════════════════════
-           PROGRESS STEPS
-        ════════════════════════════ */
-        .steps {
-            display: flex; align-items: center; gap: 0;
-            margin-bottom: 24px;
-        }
-        .step {
-            display: flex; flex-direction: column; align-items: center;
-            flex: 1; position: relative;
-        }
+        /* ── Progress steps indicator (purely decorative here — all steps active) ── */
+        .steps { display: flex; align-items: center; gap: 0; margin-bottom: 24px; }
+        .step { display: flex; flex-direction: column; align-items: center; flex: 1; position: relative; }
+        /* Connecting line between steps */
         .step:not(:last-child)::after {
             content: ''; position: absolute;
             top: 14px; left: calc(50% + 14px);
@@ -509,24 +480,26 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             transition: all 0.2s;
         }
         .step.active .step-circle { background: var(--blue); color: white; }
-        .step.done .step-circle { background: var(--success); color: white; }
+        .step.done   .step-circle { background: var(--success); color: white; }
         .step-label {
             font-size: 10px; font-weight: 600; color: var(--muted);
             text-transform: uppercase; letter-spacing: 0.4px;
             margin-top: 5px; white-space: nowrap;
         }
         .step.active .step-label { color: var(--blue); }
-        .step.done .step-label { color: var(--success); }
+        .step.done   .step-label { color: var(--success); }
     </style>
 </head>
 <body>
 
-<!-- ════ NAVBAR ════ -->
+<!-- ── Navigation bar ── -->
 <nav class="navbar">
     <div class="navbar-logo">
+        <!-- Logo image: brightness(0) invert(1) turns it white -->
         <img src="../logo.png" alt="HostelHub Logo">
     </div>
     <div class="navbar-center">
+        <!-- Show the logged-in admin's username -->
         <span class="nav-guest">
             <span class="icon">👤</span>
             <?php echo htmlspecialchars($_SESSION['username'] ?? 'Guest'); ?>
@@ -538,10 +511,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <div class="navbar-right"></div>
 </nav>
 
-<!-- ════ HERO BANNER ════ -->
+<!-- ── Hero banner with page title ── -->
 <div class="hero">
-    <div class="hero-img"></div>
-    <div class="hero-overlay"></div>
+    <div class="hero-img"></div>       <!-- background photo -->
+    <div class="hero-overlay"></div>   <!-- dark gradient overlay -->
     <div class="hero-content">
         <div class="hero-badge">Room Management</div>
         <h1>Register a New Room</h1>
@@ -549,12 +522,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     </div>
 </div>
 
-<!-- ════ TWO-COLUMN LAYOUT ════ -->
+<!-- ── Two-column layout: sidebar on left, form on right ── -->
 <div class="page-layout">
 
-    <!-- ── Side Panel ── -->
+    <!-- ── Left sidebar: helpful info cards ── -->
     <aside class="side-panel">
 
+        <!-- Mini stats card -->
         <div class="info-card">
             <div class="info-card-title">Quick Stats</div>
             <div class="stat-grid">
@@ -563,6 +537,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             </div>
         </div>
 
+        <!-- Tips card: guidance for filling in the form -->
         <div class="info-card">
             <div class="info-card-title">Tips</div>
             <div class="tip-item">
@@ -588,6 +563,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             </div>
         </div>
 
+        <!-- Room types explanation card -->
         <div class="info-card">
             <div class="info-card-title">Room Types</div>
             <div class="tip-item">
@@ -606,9 +582,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     </aside>
 
-    <!-- ── Main Form ── -->
+    <!-- ── Main form area ── -->
     <main>
 
+        <!-- Show all validation errors (if any) in one red box -->
         <?php if (!empty($errors)): ?>
             <div class="alert-error">
                 ⚠️ Please fix the following errors:
@@ -630,9 +607,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             </div>
 
             <div class="form-body">
+                <!-- POST so the form data is NOT visible in the URL -->
                 <form method="POST" action="">
 
-                    <!-- Steps indicator -->
+                    <!-- Visual step indicators: Identity → Pricing → Availability -->
                     <div class="steps">
                         <div class="step active">
                             <div class="step-circle">1</div>
@@ -648,10 +626,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         </div>
                     </div>
 
+                    <!-- Section 1: Room number and type -->
                     <div class="section-label">Room Identity</div>
                     <div class="form-row">
                         <div class="form-group">
                             <label for="room_number">Room Number <span class="req">*</span></label>
+                            <!-- htmlspecialchars re-fills the field with what the user typed if validation failed -->
                             <input type="text" id="room_number" name="room_number"
                                    value="<?php echo htmlspecialchars($room_number); ?>"
                                    placeholder="e.g. 101A">
@@ -661,6 +641,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             <label for="room_type">Room Type <span class="req">*</span></label>
                             <select id="room_type" name="room_type">
                                 <option value="">-- Select type --</option>
+                                <!-- "selected" keeps the user's choice if there was a validation error -->
                                 <option value="single" <?php echo $room_type==='single' ? 'selected':''; ?>>Single</option>
                                 <option value="double" <?php echo $room_type==='double' ? 'selected':''; ?>>Double</option>
                                 <option value="triple" <?php echo $room_type==='triple' ? 'selected':''; ?>>Triple</option>
@@ -668,6 +649,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         </div>
                     </div>
 
+                    <!-- Section 2: Capacity and price -->
                     <div class="section-label">Capacity &amp; Pricing</div>
                     <div class="form-row">
                         <div class="form-group">
@@ -679,6 +661,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         </div>
                         <div class="form-group">
                             <label for="price_per_month">Price per Month <span class="req">*</span></label>
+                            <!-- input-wrap + input-prefix shows "kr." inside the field -->
                             <div class="input-wrap">
                                 <span class="input-prefix">kr.</span>
                                 <input type="number" id="price_per_month" name="price_per_month"
@@ -689,6 +672,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         </div>
                     </div>
 
+                    <!-- Section 3: Availability date and ensuite checkbox -->
                     <div class="section-label">Availability &amp; Features</div>
                     <div class="form-group">
                         <label for="available_from">Available From <span class="req">*</span></label>
@@ -697,15 +681,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         <div class="hint">Earliest date this room can be assigned to a student</div>
                     </div>
 
+                    <!-- Ensuite checkbox styled as a full-width clickable row -->
                     <div class="form-group">
                         <label>Ensuite Facility</label>
                         <div class="checkbox-wrap">
+                            <!-- "checked" attribute is added if ensuite was selected before a validation error -->
                             <input type="checkbox" id="ensuite_facility" name="ensuite_facility"
                                    <?php echo $ensuite_facility ? 'checked' : ''; ?>>
                             <label for="ensuite_facility">🚿 This room has a private ensuite bathroom</label>
                         </div>
                     </div>
 
+                    <!-- Submit and back buttons -->
                     <div class="btn-row">
                         <button type="submit" class="btn-submit">✚ Add Room</button>
                         <a href="index.php" class="btn-back">← Back to Rooms</a>
@@ -720,4 +707,4 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 </body>
 </html>
-<?php $db = null; ?>
+<?php $db = null; // Close the database connection ?>

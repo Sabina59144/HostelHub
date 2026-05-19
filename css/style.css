@@ -1,0 +1,414 @@
+/* css/style.css — HostelHub */
+
+/* Load Google Fonts: DM Sans (body text) and DM Serif Display (headings) */
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=DM+Serif+Display&display=swap');
+
+/* =============================================
+   CSS Variables
+   ============================================= */
+/* Global design tokens — change a value here and it updates everywhere */
+:root {
+    --primary:      #1a56db;   /* Main blue — buttons, links, active states */
+    --primary-dark: #1341b0;   /* Darker blue — button hover */
+    --danger:       #e02424;   /* Red — errors, delete, logout hover */
+    --success:      #057a55;   /* Green — success messages */
+    --bg:           #f4f6fb;   /* Page background (light grey-blue) */
+    --surface:      #ffffff;   /* Card/panel background (white) */
+    --border:       #e2e8f0;   /* Subtle borders */
+    --text:         #1a202c;   /* Primary text (near-black) */
+    --text-muted:   #64748b;   /* Secondary/helper text (grey) */
+    --nav-bg:       #1e293b;   /* Navbar background (dark navy) */
+    --nav-text:     #cbd5e1;   /* Navbar link colour (light grey) */
+    --nav-active:   #ffffff;   /* Active navbar link colour (white) */
+    --radius:       10px;      /* Default border-radius for cards & inputs */
+    --shadow:       0 2px 12px rgba(0,0,0,0.08); /* Subtle card drop shadow */
+}
+
+/* =============================================
+   Reset & Base
+   ============================================= */
+/* Remove default browser margins/padding; use border-box sizing everywhere */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+/* Base body: font, background colour, text colour, size, and line spacing */
+body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    font-size: 15px;
+    line-height: 1.6;
+}
+
+/* Default link style — underline appears only on hover */
+a { color: var(--primary); text-decoration: none; }
+a:hover { text-decoration: underline; }
+
+/* =============================================
+   Navbar
+   ============================================= */
+/* Sticky top bar — stays visible while scrolling */
+.navbar {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+    background: var(--nav-bg);
+    padding: 0 28px;
+    height: 60px;
+    position: sticky;   /* Sticks to the top of the viewport */
+    top: 0;
+    z-index: 100;       /* Sits above all page content */
+    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+}
+
+/* Logo area: icon + "HostelHub" brand name */
+.navbar-brand {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-family: 'DM Serif Display', serif;
+    color: #fff;
+    font-size: 20px;
+    white-space: nowrap;
+    margin-right: 8px;
+}
+
+/* Small emoji/icon next to the brand name */
+.brand-icon { font-size: 22px; }
+
+/* Horizontal list of nav links — fills available space via flex: 1 */
+.navbar-links {
+    display: flex;
+    list-style: none;
+    gap: 2px;
+    flex: 1;
+}
+
+/* Individual nav link pill styling */
+.navbar-links a {
+    display: block;
+    padding: 6px 14px;
+    border-radius: 6px;
+    color: var(--nav-text);
+    font-size: 14px;
+    font-weight: 500;
+    transition: background 0.15s, color 0.15s;
+}
+
+/* Hover: subtle white overlay; Active: solid primary-blue highlight */
+.navbar-links a:hover,
+.navbar-links a.active {
+    background: rgba(255,255,255,0.1);
+    color: var(--nav-active);
+    text-decoration: none;
+}
+
+.navbar-links a.active {
+    background: var(--primary);
+    color: #fff;
+}
+
+/* Right-side user info + logout button */
+.navbar-user {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-left: auto; /* Pushes this block to the far right */
+}
+
+/* Stacked name + role labels, right-aligned */
+.user-info {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+}
+
+.user-name {
+    color: #fff;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.user-role {
+    color: var(--nav-text);
+    font-size: 11px;
+    text-transform: capitalize;
+}
+
+/* Logout button — turns red on hover to signal a destructive action */
+.btn-logout {
+    padding: 5px 14px;
+    border-radius: 6px;
+    background: rgba(255,255,255,0.1);
+    color: var(--nav-text);
+    font-size: 13px;
+    font-weight: 500;
+    border: 1px solid rgba(255,255,255,0.15);
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s;
+}
+
+.btn-logout:hover {
+    background: var(--danger);
+    color: #fff;
+    text-decoration: none;
+    border-color: var(--danger);
+}
+
+/* =============================================
+   Login Page
+   ============================================= */
+/* Full-screen centred layout with diagonal gradient background */
+.login-page {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, #1e293b 0%, #1a56db 100%);
+}
+
+/* White card that holds the login form */
+.login-container {
+    background: var(--surface);
+    border-radius: 16px;
+    padding: 44px 40px;
+    width: 100%;
+    max-width: 420px;       /* Never wider than 420px */
+    box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+}
+
+/* Logo + title + subtitle at the top of the card */
+.login-header {
+    text-align: center;
+    margin-bottom: 32px;
+}
+
+/* Large emoji/icon above the app name */
+.login-logo {
+    font-size: 44px;
+    margin-bottom: 10px;
+}
+
+.login-header h1 {
+    font-family: 'DM Serif Display', serif;
+    font-size: 28px;
+    color: var(--text);
+    margin-bottom: 4px;
+}
+
+.login-header p {
+    color: var(--text-muted);
+    font-size: 14px;
+}
+
+/* Wrapper for each label + input pair */
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-group label {
+    display: block;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 6px;
+}
+
+/* Text input fields — blue border glow on focus */
+.form-group input {
+    width: 100%;
+    padding: 10px 14px;
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius);
+    font-family: inherit;
+    font-size: 15px;
+    color: var(--text);
+    background: var(--bg);
+    transition: border-color 0.2s, box-shadow 0.2s;
+    outline: none;
+}
+
+.form-group input:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(26,86,219,0.12); /* Soft blue ring */
+    background: #fff;
+}
+
+/* Positions the show/hide password button inside the input */
+.password-wrapper {
+    position: relative;
+}
+
+/* Extra right padding so text doesn't sit under the toggle button */
+.password-wrapper input {
+    padding-right: 44px;
+}
+
+/* Eye icon button overlaid on the right side of the password field */
+.toggle-password {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 16px;
+    padding: 4px;
+    opacity: 0.6;
+    transition: opacity 0.2s;
+}
+
+.toggle-password:hover { opacity: 1; }
+
+/* Full-width primary submit button */
+.btn-login {
+    width: 100%;
+    padding: 12px;
+    background: var(--primary);
+    color: #fff;
+    border: none;
+    border-radius: var(--radius);
+    font-family: inherit;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    margin-top: 8px;
+    transition: background 0.2s, transform 0.1s;
+}
+
+.btn-login:hover  { background: var(--primary-dark); }
+.btn-login:active { transform: scale(0.99); } /* Slight press effect on click */
+
+/* Small copyright/version text at the bottom of the card */
+.login-footer {
+    text-align: center;
+    color: var(--text-muted);
+    font-size: 12px;
+    margin-top: 28px;
+}
+
+/* =============================================
+   Alerts
+   ============================================= */
+/* Base alert bar — coloured variants below */
+.alert {
+    padding: 12px 16px;
+    border-radius: var(--radius);
+    font-size: 14px;
+    margin-bottom: 20px;
+    font-weight: 500;
+}
+
+/* Red alert — validation errors, login failures */
+.alert-error {
+    background: #fef2f2;
+    color: var(--danger);
+    border: 1px solid #fecaca;
+}
+
+/* Green alert — successful actions */
+.alert-success {
+    background: #f0fdf4;
+    color: var(--success);
+    border: 1px solid #bbf7d0;
+}
+
+/* =============================================
+   Main Content
+   ============================================= */
+/* Centred page wrapper with comfortable padding */
+.main-content {
+    padding: 32px 36px;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+/* Page title + subtitle shown at the top of each section */
+.page-header {
+    margin-bottom: 28px;
+}
+
+.page-header h2 {
+    font-family: 'DM Serif Display', serif;
+    font-size: 26px;
+    margin-bottom: 4px;
+}
+
+.page-header p {
+    color: var(--text-muted);
+    font-size: 14px;
+}
+
+/* =============================================
+   Stats Grid (Dashboard)
+   ============================================= */
+/* Responsive row of stat cards — wraps automatically on smaller screens */
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 20px;
+}
+
+/* Individual stat card: icon on the left, number + label on the right */
+.stat-card {
+    background: var(--surface);
+    border-radius: var(--radius);
+    padding: 24px;
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    box-shadow: var(--shadow);
+    border: 1px solid var(--border);
+    transition: box-shadow 0.2s;
+}
+
+/* Slightly deeper shadow on hover for a lift effect */
+.stat-card:hover {
+    box-shadow: 0 4px 20px rgba(0,0,0,0.12);
+}
+
+/* Large emoji/icon inside a stat card */
+.stat-icon { font-size: 32px; }
+
+/* The big number (e.g. "42 students") */
+.stat-number {
+    display: block;
+    font-size: 26px;
+    font-weight: 600;
+    color: var(--primary);
+    line-height: 1.2;
+}
+
+/* Descriptive label beneath the number */
+.stat-label {
+    display: block;
+    font-size: 13px;
+    color: var(--text-muted);
+}
+
+/* "Forgot password?" link below the login form */
+.forgot-password {
+    text-align: center;
+    margin-top: 12px;
+    font-size: 0.9rem;
+}
+
+.forgot-password a {
+    color: #3b5bdb;
+    text-decoration: none;
+}
+
+.forgot-password a:hover {
+    text-decoration: underline;
+}
+
+/* Blue info banner (e.g. "Check your email for a reset link") */
+.alert-info {
+    background: #e7f5ff;
+    color: #1864ab;
+    border: 1px solid #a5d8ff;
+    padding: 12px;
+    border-radius: 6px;
+    margin-bottom: 16px;
+    text-align: center;
+}

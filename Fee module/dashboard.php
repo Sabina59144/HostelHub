@@ -322,17 +322,14 @@ body { background: var(--bg); color: var(--text); font-family: 'Outfit', sans-se
 <nav class="topnav">
     <div class="brand">🏠 Hostel<span>Hub</span></div>
     <div class="nav-links">
-        <a href="dashboard.php" class="active">Dashboard</a>
+        <a href="../dashboard.php" title="Main System Dashboard">← Home</a>
+        <a href="dashboard.php" class="active">Fee Dashboard</a>
         <a href="index.php">Fee Records</a>
         <?php if ($isAdmin): ?>
         <a href="add.php">Add Fee</a>
-        <?php endif; ?>
-        <a href="../Student%20module/index.php">Students</a>
-        <a href="../Room%20module/index.php">Rooms</a>
-        <a href="../pages/maintenance.php">Maintenance</a>
-        <?php if ($isAdmin): ?>
         <a href="../pages/users.php">Users</a>
         <?php endif; ?>
+        <a href="report.php">Report</a>
     </div>
     <div class="nav-right">
         <span class="nav-user">Logged in as <strong><?= htmlspecialchars($_SESSION['full_name'] ?? 'Staff') ?></strong></span>
@@ -364,25 +361,25 @@ body { background: var(--bg); color: var(--text); font-family: 'Outfit', sans-se
         <div class="kpi-card blue">
             <div class="kpi-icon">💰</div>
             <div class="kpi-label">Total Billed</div>
-            <div class="kpi-value">£<?= number_format($stats['total_amount'], 0) ?></div>
+            <div class="kpi-value">kr<?= number_format($stats['total_amount'], 0) ?></div>
             <div class="kpi-sub"><?= $stats['total_records'] ?> total fee records</div>
         </div>
         <div class="kpi-card green">
             <div class="kpi-icon">✅</div>
             <div class="kpi-label">Collected</div>
-            <div class="kpi-value">£<?= number_format($stats['amount_paid'], 0) ?></div>
+            <div class="kpi-value">kr<?= number_format($stats['amount_paid'], 0) ?></div>
             <div class="kpi-sub"><?= $stats['total_paid'] ?> fees paid · <?= $collectedPct ?>% rate</div>
         </div>
         <div class="kpi-card amber">
             <div class="kpi-icon">⏳</div>
             <div class="kpi-label">Outstanding</div>
-            <div class="kpi-value">£<?= number_format($stats['amount_unpaid'], 0) ?></div>
+            <div class="kpi-value">kr<?= number_format($stats['amount_unpaid'], 0) ?></div>
             <div class="kpi-sub"><?= $stats['total_unpaid'] ?> fees pending</div>
         </div>
         <div class="kpi-card red">
             <div class="kpi-icon">⚠</div>
             <div class="kpi-label">Overdue Fees</div>
-            <div class="kpi-value"><?= $stats['overdue_count'] ?></div>
+            <div class="kpi-value">kr<?= $stats['overdue_count'] ?></div>
             <div class="kpi-sub">Est. £<?= number_format($totalFinesEstimate, 2) ?> in fines</div>
         </div>
     </div>
@@ -429,7 +426,7 @@ body { background: var(--bg); color: var(--text); font-family: 'Outfit', sans-se
                         $h = max(10, round(($m['collected'] / $maxCol) * 80));
                     ?>
                     <div class="bar-col">
-                        <span style="font-size:10px;color:var(--accent);font-family:'DM Mono',monospace;">£<?= number_format($m['collected'],0) ?></span>
+                        <span style="font-size:10px;color:var(--accent);font-family:'DM Mono',monospace;">kr<?= number_format($m['collected'],0) ?></span>
                         <div class="b" style="height:<?= $h ?>px;margin-top:auto;"></div>
                         <span class="lbl"><?= $m['month'] ?></span>
                     </div>
@@ -514,7 +511,7 @@ body { background: var(--bg); color: var(--text); font-family: 'Outfit', sans-se
                         <div class="type-track">
                             <div class="type-fill <?= $fillClass ?>" style="width:<?= $w ?>%"></div>
                         </div>
-                        <span class="type-amt">£<?= number_format($t['total'], 0) ?></span>
+                        <span class="type-amt">kr<?= number_format($t['total'], 0) ?></span>
                     </div>
                     <?php endforeach; ?>
                 </div>
@@ -562,13 +559,13 @@ body { background: var(--bg); color: var(--text); font-family: 'Outfit', sans-se
                             <div class="rcpt"><?= htmlspecialchars($f['receipt_number']) ?></div>
                         </td>
                         <td style="color:var(--danger);font-weight:700;"><?= $f['days_late'] ?>d</td>
-                        <td class="amount-val text-danger">+£<?= number_format($f['fine_now'], 2) ?></td>
+                        <td class="amount-val text-danger">+kr<?= number_format($f['fine_now'], 2) ?></td>
                     </tr>
                     <?php endforeach; ?>
                     </tbody>
                 </table>
                 <div style="padding:12px 16px;font-size:11px;color:rgba(248,113,113,0.7);border-top:1px solid rgba(248,113,113,0.2);">
-                    Fine policy: £0.50/day · max £15.00 per fee
+                    Fine policy: kr0.50/day · max kr15.00 per fee
                 </div>
             </div>
             <?php endif; ?>
@@ -597,7 +594,7 @@ body { background: var(--bg); color: var(--text); font-family: 'Outfit', sans-se
     </div>
 
     <p style="text-align:center;font-size:11px;color:var(--faint);margin-top:8px;">
-        HostelHub Fee Management · Late fines auto-calculated: £0.50/day, max £15.00
+        HostelHub Fee Management · Late fines auto-calculated: kr0.50/day, max kr15.00
     </p>
 </div>
 

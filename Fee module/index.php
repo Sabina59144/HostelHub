@@ -283,15 +283,14 @@ body{background:var(--bg);color:var(--text);font-family:'Outfit',sans-serif;min-
 <nav class="topnav">
     <div class="brand">🏠 Hostel<span>Hub</span></div>
     <div class="nav-links">
-        <a href="dashboard.php">Dashboard</a>
-        <a href="../Student%20module/index.php">Students</a>
-        <a href="index.php" class="active">Fees</a>
+        <a href="../dashboard.php" title="Main System Dashboard">← Home</a>
+        <a href="dashboard.php">Fee Dashboard</a>
+        <a href="index.php" class="active">Fee Records</a>
         <?php if ($isAdmin): ?>
         <a href="add.php">Add Fee</a>
-        <a href="../Room%20module/index.php">Rooms</a>
-        <a href="../pages/maintenance.php">Maintenance</a>
         <a href="../pages/users.php">Users</a>
         <?php endif; ?>
+        <a href="report.php">Report</a>
     </div>
     <div style="display:flex;align-items:center;gap:12px;">
         <span style="font-size:13px;color:var(--muted);">Logged in as <strong style="color:var(--text);"><?= htmlspecialchars($_SESSION['full_name'] ?? 'Staff') ?></strong></span>

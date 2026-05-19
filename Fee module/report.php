@@ -97,7 +97,8 @@ body{background:var(--bg);color:var(--text);font-family:'Outfit',sans-serif;min-
 <nav class="topnav">
     <div class="brand">🏠 Hostel<span>Hub</span></div>
     <div style="display:flex;gap:12px;align-items:center;">
-        <a href="dashboard.php" style="color:var(--muted);font-size:13px;text-decoration:none;">Dashboard</a>
+        <a href="../dashboard.php" style="color:var(--muted);font-size:13px;text-decoration:none;">← Home</a>
+        <a href="dashboard.php" style="color:var(--muted);font-size:13px;text-decoration:none;">Fee Dashboard</a>
         <a href="index.php" style="color:var(--muted);font-size:13px;text-decoration:none;">Fee Records</a>
     </div>
 </nav>

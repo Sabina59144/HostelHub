@@ -171,7 +171,8 @@ body{background:var(--bg);color:var(--text);font-family:'Outfit',sans-serif;min-
 <nav class="topnav">
     <div class="brand">🏠 Hostel<span>Hub</span></div>
     <div style="display:flex;gap:12px;align-items:center;">
-        <a href="dashboard.php" style="color:var(--muted);font-size:13px;text-decoration:none;">Dashboard</a>
+        <a href="../dashboard.php" style="color:var(--muted);font-size:13px;text-decoration:none;">← Home</a>
+        <a href="dashboard.php" style="color:var(--muted);font-size:13px;text-decoration:none;">Fee Dashboard</a>
         <a href="index.php" style="color:var(--muted);font-size:13px;text-decoration:none;">Fee Records</a>
     </div>
 </nav>
@@ -232,7 +233,7 @@ body{background:var(--bg);color:var(--text);font-family:'Outfit',sans-serif;min-
                     </select>
                 </div>
                 <div class="form-group">
-                    <label>Amount (£) *</label>
+                    <label>Amount (kr) *</label>
                     <input type="number" step="0.01" min="0.01" name="amount" required
                            placeholder="0.00" value="<?= htmlspecialchars($_POST['amount'] ?? '') ?>">
                 </div>
@@ -277,16 +278,16 @@ body{background:var(--bg);color:var(--text);font-family:'Outfit',sans-serif;min-
             <!-- Fine Rate & Cap: Two-column layout -->
             <div class="form-grid">
                 <div class="form-group">
-                    <label>Fine Rate (£/day)</label>
+                    <label>Fine Rate (kr/day)</label>
                     <input type="number" step="0.01" min="0" name="fine_rate"
                            value="<?= htmlspecialchars($_POST['fine_rate'] ?? '0.50') ?>">
-                    <div class="hint">Default: £0.50/day</div>
+                    <div class="hint">Default: kr0.50/day</div>
                 </div>
                 <div class="form-group">
-                    <label>Fine Cap (£ max)</label>
+                    <label>Fine Cap (kr max)</label>
                     <input type="number" step="0.01" min="0" name="fine_cap"
                            value="<?= htmlspecialchars($_POST['fine_cap'] ?? '15.00') ?>">
-                    <div class="hint">Default: £15.00 maximum</div>
+                    <div class="hint">Default: kr15.00 maximum</div>
                 </div>
             </div>
 

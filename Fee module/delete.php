@@ -61,7 +61,10 @@ body{background:var(--bg);color:var(--text);font-family:'Outfit',sans-serif;min-
 <body>
 <nav class="topnav">
     <div class="brand">🏠 Hostel<span>Hub</span></div>
-    <a href="index.php" style="color:var(--muted);font-size:13px;text-decoration:none;">← Fee Records</a>
+    <div style="display:flex;gap:12px;align-items:center;">
+        <a href="../dashboard.php" style="color:var(--muted);font-size:13px;text-decoration:none;">← Home</a>
+        <a href="index.php" style="color:var(--muted);font-size:13px;text-decoration:none;">← Fee Records</a>
+    </div>
 </nav>
 <div class="page">
     <div class="page-hdr">

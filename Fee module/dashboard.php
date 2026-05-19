@@ -327,9 +327,12 @@ body { background: var(--bg); color: var(--text); font-family: 'Outfit', sans-se
         <?php if ($isAdmin): ?>
         <a href="add.php">Add Fee</a>
         <?php endif; ?>
-        <a href="../students/index.php">Students</a>
-        <a href="../rooms/index.php">Rooms</a>
-        <a href="../maintenance/index.php">Maintenance</a>
+        <a href="../Student%20module/index.php">Students</a>
+        <a href="../Room%20module/index.php">Rooms</a>
+        <a href="../pages/maintenance.php">Maintenance</a>
+        <?php if ($isAdmin): ?>
+        <a href="../pages/users.php">Users</a>
+        <?php endif; ?>
     </div>
     <div class="nav-right">
         <span class="nav-user">Logged in as <strong><?= htmlspecialchars($_SESSION['full_name'] ?? 'Staff') ?></strong></span>

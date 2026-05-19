@@ -329,7 +329,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     placeholder="Enter your username"
                     value="<?= htmlspecialchars($_POST['username'] ?? '') ?>"<!-- keep the value if there was an error -->
                     required
-                    autocomplete="username"
                 >
             </div>
 

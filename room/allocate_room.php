@@ -138,13 +138,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 // ── Load dropdown data ─────────────────────────────────────────────────────────
 
-// Rooms: only show rooms that still have at least one free bed (HAVING clause).
+// Rooms: only show rooms that:
+//   1. Are NOT full  (occupants < capacity)
+//   2. Are open today (available_from <= today)
+// Full rooms and future rooms are completely excluded from this dropdown.
 $roomsWithCapacity = $db->query(
     "SELECT r.*, COUNT(s.student_id) AS occupants
      FROM rooms r
      LEFT JOIN students s ON s.room_id = r.room_id AND s.status = 1
+     WHERE r.available_from <= CURDATE()   -- room must be open as of today
      GROUP BY r.room_id
-     HAVING occupants < r.capacity   -- only include rooms that are NOT full
+     HAVING occupants < r.capacity        -- only rooms that still have free beds
      ORDER BY r.room_number"
 )->fetchAll();
 

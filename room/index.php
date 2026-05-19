@@ -27,16 +27,26 @@ if (!isLoggedIn()) {
 // Total number of rooms in the hostel.
 $totalRooms     = $db->query("SELECT COUNT(*) AS c FROM rooms")->fetch()['c'];
 
-// Rooms whose available_from date is today or in the past (i.e. ready to move in).
-$totalAvailable = $db->query("SELECT COUNT(*) AS c FROM rooms WHERE available_from <= CURDATE()")->fetch()['c'];
+// Rooms that have at least one free bed (occupants < capacity).
+// We use a subquery to count active students per room and compare to capacity.
+// This is the true "available" number — rooms that can actually accept a new student.
+$totalAvailable = $db->query("
+    SELECT COUNT(*) AS c
+    FROM rooms r
+    WHERE (
+        SELECT COUNT(*) FROM students s
+        WHERE s.room_id = r.room_id AND s.status = 1
+    ) < r.capacity
+")->fetch()['c'];
 
 // Rooms that have an ensuite (private) bathroom.
 $totalEnsuite   = $db->query("SELECT COUNT(*) AS c FROM rooms WHERE ensuite_facility = 1")->fetch()['c'];
 
 // Students who are currently assigned to a room and have an active status (status = 1).
+// This is the true "students housed" count — only students with a room assigned.
 $totalOccupied  = $db->query("SELECT COUNT(*) AS c FROM students WHERE room_id IS NOT NULL AND status = 1")->fetch()['c'];
 
-// Calculate what percentage of rooms are currently available.
+// Calculate what percentage of rooms still have free beds.
 // Guard against divide-by-zero when there are no rooms yet.
 $availabilityRate = $totalRooms > 0 ? round(($totalAvailable / $totalRooms) * 100) : 0;
 
@@ -234,7 +244,7 @@ $activeNav = 'rooms';
             </div>
             <div class="stat-text">
                 <div class="stat-number"><?php echo $totalAvailable; ?></div>
-                <div class="stat-label">Available Now</div>
+                <div class="stat-label">Rooms with Free Beds</div>
             </div>
         </div>
 
@@ -272,7 +282,7 @@ $activeNav = 'rooms';
     <!-- The bar width is set inline using the PHP-calculated percentage -->
     <div class="progress-card">
         <div class="progress-row">
-            <span>Room availability rate</span>
+            <span>Rooms with free beds</span>
             <span class="pct"><?php echo $availabilityRate; ?>%</span>
         </div>
         <div class="progress-bar">

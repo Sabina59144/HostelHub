@@ -76,6 +76,74 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <title>Add Staff — HostelHub</title>
     <link rel="stylesheet" href="../css/style.css">
     <style>
+        /* ── Hero Banner ─────────────────────────────────────────── */
+        .hero-banner {
+            position: relative;
+            width: 100%;
+            height: 220px;
+            background:
+                linear-gradient(135deg, rgba(15,23,42,.72) 0%, rgba(79,70,229,.55) 100%),
+                url('https://images.unsplash.com/photo-1555854877-bab0e564b8d5?w=1400&auto=format&fit=crop&q=80')
+                center/cover no-repeat;
+            display: flex;
+            align-items: center;
+            overflow: hidden;
+        }
+        .hero-banner::after {
+            content: '';
+            position: absolute;
+            bottom: 0; left: 0; right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #6366f1, #8b5cf6, #06b6d4, #6366f1);
+            background-size: 200% 100%;
+            animation: shimmer 3s linear infinite;
+        }
+        @keyframes shimmer { to { background-position: -200% 0; } }
+        .hero-inner {
+            max-width: 860px;
+            margin: 0 auto;
+            padding: 0 2rem;
+            color: #fff;
+        }
+        .hero-breadcrumb {
+            font-size: .75rem;
+            letter-spacing: .05em;
+            text-transform: uppercase;
+            color: rgba(255,255,255,.65);
+            margin-bottom: .6rem;
+            display: flex;
+            align-items: center;
+            gap: .4rem;
+        }
+        .hero-breadcrumb span { color: rgba(255,255,255,.4); }
+        .hero-inner h1 {
+            font-size: 1.85rem;
+            font-weight: 800;
+            margin: 0 0 .4rem;
+            line-height: 1.2;
+            text-shadow: 0 2px 8px rgba(0,0,0,.35);
+        }
+        .hero-inner p {
+            font-size: .95rem;
+            color: rgba(255,255,255,.8);
+            margin: 0;
+        }
+        .hero-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: .35rem;
+            background: rgba(255,255,255,.15);
+            backdrop-filter: blur(6px);
+            border: 1px solid rgba(255,255,255,.25);
+            border-radius: 999px;
+            padding: .3rem .85rem;
+            font-size: .78rem;
+            font-weight: 600;
+            color: #fff;
+            margin-bottom: .85rem;
+        }
+
+        /* ── Form page ──────────────────────────────────────────── */
         .form-page { max-width: 680px; margin: 0 auto; padding: 2rem 1rem 4rem; }
 
         .form-page .page-header { margin-bottom: 2rem; }
@@ -172,6 +240,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <body>
 
     <?php include("../includes/navbar.php"); ?>
+
+    <!-- ── Hero Banner ── -->
+    <div class="hero-banner">
+        <div class="hero-inner">
+            <div class="hero-breadcrumb">
+                🏠 HostelHub <span>/</span> Staff Management <span>/</span> Register
+            </div>
+            <div class="hero-badge">👤 Admin Access</div>
+            <h1>Add Staff Member</h1>
+            <p>Create a new hostel staff account with role-based access.</p>
+        </div>
+    </div>
 
     <main class="main-content">
         <div class="form-page">

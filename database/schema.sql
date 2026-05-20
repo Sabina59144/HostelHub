@@ -75,45 +75,7 @@ INSERT INTO students (student_id, student_number, full_name, email, date_of_birt
 (106, 'STU-2024-007', 'Daniel Mwangi',   'daniel.mwangi@student.edu',   '2003-04-25', NULL, 1),
 (107, 'STU-2024-008', 'Emma Thompson',   'emma.thompson@student.edu',   '2002-08-09', NULL, 1);
 
--- ── Fees (your complete version) ────────────────────────────
--- Tracks every charge raised against a student (rent, deposits, fines, etc.)
-CREATE TABLE IF NOT EXISTS fees (
-    receipt_number VARCHAR(30)   NOT NULL,   -- Human-readable receipt ID e.g. "RCP-2026-0001"
-    student_id     INT           NOT NULL,   -- Which student owes this fee
-    fee_type       ENUM('rent','deposit','utility','fine','laundry','other') NOT NULL,
-    amount         DECIMAL(10,2) NOT NULL,   -- Original fee amount before any fine
-    due_date       DATE          NOT NULL,   -- Payment deadline
-    is_paid        TINYINT(1)    NOT NULL DEFAULT 0,   -- 0 = unpaid, 1 = paid
-    paid_at        DATETIME      NULL,                 -- When payment was recorded (NULL if unpaid)
-    payment_method VARCHAR(20)   NULL,                 -- e.g. "cash", "card", "transfer"
-    fine_rate      DECIMAL(5,2)  NOT NULL DEFAULT 0.50,  -- Daily fine rate (£/day)
-    fine_cap       DECIMAL(5,2)  NOT NULL DEFAULT 15.00, -- Maximum fine that can accumulate
-    fine_amount    DECIMAL(10,2) NOT NULL DEFAULT 0.00,  -- Calculated fine so far
-    total_due      DECIMAL(10,2) NOT NULL DEFAULT 0.00,  -- amount + fine_amount
-    is_active      TINYINT(1)    NOT NULL DEFAULT 1,     -- 0 = soft-deleted
-    deleted_at     DATETIME      NULL,                   -- When it was soft-deleted
-    deleted_reason VARCHAR(255)  NULL,                   -- Why it was deleted
-    created_at     TIMESTAMP     NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at     TIMESTAMP     NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    PRIMARY KEY (receipt_number),
-    -- Prevents deleting a student who still has fee records
-    CONSTRAINT fk_fee_student
-        FOREIGN KEY (student_id) REFERENCES students(student_id)
-        ON UPDATE CASCADE ON DELETE RESTRICT
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
--- Seed data: 8 sample fee records covering various types and statuses
--- RCP-0002 and RCP-0006 are already paid (is_paid = 1, paid_at = NOW())
--- RCP-0003, RCP-0004, RCP-0007 have accumulated fines (overdue)
-INSERT INTO fees (receipt_number, student_id, fee_type, amount, due_date, is_paid, paid_at, fine_rate, fine_cap, fine_amount, total_due, is_active) VALUES
-('RCP-2026-0001', 100, 'rent',    500.00, '2026-06-01', 0, NULL,  0.50, 15.00,  0.00, 500.00, 1),
-('RCP-2026-0002', 101, 'deposit', 200.00, '2026-05-15', 1, NOW(), 0.50, 15.00,  0.00, 200.00, 1),
-('RCP-2026-0003', 102, 'utility',  75.00, '2026-03-01', 0, NULL,  0.50, 15.00, 15.00,  90.00, 1),
-('RCP-2026-0004', 103, 'fine',     25.00, '2026-02-10', 0, NULL,  0.50, 15.00,  7.50,  32.50, 1),
-('RCP-2026-0005', 104, 'laundry',  30.00, '2026-06-10', 0, NULL,  0.50, 15.00,  0.00,  30.00, 1),
-('RCP-2026-0006', 105, 'rent',    500.00, '2026-06-01', 1, NOW(), 0.50, 15.00,  0.00, 500.00, 1),
-('RCP-2026-0007', 106, 'other',    40.00, '2026-04-20', 0, NULL,  0.50, 15.00, 10.00,  50.00, 1),
-('RCP-2026-0008', 107, 'deposit', 200.00, '2026-05-20', 0, NULL,  0.50, 15.00,  0.00, 200.00, 1);
 
 -- ── Maintenance ─────────────────────────────────────────────
 -- Tracks repair/maintenance requests raised for rooms

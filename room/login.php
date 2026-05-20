@@ -327,8 +327,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     id="username"
                     name="username"
                     placeholder="Enter your username"
-                    value="<?= htmlspecialchars($_POST['username'] ?? '') ?>"<!-- keep the value if there was an error -->
-                    required
+                    value="<?= htmlspecialchars($_POST['username'] ?? '') ?>"
                 >
             </div>
 

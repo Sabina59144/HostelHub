@@ -35,39 +35,34 @@ if ($filterStudentId) {
     $filterStudentName = $sRow->fetchColumn() ?: '';
 }
 
-/* ── Search & list fees ─────────────────────────────── */
-$search = $_GET['search'] ?? '';
+/* ── Search & filters ───────────────────────────────── */
+$search       = $_GET['search'] ?? '';
+$statusFilter = $_GET['status'] ?? '';
+
+$where  = ["fees.is_active = 1"];
+$params = [];
 
 if ($filterStudentId) {
-    // Show only this student's fees (from student module link)
-    $stmt = $db->prepare("
-        SELECT fees.*, students.full_name
-        FROM fees
-        LEFT JOIN students ON students.student_id = fees.student_id
-        WHERE fees.student_id = ?
-        ORDER BY fees.fee_id DESC
-    ");
-    $stmt->execute([$filterStudentId]);
-} elseif (!empty($search)) {
-    $stmt = $db->prepare("
-        SELECT fees.*, students.full_name
-        FROM fees
-        LEFT JOIN students ON students.student_id = fees.student_id
-        WHERE fees.receipt_number LIKE ?
-           OR students.full_name  LIKE ?
-           OR fees.student_id     LIKE ?
-        ORDER BY fees.fee_id DESC
-    ");
-    $stmt->execute(["%$search%", "%$search%", "%$search%"]);
-} else {
-    $stmt = $db->prepare("
-        SELECT fees.*, students.full_name
-        FROM fees
-        LEFT JOIN students ON students.student_id = fees.student_id
-        ORDER BY fees.fee_id DESC
-    ");
-    $stmt->execute();
+    $where[]  = "fees.student_id = ?";
+    $params[] = $filterStudentId;
 }
+if (!empty($search)) {
+    $where[]  = "(fees.receipt_number LIKE ? OR students.full_name LIKE ? OR fees.student_id LIKE ?)";
+    $params[] = "%$search%";
+    $params[] = "%$search%";
+    $params[] = "%$search%";
+}
+if ($statusFilter === 'unpaid') {
+    $where[] = "fees.is_paid = 0";
+}
+
+$sql  = "SELECT fees.*, students.full_name
+         FROM fees
+         LEFT JOIN students ON students.student_id = fees.student_id
+         WHERE " . implode(" AND ", $where) . "
+         ORDER BY fees.created_at DESC";
+$stmt = $db->prepare($sql);
+$stmt->execute($params);
 
 $fees  = $stmt->fetchAll(PDO::FETCH_ASSOC);
 $today = new DateTime();
@@ -187,6 +182,11 @@ $isAdmin = ($_SESSION['role'] ?? '') === 'admin';
             <?php if ($filterStudentId && $filterStudentName): ?>
                 <h2>Fees — <?= htmlspecialchars($filterStudentName) ?></h2>
                 <p>Showing all fee records for this student</p>
+            <?php elseif ($statusFilter === 'unpaid'): ?>
+                <h2>Fee Records
+                    <span style="font-size:14px;background:#fef3c7;color:#92400e;padding:3px 12px;border-radius:20px;font-family:'DM Sans',sans-serif;font-weight:600;margin-left:8px;">Unpaid only</span>
+                </h2>
+                <p>Showing all unpaid and overdue fees &nbsp;·&nbsp; <a href="index.php" style="color:#1a56db;font-size:13px;">Clear filter</a></p>
             <?php else: ?>
                 <h2>Fee Records</h2>
                 <p>Manage hostel fee payments and outstanding balances</p>
@@ -246,19 +246,20 @@ $isAdmin = ($_SESSION['role'] ?? '') === 'admin';
                 $rowClass    = '';
 
                 if ($fee['is_paid']) {
-                    // is_paid holds the date it was paid
                     $status      = 'paid';
                     $statusLabel = 'Paid';
+                    $fineAmount  = 0;
+                    $totalDue    = 0;
                 } elseif ($today > $dueDate) {
-                    // Overdue — calculate fine dynamically
                     $daysOverdue = $dueDate->diff($today)->days;
                     $fineAmount  = min($daysOverdue * $FINE_RATE, $FINE_CAP);
                     $status      = 'overdue';
                     $statusLabel = '⚠ Overdue';
                     $rowClass    = 'late-row';
+                    $totalDue    = $fee['amount'] + $fineAmount;
+                } else {
+                    $totalDue    = $fee['amount'];
                 }
-
-                $totalDue = $fee['amount'] + $fineAmount;
             ?>
             <tr class="<?= $rowClass ?>">
                 <td class="receipt"><?= htmlspecialchars($fee['receipt_number']) ?></td>
@@ -266,7 +267,7 @@ $isAdmin = ($_SESSION['role'] ?? '') === 'admin';
                 <td><span class="type-badge"><?= ucfirst($fee['fee_type']) ?></span></td>
                 <td class="amount">£<?= number_format($fee['amount'], 2) ?></td>
                 <td class="fine-amount"><?= $fineAmount > 0 ? '+£' . number_format($fineAmount, 2) : '—' ?></td>
-                <td class="total-due">£<?= number_format($totalDue, 2) ?></td>
+                <td class="total-due"><?= $status === 'paid' ? '<span style="color:#9ca3af;">—</span>' : '£' . number_format($totalDue, 2) ?></td>
                 <td><?= $dueDate->format('d M Y') ?></td>
                 <td><span class="badge <?= $status ?>"><?= $statusLabel ?></span></td>
                 <td style="white-space:nowrap;">

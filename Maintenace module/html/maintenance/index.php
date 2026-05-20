@@ -16,8 +16,18 @@ require_once $base . 'includes/db.php';
 
 <main class="app-shell">
     <header class="app-header">
-        <h1>Maintenance Requests</h1>
-        <p>Monitor all maintenance tickets and their current status.</p>
+        <h1>Maintenance Requests
+            <?php if (($_GET['status'] ?? '') === 'open'): ?>
+                <span style="font-size:14px;background:#fff1f2;color:#dc2626;padding:3px 12px;border-radius:20px;font-weight:600;margin-left:8px;">Open only</span>
+            <?php endif; ?>
+        </h1>
+        <p>
+            <?php if (($_GET['status'] ?? '') === 'open'): ?>
+                Showing open (unresolved) tickets only &nbsp;·&nbsp; <a href="index.php" style="color:#1a56db;">Clear filter</a>
+            <?php else: ?>
+                Monitor all maintenance tickets and their current status.
+            <?php endif; ?>
+        </p>
         <nav>
             <ul class="top-nav">
                 <li><a href="plan.php">Add Request</a></li>
@@ -27,7 +37,7 @@ require_once $base . 'includes/db.php';
     </header>
 
     <section class="card">
-        <h2>All Requests</h2>
+        <h2><?= ($_GET['status'] ?? '') === 'open' ? 'Open Requests' : 'All Requests' ?></h2>
         <div class="table-wrap">
             <table id="maintenanceTable">
                 <thead>
@@ -77,6 +87,8 @@ require_once $base . 'includes/db.php';
 </main>
 
 <script>
+const statusFilterParam = <?= json_encode($_GET['status'] ?? '') ?>;
+
 function createCell(value) {
     const td = document.createElement('td');
     td.textContent = value ?? '';
@@ -133,6 +145,18 @@ async function loadMaintenance() {
         tbody.innerHTML = '';
 
         if (json.success && Array.isArray(json.data)) {
+            let data = json.data;
+            if (statusFilterParam === 'open') {
+                data = data.filter(r => {
+                    const s = (r.status || r.is_resolved || '').toString().toLowerCase();
+                    return s !== 'completed' && s !== 'resolved' && s !== '1';
+                });
+            }
+            if (data.length === 0) {
+                showTableMessage('info', statusFilterParam === 'open' ? 'No open maintenance requests found.' : 'No maintenance requests found.');
+                return;
+            }
+            json.data = data;
             if (json.data.length === 0) {
                 showTableMessage('info', 'No maintenance requests found.');
                 return;

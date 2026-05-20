@@ -37,9 +37,10 @@ if (isset($_GET['msg'])) {
     if ($_GET['msg'] === 'allocated') $msg = "Student allocated successfully!";
 }
 
-/* ── Search & type filter ──────────────────────── */
-$search = trim($_GET['search'] ?? '');
-$type   = $_GET['type'] ?? '';
+/* ── Search, type & availability filter ────────── */
+$search    = trim($_GET['search']    ?? '');
+$type      = $_GET['type']           ?? '';
+$available = $_GET['available']      ?? '';
 
 /* ── Build room list with live occupant count ─── */
 $sql    = "SELECT r.*, COUNT(s.student_id) AS occupants
@@ -47,8 +48,9 @@ $sql    = "SELECT r.*, COUNT(s.student_id) AS occupants
            LEFT JOIN students s ON s.room_id = r.room_id AND s.status = 1
            WHERE 1=1";
 $params = [];
-if ($search !== '') { $sql .= " AND r.room_number LIKE ?"; $params[] = "%$search%"; }
-if ($type !== '')   { $sql .= " AND r.room_type = ?";      $params[] = $type; }
+if ($search !== '')   { $sql .= " AND r.room_number LIKE ?"; $params[] = "%$search%"; }
+if ($type !== '')     { $sql .= " AND r.room_type = ?";      $params[] = $type; }
+if ($available === '1') { $sql .= " AND r.available_from <= CURDATE()"; }
 $sql .= " GROUP BY r.room_id ORDER BY r.room_number";
 
 $stmt = $db->prepare($sql);
@@ -124,8 +126,16 @@ $rooms = $stmt->fetchAll();
 <?php include '../includes/navbar.php'; /* Shared navigation */ ?>
 <div class="container">
     <div class="page-header">
-        <h2>Room Module</h2>
-        <p>Manage hostel rooms — add, view, edit, and allocate rooms</p>
+        <h2>Room Module
+            <?php if ($available === '1'): ?>
+                <span style="font-size:14px;background:#ecfdf5;color:#059669;padding:3px 12px;border-radius:20px;font-family:'DM Sans',sans-serif;font-weight:600;margin-left:8px;">Available only</span>
+            <?php endif; ?>
+        </h2>
+        <?php if ($available === '1'): ?>
+            <p>Showing available rooms only &nbsp;·&nbsp; <a href="index.php" style="color:#1a56db;font-size:13px;">Clear filter</a></p>
+        <?php else: ?>
+            <p>Manage hostel rooms — add, view, edit, and allocate rooms</p>
+        <?php endif; ?>
     </div>
     <?php if ($msg): ?><div class="alert-success">✅ <?= htmlspecialchars($msg) ?></div><?php endif; ?>
     <div class="stat-cards">
@@ -154,6 +164,7 @@ $rooms = $stmt->fetchAll();
                 <option value="single" <?= $type==='single'?'selected':'' ?>>Single</option>
                 <option value="double" <?= $type==='double'?'selected':'' ?>>Double</option>
                 <option value="triple" <?= $type==='triple'?'selected':'' ?>>Triple</option>
+                <option value="studio" <?= $type==='studio'?'selected':'' ?>>Studio</option>
             </select>
             <button type="submit" class="btn-search">Search</button>
             <?php if ($search !== '' || $type !== ''): ?><a href="index.php" class="btn-clear">✕ Clear</a><?php endif; ?>

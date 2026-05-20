@@ -28,7 +28,7 @@ $stmt = $db->prepare("
     SELECT fees.*, students.full_name
     FROM fees
     LEFT JOIN students ON students.student_id = fees.student_id
-    WHERE fees.receipt_number = ?
+    WHERE fees.receipt_number = ? AND fees.is_active = 1
 ");
 $stmt->execute([$id]);
 $fee = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -38,12 +38,17 @@ if (!$fee) {
     exit;
 }
 
-/* ── Hard delete on confirm ─────────────────────────── */
-// Schema has no is_active / soft-delete columns, so we do a real DELETE
+/* ── Soft delete on confirm ─────────────────────────── */
 if (isset($_POST['confirm_delete'])) {
-    $db->prepare("DELETE FROM fees WHERE receipt_number = ?")
-       ->execute([$id]);
-    header("Location: index.php");
+    $reason = trim($_POST['reason'] ?? '');
+    $db->prepare("
+        UPDATE fees
+        SET is_active = 0,
+            deleted_at = NOW(),
+            deleted_reason = ?
+        WHERE receipt_number = ?
+    ")->execute([$reason ?: null, $id]);
+    header("Location: index.php?deleted=1");
     exit;
 }
 ?>

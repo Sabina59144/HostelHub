@@ -75,8 +75,8 @@ if (!isset($base)) {
         </li>
         <?php if ($user && $user['role'] === 'admin'): ?>
         <li>
-            <a href="<?= $base ?>pages/users.php"
-               class="<?= $currentPage === 'users.php' ? 'active' : '' ?>">
+            <a href="<?= $base ?>User%20module/users.php"
+               class="<?= strpos($_SERVER['SCRIPT_FILENAME'], 'User module') !== false ? 'active' : '' ?>">
                 Users
             </a>
         </li>

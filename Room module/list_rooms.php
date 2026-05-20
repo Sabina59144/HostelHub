@@ -107,6 +107,7 @@ $rooms = $stmt->fetchAll();
                 <option value="single" <?= $type==='single'?'selected':'' ?>>Single</option>
                 <option value="double" <?= $type==='double'?'selected':'' ?>>Double</option>
                 <option value="triple" <?= $type==='triple'?'selected':'' ?>>Triple</option>
+                <option value="studio" <?= $type==='studio'?'selected':'' ?>>Studio</option>
             </select>
             <select name="ensuite" class="filter-select">
                 <option value="">All Bathrooms</option>

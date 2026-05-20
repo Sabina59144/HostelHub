@@ -32,6 +32,32 @@ $maintenanceOpen = $db->query("SELECT COUNT(*) FROM maintenance WHERE is_resolve
 // Time-based greeting for the hero banner
 $hour = (int) date('H');
 $greeting = $hour < 12 ? 'Good morning' : ($hour < 17 ? 'Good afternoon' : 'Good evening');
+
+// ── Recent activity across all modules ───────────────────────
+$recentStudents = $db->query("
+    SELECT student_id, full_name, student_number, status
+    FROM students ORDER BY student_id DESC LIMIT 4
+")->fetchAll();
+
+$recentFees = $db->query("
+    SELECT f.receipt_number, f.fee_type, f.amount, f.is_paid, f.created_at, s.full_name
+    FROM fees f
+    LEFT JOIN students s ON s.student_id = f.student_id
+    WHERE f.is_active = 1
+    ORDER BY f.created_at DESC LIMIT 4
+")->fetchAll();
+
+$recentRooms = $db->query("
+    SELECT room_id, room_number, room_type, capacity, price_per_month
+    FROM rooms ORDER BY room_id DESC LIMIT 4
+")->fetchAll();
+
+$recentMaintenance = $db->query("
+    SELECT m.maintenance_id, m.ticket_number, m.date_reported, m.is_resolved, r.room_number
+    FROM maintenance m
+    LEFT JOIN rooms r ON r.room_id = m.room_id
+    ORDER BY m.maintenance_id DESC LIMIT 4
+")->fetchAll();
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -216,35 +242,63 @@ $greeting = $hour < 12 ? 'Good morning' : ($hour < 17 ? 'Good afternoon' : 'Good
         }
         .stat-card:hover .stat-arrow { background: #1a56db; color: #fff; border-color: #1a56db; }
 
-        /* ── Quick links ── */
-        .quick-links {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 14px;
-        }
-        @media (max-width: 700px) { .quick-links { grid-template-columns: 1fr 1fr; } }
 
-        .quick-link {
-            background: #fff; border-radius: 12px;
-            padding: 18px 20px;
-            display: flex; align-items: center; gap: 14px;
+        /* ── Recent Activity ── */
+        .activity-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 18px;
+        }
+        @media (max-width: 800px) { .activity-grid { grid-template-columns: 1fr; } }
+
+        .activity-card {
+            background: #fff;
+            border-radius: 16px;
             border: 1px solid #e8edf3;
-            text-decoration: none; color: #1e293b;
-            font-weight: 600; font-size: 14px;
-            box-shadow: 0 1px 4px rgba(0,0,0,0.04);
-            transition: transform 0.18s, box-shadow 0.18s, border-color 0.18s, color 0.18s;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+            overflow: hidden;
         }
-        .quick-link:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(0,0,0,0.09);
-            border-color: #1a56db; color: #1a56db; text-decoration: none;
+        .activity-card-header {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 14px 18px;
+            border-bottom: 1px solid #f1f5f9;
+            font-size: 13px; font-weight: 700; color: #0f1923;
         }
-        .quick-link-icon {
-            width: 38px; height: 38px; border-radius: 10px;
-            background: #f1f5f9;
+        .activity-card-header a {
+            font-size: 12px; color: #1a56db; text-decoration: none; font-weight: 600;
+        }
+        .activity-card-header a:hover { text-decoration: underline; }
+        .activity-row {
+            display: flex; align-items: center; gap: 12px;
+            padding: 11px 18px;
+            border-bottom: 1px solid #f8fafc;
+            text-decoration: none; color: inherit;
+            transition: background 0.15s;
+        }
+        .activity-row:last-child { border-bottom: none; }
+        .activity-row:hover { background: #f8fafc; }
+        .activity-avatar {
+            width: 34px; height: 34px; border-radius: 50%;
+            background: #e0e7ff; color: #3730a3;
             display: flex; align-items: center; justify-content: center;
-            font-size: 18px; flex-shrink: 0;
+            font-size: 13px; font-weight: 800; flex-shrink: 0;
         }
+        .activity-info { flex: 1; min-width: 0; }
+        .activity-name {
+            font-size: 13px; font-weight: 600; color: #0f1923;
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+        }
+        .activity-sub { font-size: 11px; color: #94a3b8; margin-top: 1px; }
+        .activity-badge {
+            font-size: 11px; font-weight: 700;
+            padding: 2px 9px; border-radius: 20px; flex-shrink: 0;
+        }
+        .badge-green { background: #dcfce7; color: #166534; }
+        .badge-amber { background: #fef3c7; color: #92400e; }
+        .badge-red   { background: #fee2e2; color: #991b1b; }
+        .badge-grey  { background: #f3f4f6; color: #6b7280; }
+        .badge-blue  { background: #eff6ff; color: #1d4ed8; }
+        .activity-empty { font-size: 13px; color: #94a3b8; padding: 20px 18px; }
 
         /* ── Footer ── */
         .dashboard-footer {
@@ -438,25 +492,25 @@ $greeting = $hour < 12 ? 'Good morning' : ($hour < 17 ? 'Good afternoon' : 'Good
 
     <p class="section-label">Overview</p>
     <div class="stats-grid">
-        <a href="Student%20module/index.php" class="stat-card blue" style="text-decoration:none;display:block;">
+        <a href="Student%20module/list_students.php" class="stat-card blue" style="text-decoration:none;display:block;">
             <div class="stat-icon-wrap">🎓</div>
             <span class="stat-number"><?= $totalStudents ?></span>
             <span class="stat-label">Total Students</span>
             <span class="stat-arrow">→</span>
         </a>
-        <a href="Room%20module/index.php" class="stat-card green" style="text-decoration:none;display:block;">
+        <a href="Room%20module/index.php?available=1" class="stat-card green" style="text-decoration:none;display:block;">
             <div class="stat-icon-wrap">🛏️</div>
             <span class="stat-number"><?= $availableRooms ?></span>
             <span class="stat-label">Rooms Available</span>
             <span class="stat-arrow">→</span>
         </a>
-        <a href="Fee%20module/index.php" class="stat-card amber" style="text-decoration:none;display:block;">
+        <a href="Fee%20module/index.php?status=unpaid" class="stat-card amber" style="text-decoration:none;display:block;">
             <div class="stat-icon-wrap">💷</div>
             <span class="stat-number"><?= $feesPending ?></span>
             <span class="stat-label">Fees Unpaid</span>
             <span class="stat-arrow">→</span>
         </a>
-        <a href="Maintenace%20module/html/maintenance/index.php" class="stat-card rose" style="text-decoration:none;display:block;">
+        <a href="Maintenace%20module/html/maintenance/index.php?status=open" class="stat-card rose" style="text-decoration:none;display:block;">
             <div class="stat-icon-wrap">🔧</div>
             <span class="stat-number"><?= $maintenanceOpen ?></span>
             <span class="stat-label">Maintenance Open</span>
@@ -464,28 +518,95 @@ $greeting = $hour < 12 ? 'Good morning' : ($hour < 17 ? 'Good afternoon' : 'Good
         </a>
     </div>
 
-    <p class="section-label">Quick Actions</p>
-    <div class="quick-links">
-        <a href="Student%20module/index.php" class="quick-link">
-            <div class="quick-link-icon">🎓</div> Manage Students
-        </a>
-        <a href="Room%20module/index.php" class="quick-link">
-            <div class="quick-link-icon">🛏️</div> Manage Rooms
-        </a>
-        <a href="Fee%20module/index.php" class="quick-link">
-            <div class="quick-link-icon">💷</div> View Fees
-        </a>
-        <a href="Maintenace%20module/html/maintenance/index.php" class="quick-link">
-            <div class="quick-link-icon">🔧</div> Maintenance
-        </a>
-        <?php if ($_SESSION['role'] === 'admin'): ?>
-        <a href="pages/users.php" class="quick-link">
-            <div class="quick-link-icon">👥</div> Manage Users
-        </a>
-        <a href="Fee%20module/add.php" class="quick-link">
-            <div class="quick-link-icon">➕</div> Add Fee Record
-        </a>
-        <?php endif; ?>
+    <p class="section-label">Recent Activity</p>
+    <div class="activity-grid">
+
+        <!-- Recent Students -->
+        <div class="activity-card">
+            <div class="activity-card-header">
+                <span>🎓 Students</span>
+                <a href="Student%20module/list_students.php">View all →</a>
+            </div>
+            <?php if (empty($recentStudents)): ?>
+                <p class="activity-empty">No students yet</p>
+            <?php else: foreach ($recentStudents as $s): ?>
+            <a href="Student%20module/view_student.php?id=<?= $s['student_id'] ?>" class="activity-row">
+                <div class="activity-avatar"><?= strtoupper(substr($s['full_name'], 0, 1)) ?></div>
+                <div class="activity-info">
+                    <div class="activity-name"><?= htmlspecialchars($s['full_name']) ?></div>
+                    <div class="activity-sub"><?= htmlspecialchars($s['student_number']) ?></div>
+                </div>
+                <span class="activity-badge <?= $s['status'] ? 'badge-green' : 'badge-grey' ?>">
+                    <?= $s['status'] ? 'Active' : 'Inactive' ?>
+                </span>
+            </a>
+            <?php endforeach; endif; ?>
+        </div>
+
+        <!-- Recent Fees -->
+        <div class="activity-card">
+            <div class="activity-card-header">
+                <span>💷 Fees</span>
+                <a href="Fee%20module/index.php">View all →</a>
+            </div>
+            <?php if (empty($recentFees)): ?>
+                <p class="activity-empty">No fees yet</p>
+            <?php else: foreach ($recentFees as $f): ?>
+            <a href="Fee%20module/edit.php?id=<?= urlencode($f['receipt_number']) ?>" class="activity-row">
+                <div class="activity-avatar" style="background:#fffbeb;color:#d97706;">£</div>
+                <div class="activity-info">
+                    <div class="activity-name"><?= htmlspecialchars($f['full_name'] ?? '—') ?></div>
+                    <div class="activity-sub"><?= ucfirst($f['fee_type']) ?> · £<?= number_format($f['amount'], 2) ?></div>
+                </div>
+                <span class="activity-badge <?= $f['is_paid'] ? 'badge-green' : 'badge-amber' ?>">
+                    <?= $f['is_paid'] ? 'Paid' : 'Unpaid' ?>
+                </span>
+            </a>
+            <?php endforeach; endif; ?>
+        </div>
+
+        <!-- Recent Rooms -->
+        <div class="activity-card">
+            <div class="activity-card-header">
+                <span>🛏️ Rooms</span>
+                <a href="Room%20module/list_rooms.php">View all →</a>
+            </div>
+            <?php if (empty($recentRooms)): ?>
+                <p class="activity-empty">No rooms yet</p>
+            <?php else: foreach ($recentRooms as $r): ?>
+            <a href="Room%20module/edit_room.php?id=<?= $r['room_id'] ?>" class="activity-row">
+                <div class="activity-avatar" style="background:#eff6ff;color:#1a56db;">🛏</div>
+                <div class="activity-info">
+                    <div class="activity-name">Room <?= htmlspecialchars($r['room_number']) ?></div>
+                    <div class="activity-sub"><?= ucfirst($r['room_type']) ?> · £<?= number_format($r['price_per_month'], 2) ?>/mo</div>
+                </div>
+                <span class="activity-badge badge-blue"><?= $r['capacity'] ?> bed</span>
+            </a>
+            <?php endforeach; endif; ?>
+        </div>
+
+        <!-- Recent Maintenance -->
+        <div class="activity-card">
+            <div class="activity-card-header">
+                <span>🔧 Maintenance</span>
+                <a href="Maintenace%20module/html/maintenance/index.php">View all →</a>
+            </div>
+            <?php if (empty($recentMaintenance)): ?>
+                <p class="activity-empty">No tickets yet</p>
+            <?php else: foreach ($recentMaintenance as $m): ?>
+            <a href="Maintenace%20module/html/maintenance/index.php" class="activity-row">
+                <div class="activity-avatar" style="background:#fff1f2;color:#dc2626;">🔧</div>
+                <div class="activity-info">
+                    <div class="activity-name"><?= htmlspecialchars($m['ticket_number']) ?></div>
+                    <div class="activity-sub">Room <?= htmlspecialchars($m['room_number'] ?? '—') ?> · <?= htmlspecialchars($m['date_reported']) ?></div>
+                </div>
+                <span class="activity-badge <?= $m['is_resolved'] ? 'badge-green' : 'badge-red' ?>">
+                    <?= $m['is_resolved'] ? 'Resolved' : 'Open' ?>
+                </span>
+            </a>
+            <?php endforeach; endif; ?>
+        </div>
+
     </div>
 
 </div>

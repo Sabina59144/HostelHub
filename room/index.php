@@ -273,7 +273,7 @@ $activeNav = 'rooms';
             </div>
             <div class="stat-text">
                 <div class="stat-number"><?php echo $totalOccupied; ?></div>
-                <div class="stat-label">Students Housed</div>
+                <div class="stat-label">Rooms Assigned</div>
             </div>
         </div>
     </div>

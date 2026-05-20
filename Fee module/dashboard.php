@@ -43,7 +43,7 @@ $recent = $db->query("
 $overdueList = $db->query("
     SELECT f.*, s.full_name,
            DATEDIFF(CURDATE(), f.due_date) AS days_late,
-           LEAST(DATEDIFF(CURDATE(), f.due_date) * f.fine_rate, f.fine_cap) AS fine_now
+           DATEDIFF(CURDATE(), f.due_date) * f.fine_rate AS fine_now
     FROM fees f
     LEFT JOIN students s ON s.student_id = f.student_id
     WHERE f.is_paid = 0 AND f.due_date < CURDATE() AND f.is_active = 1
@@ -328,11 +328,14 @@ body { background: var(--bg); color: var(--text); font-family: 'Outfit', sans-se
         <?php if ($isAdmin): ?>
         <a href="add.php">Add Fee</a>
         <a href="../pages/users.php">Users</a>
+         <a href="../pages/users.php">student</a>
+          <a href="../pages/users.php">room</a>
+           <a href="../pages/users.php">maintenace</a>
         <?php endif; ?>
         <a href="report.php">Report</a>
     </div>
     <div class="nav-right">
-        <span class="nav-user">Logged in as <strong><?= htmlspecialchars($_SESSION['full_name'] ?? 'Staff') ?></strong></span>
+        <span class="nav-user"> <strong><?= htmlspecialchars($_SESSION['full_name'] ?? 'Staff') ?></strong></span>
         <a href="../logout.php" class="action-btn danger" style="padding:7px 14px;font-size:12px;">Sign out</a>
     </div>
 </nav>
@@ -341,7 +344,7 @@ body { background: var(--bg); color: var(--text); font-family: 'Outfit', sans-se
 
     <!-- HERO -->
     <div class="hero">
-        <h1>Fee <span>Dashboard</span></h1>
+        <h1>Fee <span>Management</span></h1>
         <p><?= $today->format('l, d F Y') ?> &mdash; Overview of all hostel fee activity</p>
     </div>
 
@@ -380,7 +383,7 @@ body { background: var(--bg); color: var(--text); font-family: 'Outfit', sans-se
             <div class="kpi-icon">⚠</div>
             <div class="kpi-label">Overdue Fees</div>
             <div class="kpi-value">kr<?= $stats['overdue_count'] ?></div>
-            <div class="kpi-sub">Est. £<?= number_format($totalFinesEstimate, 2) ?> in fines</div>
+            <div class="kpi-sub">Est. kr <?= number_format($totalFinesEstimate, 2) ?> in fines</div>
         </div>
     </div>
 
@@ -398,8 +401,8 @@ body { background: var(--bg); color: var(--text); font-family: 'Outfit', sans-se
                 </div>
                 <div class="collection-bar">
                     <div class="bar-meta">
-                        <span>£<?= number_format($stats['amount_paid'], 2) ?> collected</span>
-                        <strong>£<?= number_format($stats['total_amount'], 2) ?> total billed</strong>
+                        <span>kr <?= number_format($stats['amount_paid'], 2) ?> collected</span>
+                        <strong>kr <?= number_format($stats['total_amount'], 2) ?> total billed</strong>
                     </div>
                     <div class="bar-track">
                         <div class="bar-fill" style="width:<?= $collectedPct ?>%"></div>
@@ -466,7 +469,7 @@ body { background: var(--bg); color: var(--text); font-family: 'Outfit', sans-se
                         <td><span class="rcpt"><?= $rcpt ?></span></td>
                         <td><?= htmlspecialchars($f['full_name'] ?? '—') ?></td>
                         <td><span class="type-pill"><?= ucfirst($f['fee_type']) ?></span></td>
-                        <td class="amount-val">£<?= number_format($f['amount'], 2) ?></td>
+                        <td class="amount-val">kr <?= number_format($f['amount'], 2) ?></td>
                         <td style="font-size:12px;color:var(--muted);"><?= $due->format('d M Y') ?></td>
                         <td id="dash-status-<?= $rcpt ?>"><span class="badge <?= $bclass[$status] ?>"><?= $labels[$status] ?></span></td>
                         <td style="white-space:nowrap;">
@@ -528,7 +531,7 @@ body { background: var(--bg); color: var(--text); font-family: 'Outfit', sans-se
                             <td style="padding:7px 0;color:var(--muted);text-transform:capitalize;"><?= $t['fee_type'] ?></td>
                             <td style="text-align:right;padding:7px 0;"><?= $t['cnt'] ?></td>
                             <td style="text-align:right;padding:7px 0;color:var(--success);"><?= $t['paid_cnt'] ?></td>
-                            <td style="text-align:right;padding:7px 0;font-family:'DM Mono',monospace;">£<?= number_format($t['total'],0) ?></td>
+                            <td style="text-align:right;padding:7px 0;font-family:'DM Mono',monospace;">kr <?= number_format($t['total'],0) ?></td>
                         </tr>
                         <?php endforeach; ?>
                     </table>
@@ -565,7 +568,7 @@ body { background: var(--bg); color: var(--text); font-family: 'Outfit', sans-se
                     </tbody>
                 </table>
                 <div style="padding:12px 16px;font-size:11px;color:rgba(248,113,113,0.7);border-top:1px solid rgba(248,113,113,0.2);">
-                    Fine policy: kr0.50/day · max kr15.00 per fee
+                    Fine policy: kr0.50%/day
                 </div>
             </div>
             <?php endif; ?>
@@ -594,7 +597,7 @@ body { background: var(--bg); color: var(--text); font-family: 'Outfit', sans-se
     </div>
 
     <p style="text-align:center;font-size:11px;color:var(--faint);margin-top:8px;">
-        HostelHub Fee Management · Late fines auto-calculated: kr0.50/day, max kr15.00
+        HostelHub Fee Management · Late fines auto-calculated: kr0.50%/day
     </p>
 </div>
 
@@ -657,5 +660,27 @@ async function dashToggle(btn) {
     btn.disabled = false;
 }
 </script>
+
+<!-- HostelHub Footer -->
+<footer style="
+    background:var(--surface);
+    border-top:1px solid var(--border);
+    margin-top:48px;
+    padding:28px 32px;
+    text-align:center;
+    font-family:'Outfit',sans-serif;
+">
+    <div style="max-width:1100px;margin:0 auto;">
+        
+        <div style="width:48px;height:1px;background:var(--border);margin:0 auto 16px;"></div>
+        <div style="display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:6px;">
+            <span style="font-family:'Syne',sans-serif;font-size:16px;font-weight:800;color:var(--text);">🏠 Hostel<span style="color:var(--accent);">Hub</span></span>
+        </div>
+        <p style="font-size:11px;color:var(--muted);margin:0;">
+            Hostel Fee Management System &nbsp;·&nbsp; &copy; <?= date('Y') ?> HostelHub &nbsp;·&nbsp; All records are encrypted and access-controlled.
+        </p>
+    </div>
+</footer>
+
 </body>
 </html>

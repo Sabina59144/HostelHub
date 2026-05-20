@@ -198,52 +198,43 @@ foreach ($fees as $f) {
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Fee Records — HostelHub</title>
 
-<!-- Google Fonts: Syne (headings), DM Mono (monospace), Outfit (body) -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Mono:wght@400;500&family=Outfit:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
 
 <!-- Flatpickr: Date picker library with calendar UI -->
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
 <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 
 <style>
-/* ══════════════════════════════════════════════════════════════════════════
-   DESIGN SYSTEM: CSS Custom Properties (Variables)
-   
-   These variables define the entire color scheme, spacing, and typography
-   for the page. Changing them updates the entire design consistently.
-   ══════════════════════════════════════════════════════════════════════════ */
 :root{
-  --bg:#0e1117;           /* Main background color (very dark blue) */
-  --surface:#161b27;      /* Secondary background (cards, surface) */
-  --card:#1c2235;         /* Card/container background (lighter than surface) */
-  --border:#2a3148;       /* Border color (dark blue-gray) */
-  --accent:#4f7aff;       /* Primary accent (bright blue) */
-  --success:#22d3a5;      /* Success state (green) */
-  --warning:#fbbf24;      /* Warning state (amber/yellow) */
-  --danger:#f87171;       /* Danger/error state (red) */
-  --text:#e8eaf6;         /* Primary text color (light) */
-  --muted:#8892b0;        /* Secondary text/muted (gray) */
-  --faint:#3a4260;        /* Very muted text (lighter gray) */
-  --radius:14px;          /* Standard border radius */
+  --bg:#f0f4f8;
+  --surface:#fff;
+  --card:#fff;
+  --border:#e8edf3;
+  --accent:#1a56db;
+  --success:#059669;
+  --success-bg:#ecfdf5;
+  --warning:#d97706;
+  --warning-bg:#fffbeb;
+  --danger:#dc2626;
+  --danger-bg:#fff1f2;
+  --text:#0f1923;
+  --muted:#64748b;
+  --faint:#94a3b8;
+  --radius:16px;
 }
 
-/* Reset all default browser styles */
 *{box-sizing:border-box;margin:0;padding:0;}
 
-/* Base body styling */
 body{
   background:var(--bg);
   color:var(--text);
-  font-family:'Outfit',sans-serif;
+  font-family:'DM Sans',sans-serif;
   min-height:100vh;
 }
 
-/* ──────────────────────────────────────────────────────────────────────────
-   TOPNAV: Fixed navigation bar at top
-   ────────────────────────────────────────────────────────────────────────── */
 .topnav{
-  background:var(--surface);
+  background:#fff;
   border-bottom:1px solid var(--border);
   padding:0 32px;
   height:60px;
@@ -252,16 +243,17 @@ body{
   justify-content:space-between;
   position:sticky;
   top:0;
-  z-index:100;  /* Ensure it stays on top when scrolling */
+  z-index:100;
+  box-shadow:0 1px 4px rgba(0,0,0,0.06);
 }
 
 .brand{
-  font-family:'Syne',sans-serif;
-  font-weight:800;
+  font-family:'Playfair Display',serif;
+  font-weight:700;
   font-size:20px;
   color:var(--text);
 }
-.brand span{color:var(--accent);}  /* "Hub" in accent color */
+.brand span{color:var(--accent);}
 
 .nav-links{display:flex;gap:4px;}
 .nav-links a{
@@ -273,12 +265,9 @@ body{
   text-decoration:none;
   transition:all .15s;
 }
-.nav-links a:hover{background:var(--card);color:var(--text);}
+.nav-links a:hover{background:var(--bg);color:var(--text);}
 .nav-links a.active{background:var(--accent);color:#fff;}
 
-/* ──────────────────────────────────────────────────────────────────────────
-   PAGE LAYOUT: Main content container
-   ────────────────────────────────────────────────────────────────────────── */
 .page{
   max-width:1320px;
   margin:0 auto;
@@ -291,19 +280,17 @@ body{
   justify-content:space-between;
   gap:12px;
   margin-bottom:20px;
-  flex-wrap:wrap;  /* Wrap on smaller screens */
+  flex-wrap:wrap;
 }
 .page-hdr h2{
-  font-family:'Syne',sans-serif;
+  font-family:'Playfair Display',serif;
   font-size:24px;
-  font-weight:800;
+  font-weight:700;
   margin-bottom:4px;
+  color:var(--text);
 }
 .page-hdr p{color:var(--muted);font-size:13px;}
 
-/* ──────────────────────────────────────────────────────────────────────────
-   BUTTONS: Primary and secondary button styles
-   ────────────────────────────────────────────────────────────────────────── */
 .btn{
   display:inline-flex;
   align-items:center;
@@ -316,16 +303,13 @@ body{
   transition:all .15s;
   border:1px solid transparent;
   cursor:pointer;
-  font-family:'Outfit',sans-serif;
+  font-family:'DM Sans',sans-serif;
 }
 .btn-primary{background:var(--accent);color:#fff;}
-.btn-primary:hover{background:#3d68e8;}
-.btn-ghost{background:var(--card);color:var(--text);border-color:var(--border);}
+.btn-primary:hover{background:#1547c0;}
+.btn-ghost{background:#fff;color:var(--text);border-color:var(--border);}
 .btn-ghost:hover{border-color:var(--accent);color:var(--accent);}
 
-/* ──────────────────────────────────────────────────────────────────────────
-   FILTER ROW: Search and filter controls
-   ────────────────────────────────────────────────────────────────────────── */
 .filter-row{
   display:flex;
   gap:10px;
@@ -343,36 +327,33 @@ body{
   flex-wrap:wrap;
 }
 
-/* Search input */
 .filter-row input[type=text]{
   flex:1;
   padding:9px 14px;
   border:1px solid var(--border);
   border-radius:9px;
   font-size:13px;
-  background:var(--card);
+  background:#fff;
   color:var(--text);
-  font-family:'Outfit',sans-serif;
+  font-family:'DM Sans',sans-serif;
   outline:none;
   transition:border-color .15s;
 }
 .filter-row input[type=text]:focus{border-color:var(--accent);}
 
-/* Dropdown selects */
 .filter-row select{
   padding:9px 12px;
   border:1px solid var(--border);
   border-radius:9px;
   font-size:13px;
-  background:var(--card);
+  background:#fff;
   color:var(--text);
-  font-family:'Outfit',sans-serif;
+  font-family:'DM Sans',sans-serif;
   outline:none;
   cursor:pointer;
 }
 .filter-row select:focus{border-color:var(--accent);}
 
-/* Date range filter */
 .date-filter{display:flex;gap:8px;align-items:center;flex-wrap:wrap;}
 .date-filter label{font-size:11px;color:var(--muted);font-weight:600;letter-spacing:.04em;text-transform:uppercase;}
 .date-filter input{
@@ -381,17 +362,13 @@ body{
   border:1px solid var(--border);
   border-radius:8px;
   font-size:12px;
-  background:var(--card);
+  background:#fff;
   color:var(--text);
-  font-family:'DM Mono',monospace;
   outline:none;
   cursor:pointer;
 }
 .date-filter input:focus{border-color:var(--accent);}
 
-/* ──────────────────────────────────────────────────────────────────────────
-   STAT STRIP: Summary KPI cards at top
-   ────────────────────────────────────────────────────────────────────────── */
 .stat-strip{
   display:flex;
   gap:12px;
@@ -400,121 +377,113 @@ body{
 }
 
 .stat-chip{
-  background:var(--card);
+  background:#fff;
   border:1px solid var(--border);
-  border-radius:10px;
-  padding:10px 16px;
+  border-radius:12px;
+  padding:14px 18px;
   font-size:12px;
   color:var(--muted);
-  min-width:120px;
+  min-width:130px;
+  box-shadow:0 2px 8px rgba(0,0,0,0.04);
 }
 .stat-chip strong{
   display:block;
-  font-family:'Syne',sans-serif;
-  font-size:18px;
+  font-family:'Playfair Display',serif;
+  font-size:20px;
   font-weight:700;
   color:var(--text);
+  margin-bottom:2px;
 }
-
-/* Color-coded stat chips */
 .stat-chip.s-green strong{color:var(--success);}
 .stat-chip.s-amber strong{color:var(--warning);}
 .stat-chip.s-red  strong{color:var(--danger);}
 .stat-chip.s-blue strong{color:var(--accent);}
 
-/* ──────────────────────────────────────────────────────────────────────────
-   TABLE: Main data table styling
-   ────────────────────────────────────────────────────────────────────────── */
 .table-wrap{
-  background:var(--card);
+  background:#fff;
   border:1px solid var(--border);
   border-radius:var(--radius);
   overflow:hidden;
+  box-shadow:0 2px 12px rgba(0,0,0,0.06);
 }
 
 .table-wrap table{width:100%;border-collapse:collapse;}
 
 .table-wrap thead th{
-  background:var(--surface);
+  background:#f8fafc;
   padding:11px 14px;
   font-size:10px;
   font-weight:700;
   letter-spacing:.07em;
   text-transform:uppercase;
-  color:var(--muted);
+  color:var(--faint);
   text-align:left;
-  border-bottom:1px solid var(--border);
+  border-bottom:2px solid var(--border);
   white-space:nowrap;
 }
 
 .table-wrap td{
   padding:12px 14px;
-  border-bottom:1px solid rgba(42,49,72,0.4);
+  border-bottom:1px solid var(--border);
   font-size:13px;
+  color:var(--text);
 }
 
 .table-wrap tbody tr{transition:background .1s;}
-.table-wrap tbody tr:hover{background:rgba(79,122,255,0.04);}
+.table-wrap tbody tr:hover td{background:#f8fafc;}
 
-/* Row states */
-.row-late{background:rgba(248,113,113,0.06);}
-.row-cleared{background:rgba(34,211,165,0.04);}
+.row-late{background:#fff8f8;}
+.row-cleared{background:#f0fdf9;}
 
-/* ──────────────────────────────────────────────────────────────────────────
-   BADGES: Status indicators
-   ────────────────────────────────────────────────────────────────────────── */
 .badge{
   display:inline-block;
-  padding:4px 12px;
+  padding:3px 10px;
   border-radius:20px;
   font-size:11px;
-  font-weight:700;
+  font-weight:600;
 }
 
-.b-cleared{background:rgba(34,211,165,0.2);color:var(--success);}
-.b-unpaid{background:rgba(251,191,36,0.2);color:var(--warning);}
-.b-overdue{background:rgba(248,113,113,0.2);color:var(--danger);}
+.b-cleared{background:var(--success-bg);color:var(--success);}
+.b-unpaid{background:var(--warning-bg);color:var(--warning);}
+.b-overdue{background:var(--danger-bg);color:var(--danger);}
 
-/* ──────────────────────────────────────────────────────────────────────────
-   BUTTONS: Action buttons in table
-   ────────────────────────────────────────────────────────────────────────── */
 .btn-pay-toggle{
-  padding:7px 12px;
+  padding:6px 12px;
   border:1px solid transparent;
   border-radius:7px;
   font-size:12px;
   font-weight:600;
   cursor:pointer;
-  font-family:'Outfit',sans-serif;
+  font-family:'DM Sans',sans-serif;
   transition:all .15s;
   white-space:nowrap;
 }
 
 .btn-pay-toggle.state-pay{
-  background:rgba(34,211,165,0.15);
+  background:var(--success-bg);
   color:var(--success);
-  border-color:rgba(34,211,165,0.3);
+  border-color:#a7f3d0;
 }
-.btn-pay-toggle.state-pay:hover{background:rgba(34,211,165,0.25);}
+.btn-pay-toggle.state-pay:hover{background:#d1fae5;}
 
 .btn-pay-toggle.state-unpay{
-  background:rgba(251,191,36,0.12);
+  background:var(--warning-bg);
   color:var(--warning);
-  border-color:rgba(251,191,36,0.3);
+  border-color:#fde68a;
 }
-.btn-pay-toggle.state-unpay:hover{background:rgba(251,191,36,0.22);}
+.btn-pay-toggle.state-unpay:hover{background:#fef3c7;}
 
 .btn-pay-toggle:disabled{opacity:0.6;cursor:not-allowed;}
 
 .btn-edit, .btn-delete{
-  padding:7px 12px;
+  padding:6px 12px;
   border:1px solid var(--border);
   border-radius:7px;
   font-size:12px;
   font-weight:600;
   cursor:pointer;
-  font-family:'Outfit',sans-serif;
-  background:var(--card);
+  font-family:'DM Sans',sans-serif;
+  background:#fff;
   color:var(--text);
   text-decoration:none;
   transition:all .15s;
@@ -523,24 +492,18 @@ body{
 .btn-edit:hover{color:var(--accent);border-color:var(--accent);}
 .btn-delete:hover{color:var(--danger);border-color:var(--danger);}
 
-/* ──────────────────────────────────────────────────────────────────────────
-   LOADING SPINNER: Animated spinner for button states
-   ────────────────────────────────────────────────────────────────────────── */
 .spinner{
   display:inline-block;
   width:12px;
   height:12px;
-  border:2px solid rgba(255,255,255,0.3);
-  border-top-color:white;
+  border:2px solid rgba(0,0,0,0.15);
+  border-top-color:var(--accent);
   border-radius:50%;
   animation:spin .6s linear infinite;
 }
 
 @keyframes spin{to{transform:rotate(360deg);}}
 
-/* ──────────────────────────────────────────────────────────────────────────
-   TOAST NOTIFICATION: Success/error messages
-   ────────────────────────────────────────────────────────────────────────── */
 #toast{
   position:fixed;
   bottom:24px;
@@ -560,10 +523,7 @@ body{
 #toast.t-amber{background:var(--warning);}
 #toast.t-red{background:var(--danger);}
 
-/* ──────────────────────────────────────────────────────────────────────────
-   UTILITY: Helper classes
-   ────────────────────────────────────────────────────────────────────────── */
-.mono{font-family:'DM Mono',monospace;font-size:12px;}
+.mono{font-size:12px;}
 
 .no-data{
   text-align:center;
@@ -572,7 +532,6 @@ body{
 }
 .no-data p{margin:0;}
 
-/* Responsive adjustments for mobile */
 @media (max-width:900px){
   .page{padding:16px;}
   .table-wrap{overflow-x:auto;}
@@ -1035,20 +994,19 @@ async function togglePay(btn) {
 
 <!-- HostelHub Footer -->
 <footer style="
-    background:var(--surface);
-    border-top:1px solid var(--border);
+    background:#fff;
+    border-top:1px solid #e8edf3;
     margin-top:48px;
-    padding:28px 32px;
+    padding:24px 32px;
     text-align:center;
-    font-family:'Outfit',sans-serif;
+    font-family:'DM Sans',sans-serif;
 ">
     <div style="max-width:1100px;margin:0 auto;">
-        <div style="width:48px;height:1px;background:var(--border);margin:0 auto 16px;"></div>
         <div style="display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:6px;">
-            <span style="font-family:'Syne',sans-serif;font-size:16px;font-weight:800;color:var(--text);">🏠 Hostel<span style="color:var(--accent);">Hub</span></span>
+            <span style="font-family:'Playfair Display',serif;font-size:16px;font-weight:700;color:#0f1923;">🏠 Hostel<span style="color:#1a56db;">Hub</span></span>
         </div>
-        <p style="font-size:11px;color:var(--muted);margin:0;">
-            Hostel Fee Management System &nbsp;·&nbsp; &copy; <?= date('Y') ?> HostelHub &nbsp;·&nbsp; All records are encrypted and access-controlled.
+        <p style="font-size:11px;color:#64748b;margin:0;">
+            Hostel Fee Management System &nbsp;·&nbsp; &copy; <?= date('Y') ?> HostelHub
         </p>
     </div>
 </footer>

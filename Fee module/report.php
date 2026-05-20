@@ -68,104 +68,68 @@ $monthly = $db->query("
 <title>Fee Report — HostelHub</title>
 <!-- Preconnect to Google Fonts CDN for faster DNS resolution -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<!-- Load Syne (headings), DM Mono (numbers/code), and Outfit (body text) fonts -->
-<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Mono:wght@400;500&family=Outfit:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
-/* Dark theme colour tokens as CSS custom properties */
-:root{--bg:#0e1117;--surface:#161b27;--card:#1c2235;--border:#2a3148;--accent:#4f7aff;--success:#22d3a5;--warning:#fbbf24;--danger:#f87171;--text:#e8eaf6;--muted:#8892b0;}
+:root{--bg:#f0f4f8;--surface:#f8fafc;--card:#fff;--border:#e8edf3;--accent:#1a56db;--success:#059669;--warning:#d97706;--danger:#dc2626;--text:#0f1923;--muted:#64748b;--faint:#94a3b8;}
 
-/* Universal reset: remove default margin/padding, use border-box sizing */
 *{box-sizing:border-box;margin:0;padding:0;}
 
-/* Page base: dark background, light text, Outfit font, minimum full viewport height */
-body{background:var(--bg);color:var(--text);font-family:'Outfit',sans-serif;min-height:100vh;}
+body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;min-height:100vh;}
 
-/* Sticky top navigation bar that stays visible while scrolling */
-.topnav{background:var(--surface);border-bottom:1px solid var(--border);padding:0 32px;height:60px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;}
+.topnav{background:#fff;border-bottom:1px solid var(--border);padding:0 32px;height:60px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;box-shadow:0 1px 4px rgba(0,0,0,0.06);}
 
-/* Brand logo using Syne bold font */
-.brand{font-family:'Syne',sans-serif;font-weight:800;font-size:20px;color:var(--text);}
-
-/* Accent colour for the "Hub" suffix in the logo */
+.brand{font-family:'Playfair Display',serif;font-weight:700;font-size:20px;color:var(--text);}
 .brand span{color:var(--accent);}
 
-/* Main content wrapper: max 1100px wide, centred, with padding */
 .page{max-width:1100px;margin:0 auto;padding:32px;}
 
-/* Page header row: title on the left, print button on the right */
 .page-hdr{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:24px;}
-
-/* Page title in large Syne font */
-.page-hdr h2{font-family:'Syne',sans-serif;font-size:26px;font-weight:800;margin-bottom:4px;}
-
-/* Subtitle text below the page title */
+.page-hdr h2{font-family:'Playfair Display',serif;font-size:26px;font-weight:700;margin-bottom:4px;color:var(--text);}
 .page-hdr p{color:var(--muted);font-size:13px;}
 
-/* Print/export button: outlined style that glows accent colour on hover */
-.print-btn{display:inline-flex;align-items:center;gap:6px;padding:9px 18px;border-radius:9px;background:var(--card);color:var(--text);border:1px solid var(--border);font-size:13px;font-weight:600;cursor:pointer;text-decoration:none;font-family:'Outfit',sans-serif;}
+.print-btn{display:inline-flex;align-items:center;gap:6px;padding:9px 18px;border-radius:9px;background:#fff;color:var(--text);border:1px solid var(--border);font-size:13px;font-weight:600;cursor:pointer;text-decoration:none;font-family:'DM Sans',sans-serif;box-shadow:0 1px 4px rgba(0,0,0,0.06);}
 .print-btn:hover{border-color:var(--accent);color:var(--accent);}
 
-/* KPI grid: 3 equal columns with gaps between cards */
 .kpi-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:24px;}
 
-/* Individual KPI card */
-.kpi{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:20px 22px;}
+.kpi{background:#fff;border:1px solid var(--border);border-radius:16px;padding:20px 22px;box-shadow:0 2px 12px rgba(0,0,0,0.06);position:relative;overflow:hidden;}
+.kpi::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;border-radius:16px 16px 0 0;}
+.kpi.blue::before{background:linear-gradient(90deg,#1a56db,#60a5fa);}
+.kpi.green::before{background:linear-gradient(90deg,#059669,#34d399);}
+.kpi.amber::before{background:linear-gradient(90deg,#d97706,#fbbf24);}
+.kpi.red::before{background:linear-gradient(90deg,#dc2626,#fb7185);}
 
-/* Small uppercase label above the KPI value */
 .kpi .label{font-size:11px;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);font-weight:700;margin-bottom:8px;}
-
-/* Large bold KPI number in Syne font */
-.kpi .val{font-family:'Syne',sans-serif;font-size:26px;font-weight:800;}
-
-/* Supplementary info below the KPI value */
+.kpi .val{font-family:'Playfair Display',serif;font-size:26px;font-weight:700;color:var(--text);}
 .kpi .sub{font-size:12px;color:var(--muted);margin-top:4px;}
 
-/* Colour modifiers for KPI card values */
-.kpi.blue .val{color:var(--accent);}    /* Blue for total billed */
-.kpi.green .val{color:var(--success);}  /* Green for collected */
-.kpi.amber .val{color:var(--warning);}  /* Amber for outstanding/pending */
-.kpi.red .val{color:var(--danger);}     /* Red for overdue */
+.kpi.blue .val{color:var(--accent);}
+.kpi.green .val{color:var(--success);}
+.kpi.amber .val{color:var(--warning);}
+.kpi.red .val{color:var(--danger);}
 
-/* Panel: card container used for the data tables */
-.panel{background:var(--card);border:1px solid var(--border);border-radius:14px;overflow:hidden;margin-bottom:20px;}
+.panel{background:#fff;border:1px solid var(--border);border-radius:16px;overflow:hidden;margin-bottom:20px;box-shadow:0 2px 12px rgba(0,0,0,0.06);}
+.panel-head{padding:16px 22px;border-bottom:1px solid var(--border);font-family:'Playfair Display',serif;font-size:15px;font-weight:700;color:var(--text);}
 
-/* Panel header bar above each table */
-.panel-head{padding:16px 22px;border-bottom:1px solid var(--border);font-family:'Syne',sans-serif;font-size:15px;font-weight:700;}
-
-/* Table inside a panel: full width, no border spacing */
 .tbl{width:100%;border-collapse:collapse;}
-
-/* Table column headers: uppercase, muted, small text on a slightly darker background */
-.tbl th{padding:10px 16px;font-size:10px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);text-align:left;border-bottom:1px solid var(--border);background:var(--surface);}
-
-/* Table data cells: comfortable padding, small font, thin bottom border */
-.tbl td{padding:11px 16px;font-size:13px;border-bottom:1px solid rgba(42,49,72,0.4);vertical-align:middle;}
-
-/* Remove the border from the last row's cells */
+.tbl th{padding:10px 16px;font-size:10px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--faint);text-align:left;border-bottom:2px solid var(--border);background:#f8fafc;}
+.tbl td{padding:11px 16px;font-size:13px;border-bottom:1px solid var(--border);vertical-align:middle;color:var(--text);}
 .tbl tr:last-child td{border-bottom:none;}
+.tbl tr:hover td{background:#f8fafc;}
 
-/* Subtle accent highlight when hovering over a table row */
-.tbl tr:hover td{background:rgba(79,122,255,0.04);}
+.mono{font-size:12px;}
 
-/* Monospace class for numbers/codes to align digits properly */
-.mono{font-family:'DM Mono',monospace;font-size:12px;}
-
-/* Progress bar track (background/container) */
 .bar-track{height:5px;background:var(--border);border-radius:99px;overflow:hidden;margin-top:4px;}
-
-/* Progress bar fill; width is set inline as a percentage from PHP */
 .bar-fill{height:100%;background:var(--accent);border-radius:99px;}
 
-/* Back/breadcrumb link in the nav */
 .back-link{font-size:13px;color:var(--muted);text-decoration:none;}
 .back-link:hover{color:var(--accent);}
 
-/* Print media query: hide nav and buttons, switch to white/black for paper */
 @media print{
-    .topnav,.print-btn{display:none;}   /* Hide interactive UI elements when printing */
-    body{background:#fff;color:#000;}   /* White background, black text for print */
-    .kpi,.panel{border:1px solid #ccc;background:#fff;} /* Light borders for print */
-    .kpi .val,.panel-head{color:#000;}  /* Ensure headings print in black */
+    .topnav,.print-btn{display:none;}
+    body{background:#fff;color:#000;}
+    .kpi,.panel{border:1px solid #ccc;background:#fff;}
+    .kpi .val,.panel-head{color:#000;}
 }
 </style>
 </head>
@@ -179,11 +143,11 @@ body{background:var(--bg);color:var(--text);font-family:'Outfit',sans-serif;min-
     <!-- Right-side nav links -->
     <div style="display:flex;gap:12px;align-items:center;">
         <!-- Link to the main application dashboard -->
-        <a href="../dashboard.php" style="color:var(--muted);font-size:13px;text-decoration:none;">← Home</a>
+        <a href="../dashboard.php" style="color:#64748b;font-size:13px;text-decoration:none;">← Home</a>
         <!-- Link to the fee module dashboard -->
-        <a href="dashboard.php" style="color:var(--muted);font-size:13px;text-decoration:none;">Fee Dashboard</a>
+        <a href="dashboard.php" style="color:#64748b;font-size:13px;text-decoration:none;">Fee Dashboard</a>
         <!-- Link to the full fee records list -->
-        <a href="index.php" style="color:var(--muted);font-size:13px;text-decoration:none;">Fee Records</a>
+        <a href="index.php" style="color:#64748b;font-size:13px;text-decoration:none;">Fee Records</a>
     </div>
 </nav>
 
@@ -233,7 +197,7 @@ body{background:var(--bg);color:var(--text);font-family:'Outfit',sans-serif;min-
         <div class="kpi">
             <div class="label">Collection Rate</div>
             <!-- Avoid division by zero; multiply ratio by 100 and round to nearest integer -->
-            <div class="val" style="color:var(--success);"><?= $summary['billed']>0 ? round(($summary['collected']/$summary['billed'])*100) : 0 ?>%</div>
+            <div class="val" style="color:#059669;"><?= $summary['billed']>0 ? round(($summary['collected']/$summary['billed'])*100) : 0 ?>%</div>
         </div>
 
         <!-- Count of fees that are unpaid but not yet past their due date -->
@@ -285,7 +249,7 @@ body{background:var(--bg);color:var(--text);font-family:'Outfit',sans-serif;min-
                 <td class="mono">kr <?= number_format($row['total'],2) ?></td>
 
                 <!-- Amount paid (highlighted in success/green colour) -->
-                <td class="mono" style="color:var(--success);">kr <?= number_format($row['paid'],2) ?></td>
+                <td class="mono" style="color:#059669;">kr <?= number_format($row['paid'],2) ?></td>
 
                 <!-- Visual collection rate: percentage text + progress bar -->
                 <td>
@@ -295,7 +259,7 @@ body{background:var(--bg);color:var(--text);font-family:'Outfit',sans-serif;min-
                 </td>
 
                 <!-- Overdue count: shown in red bold if > 0, otherwise a dash -->
-                <td><?= $row['overdue_cnt'] > 0 ? '<span style="color:var(--danger);font-weight:700;">'.$row['overdue_cnt'].'</span>' : '—' ?></td>
+                <td><?= $row['overdue_cnt'] > 0 ? '<span style="color:#dc2626;font-weight:700;">'.$row['overdue_cnt'].'</span>' : '—' ?></td>
             </tr>
             <?php endforeach; ?>
             </tbody>
@@ -332,10 +296,10 @@ body{background:var(--bg);color:var(--text);font-family:'Outfit',sans-serif;min-
                 <td class="mono">kr <?= number_format($m['total'],2) ?></td>
 
                 <!-- Amount collected in this month (green) -->
-                <td class="mono" style="color:var(--success);">kr <?= number_format($m['paid'],2) ?></td>
+                <td class="mono" style="color:#059669;">kr <?= number_format($m['paid'],2) ?></td>
 
                 <!-- Outstanding = total billed minus amount collected (amber warning colour) -->
-                <td class="mono" style="color:var(--warning);">kr <?= number_format($m['total']-$m['paid'],2) ?></td>
+                <td class="mono" style="color:#d97706;">kr <?= number_format($m['total']-$m['paid'],2) ?></td>
 
                 <!-- Collection rate percentage + mini progress bar -->
                 <td>
@@ -350,29 +314,12 @@ body{background:var(--bg);color:var(--text);font-family:'Outfit',sans-serif;min-
 </div><!-- /.page -->
 
 <!-- HostelHub Footer -->
-<footer style="
-    background:var(--surface);
-    border-top:1px solid var(--border);
-    margin-top:48px;
-    padding:28px 32px;
-    text-align:center;
-    font-family:'Outfit',sans-serif;
-">
+<footer style="background:#fff;border-top:1px solid #e8edf3;margin-top:48px;padding:24px 32px;text-align:center;font-family:'DM Sans',sans-serif;">
     <div style="max-width:1100px;margin:0 auto;">
-        <!-- Decorative thin horizontal rule -->
-        <div style="width:48px;height:1px;background:var(--border);margin:0 auto 16px;"></div>
-
-        <!-- Footer logo -->
         <div style="display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:6px;">
-            <span style="font-family:'Syne',sans-serif;font-size:16px;font-weight:800;color:var(--text);">
-                🏠 Hostel<span style="color:var(--accent);">Hub</span>
-            </span>
+            <span style="font-family:'Playfair Display',serif;font-size:16px;font-weight:700;color:#0f1923;">🏠 Hostel<span style="color:#1a56db;">Hub</span></span>
         </div>
-
-        <!-- Copyright line; date('Y') outputs the current four-digit year dynamically -->
-        <p style="font-size:11px;color:var(--muted);margin:0;">
-            Hostel Fee Management System &nbsp;·&nbsp; &copy; <?= date('Y') ?> HostelHub &nbsp;·&nbsp; All records are encrypted and access-controlled.
-        </p>
+        <p style="font-size:11px;color:#64748b;margin:0;">Hostel Fee Management System &nbsp;·&nbsp; &copy; <?= date('Y') ?> HostelHub</p>
     </div>
 </footer>
 

@@ -51,79 +51,42 @@ if (isset($_POST['confirm_delete'])) {
 <title>Delete Fee — HostelHub</title>
 <!-- Preconnect to Google Fonts for faster font loading -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<!-- Load three custom fonts: Syne (headings), DM Mono (code/numbers), Outfit (body) -->
-<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Mono:wght@400&family=Outfit:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
-/* CSS custom properties (variables) for the dark theme colour palette */
-:root{--bg:#0e1117;--surface:#161b27;--card:#1c2235;--border:#2a3148;--accent:#4f7aff;--danger:#f87171;--text:#e8eaf6;--muted:#8892b0;}
+:root{--bg:#f0f4f8;--surface:#f8fafc;--card:#fff;--border:#e8edf3;--accent:#1a56db;--danger:#dc2626;--text:#0f1923;--muted:#64748b;}
 
-/* Reset default browser margin/padding and use border-box sizing for all elements */
 *{box-sizing:border-box;margin:0;padding:0;}
 
-/* Dark background, light text, Outfit font, full viewport height */
-body{background:var(--bg);color:var(--text);font-family:'Outfit',sans-serif;min-height:100vh;}
+body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;min-height:100vh;}
 
-/* Top navigation bar: dark surface, bottom border, flex layout, fixed height */
-.topnav{background:var(--surface);border-bottom:1px solid var(--border);padding:0 32px;height:60px;display:flex;align-items:center;justify-content:space-between;}
+.topnav{background:#fff;border-bottom:1px solid var(--border);padding:0 32px;height:60px;display:flex;align-items:center;justify-content:space-between;box-shadow:0 1px 4px rgba(0,0,0,0.06);}
 
-/* Brand/logo text using Syne font in bold */
-.brand{font-family:'Syne',sans-serif;font-weight:800;font-size:20px;color:var(--text);}
-
-/* Accent colour applied to the "Hub" part of the logo */
+.brand{font-family:'Playfair Display',serif;font-weight:700;font-size:20px;color:var(--text);}
 .brand span{color:var(--accent);}
 
-/* Main page content wrapper: centred, max 540px wide, with padding */
 .page{max-width:540px;margin:0 auto;padding:36px 24px;}
-
-/* Page header section spacing */
 .page-hdr{margin-bottom:24px;}
-
-/* Page title styled in Syne font with danger (red) colour */
-.page-hdr h2{font-family:'Syne',sans-serif;font-size:26px;font-weight:800;color:var(--danger);margin-bottom:4px;}
-
-/* Subtitle/description text in muted colour */
+.page-hdr h2{font-family:'Playfair Display',serif;font-size:26px;font-weight:700;color:var(--danger);margin-bottom:4px;}
 .page-hdr p{color:var(--muted);font-size:13px;}
 
-/* Card container: dark card background with a subtle red border to signal danger */
-.form-card{background:var(--card);border:1px solid rgba(248,113,113,0.3);border-radius:16px;padding:28px 30px;}
+.form-card{background:#fff;border:1px solid #fecaca;border-radius:16px;padding:28px 30px;box-shadow:0 2px 12px rgba(0,0,0,0.06);}
 
-/* Warning box: semi-transparent red background to draw attention */
-.warn{background:rgba(248,113,113,0.08);border:1px solid rgba(248,113,113,0.25);border-radius:10px;padding:14px 18px;margin-bottom:22px;font-size:13px;color:var(--danger);}
-
-/* Bold warning heading displayed as block */
+.warn{background:#fff1f2;border:1px solid #fecaca;border-radius:10px;padding:14px 18px;margin-bottom:22px;font-size:13px;color:var(--danger);}
 .warn strong{display:block;margin-bottom:4px;font-size:14px;}
 
-/* A single row in the fee detail summary (label on left, value on right) */
-.detail-row{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid rgba(42,49,72,0.5);font-size:13px;}
-
-/* Remove bottom border from the last detail row */
+.detail-row{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--border);font-size:13px;}
 .detail-row:last-of-type{border-bottom:none;}
-
-/* Left-side label in each detail row */
 .detail-row span:first-child{color:var(--muted);font-weight:600;}
 
-/* Form group container for label + input pairs */
 .form-group{margin:20px 0 0;}
-
-/* Uppercase small label above the input field */
 .form-group label{display:block;font-size:11px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);margin-bottom:6px;}
+.form-group input{width:100%;padding:10px 14px;border:1px solid var(--border);border-radius:9px;font-size:13px;font-family:'DM Sans',sans-serif;background:var(--surface);color:var(--text);outline:none;}
+.form-group input:focus{border-color:var(--danger);box-shadow:0 0 0 3px rgba(220,38,38,0.1);}
 
-/* Text input styling: full width, dark surface background */
-.form-group input{width:100%;padding:10px 14px;border:1px solid var(--border);border-radius:9px;font-size:13px;font-family:'Outfit',sans-serif;background:var(--surface);color:var(--text);outline:none;}
+.btn-delete{width:100%;padding:13px;background:var(--danger);color:#fff;border:none;border-radius:11px;font-size:15px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;transition:background 0.2s;margin-top:16px;}
+.btn-delete:hover{background:#b91c1c;}
 
-/* Focus state: red glow to match the danger theme */
-.form-group input:focus{border-color:var(--danger);box-shadow:0 0 0 3px rgba(248,113,113,0.15);}
-
-/* Delete confirmation button: full width, danger red */
-.btn-delete{width:100%;padding:13px;background:var(--danger);color:#fff;border:none;border-radius:11px;font-size:15px;font-weight:700;cursor:pointer;font-family:'Outfit',sans-serif;transition:background 0.2s;margin-top:16px;}
-
-/* Darken the delete button on hover */
-.btn-delete:hover{background:#e85252;}
-
-/* Centred cancel/back link below the form */
 .back-link{display:block;text-align:center;margin-top:14px;font-size:13px;color:var(--muted);text-decoration:none;}
-
-/* Highlight the back link in accent colour on hover */
 .back-link:hover{color:var(--accent);}
 </style>
 </head>
@@ -137,9 +100,9 @@ body{background:var(--bg);color:var(--text);font-family:'Outfit',sans-serif;min-
     <!-- Navigation links on the right side of the nav bar -->
     <div style="display:flex;gap:12px;align-items:center;">
         <!-- Link back to the main dashboard -->
-        <a href="../dashboard.php" style="color:var(--muted);font-size:13px;text-decoration:none;">← Home</a>
+        <a href="../dashboard.php" style="color:#64748b;font-size:13px;text-decoration:none;">← Home</a>
         <!-- Link back to the fee records list -->
-        <a href="index.php" style="color:var(--muted);font-size:13px;text-decoration:none;">← Fee Records</a>
+        <a href="index.php" style="color:#64748b;font-size:13px;text-decoration:none;">← Fee Records</a>
     </div>
 </nav>
 
@@ -222,29 +185,12 @@ body{background:var(--bg);color:var(--text);font-family:'Outfit',sans-serif;min-
 </div><!-- /.page -->
 
 <!-- HostelHub Footer -->
-<footer style="
-    background:var(--surface);
-    border-top:1px solid var(--border);
-    margin-top:48px;
-    padding:28px 32px;
-    text-align:center;
-    font-family:'Outfit',sans-serif;
-">
+<footer style="background:#fff;border-top:1px solid #e8edf3;margin-top:48px;padding:24px 32px;text-align:center;font-family:'DM Sans',sans-serif;">
     <div style="max-width:1100px;margin:0 auto;">
-        <!-- Decorative horizontal rule -->
-        <div style="width:48px;height:1px;background:var(--border);margin:0 auto 16px;"></div>
-
-        <!-- Footer logo row -->
         <div style="display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:6px;">
-            <span style="font-family:'Syne',sans-serif;font-size:16px;font-weight:800;color:var(--text);">
-                🏠 Hostel<span style="color:var(--accent);">Hub</span>
-            </span>
+            <span style="font-family:'Playfair Display',serif;font-size:16px;font-weight:700;color:#0f1923;">🏠 Hostel<span style="color:#1a56db;">Hub</span></span>
         </div>
-
-        <!-- Copyright and disclaimer text; date() outputs the current 4-digit year dynamically -->
-        <p style="font-size:11px;color:var(--muted);margin:0;">
-            Hostel Fee Management System &nbsp;·&nbsp; &copy; <?= date('Y') ?> HostelHub &nbsp;·&nbsp; All records are encrypted and access-controlled.
-        </p>
+        <p style="font-size:11px;color:#64748b;margin:0;">Hostel Fee Management System &nbsp;·&nbsp; &copy; <?= date('Y') ?> HostelHub</p>
     </div>
 </footer>
 

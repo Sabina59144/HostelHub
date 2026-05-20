@@ -166,47 +166,38 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit'])) {
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Add Fee — HostelHub</title>
 
-<!-- Google Fonts -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Mono:wght@400&family=Outfit:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
 
 <!-- Flatpickr: Date picker library -->
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
 <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 
 <style>
-/* ══════════════════════════════════════════════════════════════════════════
-   DESIGN SYSTEM: CSS Variables
-   ══════════════════════════════════════════════════════════════════════════ */
 :root{
-  --bg:#0e1117;              /* Main background */
-  --surface:#161b27;         /* Secondary background */
-  --card:#1c2235;            /* Card/container background */
-  --border:#2a3148;          /* Border color */
-  --accent:#4f7aff;          /* Primary accent (blue) */
-  --success:#22d3a5;         /* Success state (green) */
-  --warning:#fbbf24;         /* Warning state (amber) */
-  --danger:#f87171;          /* Danger state (red) */
-  --text:#e8eaf6;            /* Primary text (light) */
-  --muted:#8892b0;           /* Secondary text (gray) */
+  --bg:#f0f4f8;
+  --surface:#f8fafc;
+  --card:#fff;
+  --border:#e8edf3;
+  --accent:#1a56db;
+  --success:#059669;
+  --warning:#d97706;
+  --danger:#dc2626;
+  --text:#0f1923;
+  --muted:#64748b;
 }
 
-/* Reset styles */
 *{box-sizing:border-box;margin:0;padding:0;}
 
-/* Base body */
 body{
   background:var(--bg);
   color:var(--text);
-  font-family:'Outfit',sans-serif;
+  font-family:'DM Sans',sans-serif;
   min-height:100vh;
 }
 
-/* ──────────────────────────────────────────────────────────────────────────
-   NAVIGATION BAR
-   ────────────────────────────────────────────────────────────────────────── */
 .topnav{
-  background:var(--surface);
+  background:#fff;
   border-bottom:1px solid var(--border);
   padding:0 32px;
   height:60px;
@@ -216,50 +207,44 @@ body{
   position:sticky;
   top:0;
   z-index:100;
+  box-shadow:0 1px 4px rgba(0,0,0,0.06);
 }
 
 .brand{
-  font-family:'Syne',sans-serif;
-  font-weight:800;
+  font-family:'Playfair Display',serif;
+  font-weight:700;
   font-size:20px;
   color:var(--text);
 }
 .brand span{color:var(--accent);}
 
-/* ──────────────────────────────────────────────────────────────────────────
-   PAGE LAYOUT
-   ────────────────────────────────────────────────────────────────────────── */
 .page{
-  max-width:660px;          /* Narrow column for form */
+  max-width:660px;
   margin:0 auto;
   padding:36px 24px;
 }
 
 .page-hdr{margin-bottom:24px;}
 .page-hdr h2{
-  font-family:'Syne',sans-serif;
+  font-family:'Playfair Display',serif;
   font-size:26px;
-  font-weight:800;
+  font-weight:700;
   margin-bottom:4px;
+  color:var(--text);
 }
 .page-hdr p{color:var(--muted);font-size:13px;}
 
-/* ──────────────────────────────────────────────────────────────────────────
-   FORM CARD
-   ────────────────────────────────────────────────────────────────────────── */
 .form-card{
-  background:var(--card);
+  background:#fff;
   border:1px solid var(--border);
   border-radius:16px;
   padding:30px;
+  box-shadow:0 2px 12px rgba(0,0,0,0.06);
 }
 
-/* ──────────────────────────────────────────────────────────────────────────
-   ERROR BOX
-   ────────────────────────────────────────────────────────────────────────── */
 .error-box{
-  background:rgba(248,113,113,0.08);  /* Light red background */
-  border:1px solid rgba(248,113,113,0.3);
+  background:#fff1f2;
+  border:1px solid #fecaca;
   border-radius:10px;
   padding:14px 18px;
   margin-bottom:22px;
@@ -268,23 +253,17 @@ body{
 }
 .error-box ul{margin:6px 0 0 18px;}
 
-/* ──────────────────────────────────────────────────────────────────────────
-   SECTION DIVIDERS
-   ────────────────────────────────────────────────────────────────────────── */
 .section-divider{
   font-size:11px;
   font-weight:700;
   letter-spacing:.08em;
   text-transform:uppercase;
-  color:var(--muted);
+  color:#94a3b8;
   margin:24px 0 14px;
   padding-bottom:8px;
-  border-bottom:1px solid var(--border);
+  border-bottom:2px solid var(--border);
 }
 
-/* ──────────────────────────────────────────────────────────────────────────
-   FORM GROUPS (Labels, inputs, selects)
-   ────────────────────────────────────────────────────────────────────────── */
 .form-group{margin-bottom:18px;}
 
 .form-group label{
@@ -297,7 +276,6 @@ body{
   text-transform:uppercase;
 }
 
-/* All input elements */
 .form-group input,
 .form-group select,
 .form-group textarea{
@@ -306,41 +284,32 @@ body{
   border:1px solid var(--border);
   border-radius:9px;
   font-size:14px;
-  font-family:'Outfit',sans-serif;
+  font-family:'DM Sans',sans-serif;
   background:var(--surface);
   color:var(--text);
   outline:none;
   transition:border-color 0.15s;
 }
 
-/* Focus state: highlight with accent color */
 .form-group input:focus,
 .form-group select:focus,
 .form-group textarea:focus{
   border-color:var(--accent);
-  box-shadow:0 0 0 3px rgba(79,122,255,0.15);
+  box-shadow:0 0 0 3px rgba(26,86,219,0.1);
 }
 
-/* Read-only inputs (like receipt number) */
 .form-group input[readonly]{
-  background:#12161f;
+  background:#f0f4f8;
   color:var(--muted);
-  font-family:'DM Mono',monospace;
   cursor:default;
 }
 
-/* ──────────────────────────────────────────────────────────────────────────
-   FORM GRID: Two-column layout for related fields
-   ────────────────────────────────────────────────────────────────────────── */
 .form-grid{
   display:grid;
   grid-template-columns:1fr 1fr;
   gap:16px;
 }
 
-/* ──────────────────────────────────────────────────────────────────────────
-   CHECKBOX GROUP
-   ────────────────────────────────────────────────────────────────────────── */
 .checkbox-group{
   display:flex;
   align-items:center;
@@ -355,6 +324,7 @@ body{
   width:18px;
   height:18px;
   cursor:pointer;
+  accent-color:var(--accent);
 }
 
 .checkbox-group label{
@@ -365,18 +335,12 @@ body{
   margin:0;
 }
 
-/* ──────────────────────────────────────────────────────────────────────────
-   HELPER TEXT
-   ────────────────────────────────────────────────────────────────────────── */
 .hint{
   font-size:11px;
-  color:var(--muted);
+  color:#94a3b8;
   margin-top:5px;
 }
 
-/* ──────────────────────────────────────────────────────────────────────────
-   SUBMIT BUTTON
-   ────────────────────────────────────────────────────────────────────────── */
 .btn-submit{
   width:100%;
   padding:13px;
@@ -385,17 +349,14 @@ body{
   border:none;
   border-radius:11px;
   font-size:15px;
-  font-weight:700;
+  font-weight:600;
   cursor:pointer;
-  font-family:'Outfit',sans-serif;
+  font-family:'DM Sans',sans-serif;
   transition:background 0.2s;
   margin-top:8px;
 }
-.btn-submit:hover{background:#3d68e8;}
+.btn-submit:hover{background:#1547c0;}
 
-/* ──────────────────────────────────────────────────────────────────────────
-   BACK LINK
-   ────────────────────────────────────────────────────────────────────────── */
 .back-link{
   display:block;
   text-align:center;
@@ -406,72 +367,6 @@ body{
 }
 .back-link:hover{color:var(--accent);}
 
-/* ──────────────────────────────────────────────────────────────────────────
-   FLATPICKR DARK THEME (Date picker styling)
-   ────────────────────────────────────────────────────────────────────────── */
-.flatpickr-calendar{
-  background:var(--card)!important;
-  border:1px solid var(--border)!important;
-  box-shadow:0 12px 40px rgba(0,0,0,.55)!important;
-  border-radius:12px!important;
-}
-
-.flatpickr-day{
-  color:var(--text)!important;
-  border-radius:7px!important;
-}
-
-.flatpickr-day:hover{
-  background:rgba(79,122,255,.2)!important;
-  border-color:transparent!important;
-}
-
-.flatpickr-day.selected,
-.flatpickr-day.selected:hover{
-  background:var(--accent)!important;
-  border-color:var(--accent)!important;
-}
-
-.flatpickr-day.today{
-  border-color:var(--success)!important;
-  color:var(--success)!important;
-}
-
-.flatpickr-day.today.selected{
-  color:#fff!important;
-}
-
-.flatpickr-months .flatpickr-month,
-.flatpickr-weekdays,
-.flatpickr-weekday{
-  background:var(--surface)!important;
-  color:var(--muted)!important;
-  border-radius:12px 12px 0 0!important;
-}
-
-.flatpickr-current-month{
-  color:var(--text)!important;
-  font-family:'Outfit',sans-serif!important;
-  font-weight:600!important;
-}
-
-.flatpickr-current-month input.cur-year,
-.numInput{
-  color:var(--text)!important;
-  background:transparent!important;
-}
-
-.flatpickr-prev-month svg,
-.flatpickr-next-month svg{
-  fill:var(--muted)!important;
-}
-
-.flatpickr-prev-month:hover svg,
-.flatpickr-next-month:hover svg{
-  fill:var(--accent)!important;
-}
-
-/* Calendar input wrapper */
 .cal-wrap{position:relative;}
 .cal-wrap input{padding-right:36px;}
 </style>
@@ -484,9 +379,9 @@ body{
 <nav class="topnav">
     <div class="brand">🏠 Hostel<span>Hub</span></div>
     <div style="display:flex;gap:12px;align-items:center;">
-        <a href="../dashboard.php" style="color:var(--muted);font-size:13px;text-decoration:none;">← Home</a>
-        <a href="dashboard.php" style="color:var(--muted);font-size:13px;text-decoration:none;">Fee Dashboard</a>
-        <a href="index.php" style="color:var(--muted);font-size:13px;text-decoration:none;">Fee Records</a>
+        <a href="../dashboard.php" style="color:#64748b;font-size:13px;text-decoration:none;">← Home</a>
+        <a href="dashboard.php" style="color:#64748b;font-size:13px;text-decoration:none;">Fee Dashboard</a>
+        <a href="index.php" style="color:#64748b;font-size:13px;text-decoration:none;">Fee Records</a>
     </div>
 </nav>
 
@@ -666,25 +561,12 @@ flatpickr("#due_date", {
 </script>
 
 <!-- HostelHub Footer -->
-<footer style="
-    background:var(--surface);
-    border-top:1px solid var(--border);
-    margin-top:48px;
-    padding:28px 32px;
-    text-align:center;
-    font-family:'Outfit',sans-serif;
-">
+<footer style="background:#fff;border-top:1px solid #e8edf3;margin-top:48px;padding:24px 32px;text-align:center;font-family:'DM Sans',sans-serif;">
     <div style="max-width:1100px;margin:0 auto;">
-        <div style="width:48px;height:1px;background:var(--border);margin:0 auto 16px;"></div>
         <div style="display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:6px;">
-            <span style="font-family:'Syne',sans-serif;font-size:16px;font-weight:800;color:var(--text);">
-                🏠 Hostel<span style="color:var(--accent);">Hub</span>
-            </span>
+            <span style="font-family:'Playfair Display',serif;font-size:16px;font-weight:700;color:#0f1923;">🏠 Hostel<span style="color:#1a56db;">Hub</span></span>
         </div>
-        <p style="font-size:11px;color:var(--muted);margin:0;">
-            Hostel Fee Management System &nbsp;·&nbsp; &copy; <?= date('Y') ?> HostelHub &nbsp;·&nbsp; 
-            All records are encrypted and access-controlled.
-        </p>
+        <p style="font-size:11px;color:#64748b;margin:0;">Hostel Fee Management System &nbsp;·&nbsp; &copy; <?= date('Y') ?> HostelHub</p>
     </div>
 </footer>
 

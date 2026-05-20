@@ -124,139 +124,58 @@ isset($_GET['saved']) && $success = "Changes saved.";
 <title>Edit Fee — HostelHub</title>
 <!-- Preconnect to Google Fonts CDN for faster DNS lookup -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<!-- Load Syne (headings), DM Mono (monospace numbers), and Outfit (body) typefaces -->
-<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Mono:wght@400&family=Outfit:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
 <!-- Flatpickr CSS: styles the date-picker calendar widget -->
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
 <!-- Flatpickr JS: the calendar library itself (loaded in <head> so it's ready when the DOM fires) -->
 <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 <style>
-/* Dark theme colour palette as CSS custom properties */
-:root{--bg:#0e1117;--surface:#161b27;--card:#1c2235;--border:#2a3148;--accent:#4f7aff;--success:#22d3a5;--warning:#fbbf24;--danger:#f87171;--text:#e8eaf6;--muted:#8892b0;}
+:root{--bg:#f0f4f8;--surface:#f8fafc;--card:#fff;--border:#e8edf3;--accent:#1a56db;--success:#059669;--warning:#d97706;--danger:#dc2626;--text:#0f1923;--muted:#64748b;}
 
-/* Universal reset: remove browser default margin/padding, use border-box sizing */
 *{box-sizing:border-box;margin:0;padding:0;}
 
-/* Page base: dark background, light text, minimum full viewport height */
-body{background:var(--bg);color:var(--text);font-family:'Outfit',sans-serif;min-height:100vh;}
+body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;min-height:100vh;}
 
-/* Sticky top navigation bar — stays visible while scrolling */
-.topnav{background:var(--surface);border-bottom:1px solid var(--border);padding:0 32px;height:60px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;}
+.topnav{background:#fff;border-bottom:1px solid var(--border);padding:0 32px;height:60px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;box-shadow:0 1px 4px rgba(0,0,0,0.06);}
 
-/* Brand/logo text */
-.brand{font-family:'Syne',sans-serif;font-weight:800;font-size:20px;color:var(--text);}
-
-/* Accent colour for the "Hub" part of the logo */
+.brand{font-family:'Playfair Display',serif;font-weight:700;font-size:20px;color:var(--text);}
 .brand span{color:var(--accent);}
 
-/* Main content area: max 660px wide, centred, padded */
 .page{max-width:660px;margin:0 auto;padding:36px 24px;}
-
-/* Page header section spacing */
 .page-hdr{margin-bottom:24px;}
-
-/* Page title in Syne bold */
-.page-hdr h2{font-family:'Syne',sans-serif;font-size:26px;font-weight:800;margin-bottom:4px;}
-
-/* Subtitle/description line */
+.page-hdr h2{font-family:'Playfair Display',serif;font-size:26px;font-weight:700;margin-bottom:4px;color:var(--text);}
 .page-hdr p{color:var(--muted);font-size:13px;}
 
-/* Card container for each form section */
-.form-card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:28px 30px;margin-bottom:18px;}
+.form-card{background:#fff;border:1px solid var(--border);border-radius:16px;padding:28px 30px;margin-bottom:18px;box-shadow:0 2px 12px rgba(0,0,0,0.06);}
+.form-card h3{font-family:'Playfair Display',serif;font-size:15px;font-weight:700;margin-bottom:18px;padding-bottom:12px;border-bottom:2px solid var(--border);color:var(--text);}
 
-/* Section heading inside a card — uses Syne font with a bottom divider line */
-.form-card h3{font-family:'Syne',sans-serif;font-size:15px;font-weight:700;margin-bottom:18px;padding-bottom:12px;border-bottom:1px solid var(--border);}
-
-/* Success alert box: green-tinted, shown after a successful save or status toggle */
-.alert-success{background:rgba(34,211,165,0.1);border:1px solid rgba(34,211,165,0.3);border-radius:10px;padding:12px 16px;margin-bottom:18px;font-size:13px;color:var(--success);}
-
-/* Error alert box: red-tinted, shown when form validation fails */
-.alert-error{background:rgba(248,113,113,0.08);border:1px solid rgba(248,113,113,0.3);border-radius:10px;padding:12px 16px;margin-bottom:18px;font-size:13px;color:var(--danger);}
-
-/* Indent the error bullet list inside the alert */
+.alert-success{background:#ecfdf5;border:1px solid #a7f3d0;border-radius:10px;padding:12px 16px;margin-bottom:18px;font-size:13px;color:var(--success);}
+.alert-error{background:#fff1f2;border:1px solid #fecaca;border-radius:10px;padding:12px 16px;margin-bottom:18px;font-size:13px;color:var(--danger);}
 .alert-error ul{margin:6px 0 0 18px;}
 
-/* Spacing between each form field group (label + input pair) */
 .form-group{margin-bottom:18px;}
-
-/* Small uppercase label above each form field */
 .form-group label{display:block;font-size:11px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);margin-bottom:6px;}
-
-/* Text inputs and select dropdowns: full width, dark surface background, smooth focus transition */
-.form-group input,.form-group select{width:100%;padding:10px 14px;border:1px solid var(--border);border-radius:9px;font-size:14px;font-family:'Outfit',sans-serif;background:var(--surface);color:var(--text);outline:none;transition:border-color 0.15s;}
-
-/* Accent glow on focus to clearly indicate the active field */
-.form-group input:focus,.form-group select:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(79,122,255,0.15);}
-
-/* Two-column grid used for Fee Type + Amount fields side by side */
+.form-group input,.form-group select{width:100%;padding:10px 14px;border:1px solid var(--border);border-radius:9px;font-size:14px;font-family:'DM Sans',sans-serif;background:var(--surface);color:var(--text);outline:none;transition:border-color 0.15s;}
+.form-group input:focus,.form-group select:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(26,86,219,0.1);}
 .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
 
-/* Read-only receipt number display — looks like an input but cannot be edited */
-.rcpt-display{background:#12161f;border:1px solid var(--border);border-radius:9px;padding:10px 14px;font-family:'DM Mono',monospace;font-size:13px;color:var(--muted);}
+.rcpt-display{background:#f0f4f8;border:1px solid var(--border);border-radius:9px;padding:10px 14px;font-size:13px;color:var(--muted);}
+.paid-notice{background:#ecfdf5;border:1px solid #a7f3d0;border-radius:9px;padding:13px 16px;font-size:13px;color:var(--success);margin-bottom:14px;}
 
-/* Green notice box shown when the fee has already been marked as paid */
-.paid-notice{background:rgba(34,211,165,0.08);border:1px solid rgba(34,211,165,0.25);border-radius:9px;padding:13px 16px;font-size:13px;color:var(--success);margin-bottom:14px;}
-
-/* Shared button base: full-width block, smooth hover transition */
-.btn{display:block;width:100%;padding:12px;border:none;border-radius:11px;font-size:14px;font-weight:700;cursor:pointer;font-family:'Outfit',sans-serif;transition:background 0.2s;}
-
-/* Green ghost button — "Mark as Paid" */
-.btn-green{background:rgba(34,211,165,0.15);color:var(--success);border:1px solid rgba(34,211,165,0.3);}
-.btn-green:hover{background:rgba(34,211,165,0.25);}
-
-/* Amber ghost button — "Mark as Unpaid" */
-.btn-amber{background:rgba(251,191,36,0.12);color:var(--warning);border:1px solid rgba(251,191,36,0.3);}
-.btn-amber:hover{background:rgba(251,191,36,0.22);}
-
-/* Solid blue button — "Save Changes" */
+.btn{display:block;width:100%;padding:12px;border:none;border-radius:11px;font-size:14px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;transition:background 0.2s;}
+.btn-green{background:#ecfdf5;color:var(--success);border:1px solid #a7f3d0;}
+.btn-green:hover{background:#d1fae5;}
+.btn-amber{background:#fffbeb;color:var(--warning);border:1px solid #fde68a;}
+.btn-amber:hover{background:#fef3c7;}
 .btn-blue{background:var(--accent);color:#fff;margin-top:8px;}
-.btn-blue:hover{background:#3d68e8;}
+.btn-blue:hover{background:#1547c0;}
 
-/* Centred text link below the form card */
 .back-link{display:block;text-align:center;margin-top:16px;font-size:13px;color:var(--muted);text-decoration:none;}
 .back-link:hover{color:var(--accent);}
 
-/* ── FLATPICKR DARK THEME OVERRIDES ─────────────────────────────────────── */
-/* Calendar popup: dark card background, themed border and shadow */
-.flatpickr-calendar{background:var(--card)!important;border:1px solid var(--border)!important;
-  box-shadow:0 12px 40px rgba(0,0,0,.55)!important;border-radius:12px!important;}
-
-/* Individual day cells: light text with a slightly rounded shape */
-.flatpickr-day{color:var(--text)!important;border-radius:7px!important;}
-
-/* Day hover: subtle accent tint */
-.flatpickr-day:hover{background:rgba(79,122,255,.2)!important;border-color:transparent!important;}
-
-/* Selected day: solid accent background */
-.flatpickr-day.selected,.flatpickr-day.selected:hover{background:var(--accent)!important;border-color:var(--accent)!important;}
-
-/* Today's date: highlighted in success green */
-.flatpickr-day.today{border-color:var(--success)!important;color:var(--success)!important;}
-
-/* Today when also selected: override green text with white so it's readable on the accent bg */
-.flatpickr-day.today.selected{color:#fff!important;}
-
-/* Month/weekday headers: dark surface background */
-.flatpickr-months .flatpickr-month,.flatpickr-weekdays,.flatpickr-weekday{
-  background:var(--surface)!important;color:var(--muted)!important;border-radius:12px 12px 0 0!important;}
-
-/* Month/year text in the header bar */
-.flatpickr-current-month{color:var(--text)!important;font-family:'Outfit',sans-serif!important;font-weight:600!important;}
-
-/* Year number input inside the calendar header */
-.flatpickr-current-month input.cur-year,.numInput{color:var(--text)!important;background:transparent!important;}
-
-/* Navigation arrow icons: muted by default, accent on hover */
-.flatpickr-prev-month svg,.flatpickr-next-month svg{fill:var(--muted)!important;}
-.flatpickr-prev-month:hover svg,.flatpickr-next-month:hover svg{fill:var(--accent)!important;}
-
-/* Calendar input wrapper: adds a 📅 icon via a CSS pseudo-element */
 .cal-wrap{position:relative;}
-/* Right padding so text doesn't overlap the icon */
 .cal-wrap input{padding-right:36px!important;cursor:pointer;}
-/* The calendar icon itself — purely decorative, pointer-events:none keeps clicks going to input */
-.cal-wrap::after{content:'📅';position:absolute;right:11px;top:50%;transform:translateY(-50%);
-  font-size:14px;pointer-events:none;opacity:.6;}
+.cal-wrap::after{content:'📅';position:absolute;right:11px;top:50%;transform:translateY(-50%);font-size:14px;pointer-events:none;opacity:.5;}
 </style>
 </head>
 <body>
@@ -268,9 +187,9 @@ body{background:var(--bg);color:var(--text);font-family:'Outfit',sans-serif;min-
 
     <!-- Right-side breadcrumb links -->
     <div style="display:flex;gap:12px;align-items:center;">
-        <a href="../dashboard.php" style="color:var(--muted);font-size:13px;text-decoration:none;">← Home</a>
-        <a href="dashboard.php"   style="color:var(--muted);font-size:13px;text-decoration:none;">Fee Dashboard</a>
-        <a href="index.php"       style="color:var(--muted);font-size:13px;text-decoration:none;">Fee Records</a>
+        <a href="../dashboard.php" style="color:#64748b;font-size:13px;text-decoration:none;">← Home</a>
+        <a href="dashboard.php"   style="color:#64748b;font-size:13px;text-decoration:none;">Fee Dashboard</a>
+        <a href="index.php"       style="color:#64748b;font-size:13px;text-decoration:none;">Fee Records</a>
     </div>
 </nav>
 
@@ -282,7 +201,7 @@ body{background:var(--bg);color:var(--text);font-family:'Outfit',sans-serif;min-
         <h2>Edit Fee Record</h2>
         <!-- Show the receipt number in a styled inline code pill and the student name -->
         <p>Receipt:
-            <code style="font-family:'DM Mono',monospace;background:rgba(79,122,255,0.1);padding:2px 8px;border-radius:4px;font-size:12px;">
+            <code style="font-family:monospace;background:#eff6ff;color:#1a56db;padding:2px 8px;border-radius:4px;font-size:12px;">
                 <?= htmlspecialchars($fee['receipt_number']) ?>
             </code>
             · <?= htmlspecialchars($fee['full_name'] ?? '—') ?>
@@ -455,29 +374,12 @@ flatpickr("#due_date", {
 </script>
 
 <!-- HostelHub Footer -->
-<footer style="
-    background:var(--surface);
-    border-top:1px solid var(--border);
-    margin-top:48px;
-    padding:28px 32px;
-    text-align:center;
-    font-family:'Outfit',sans-serif;
-">
+<footer style="background:#fff;border-top:1px solid #e8edf3;margin-top:48px;padding:24px 32px;text-align:center;font-family:'DM Sans',sans-serif;">
     <div style="max-width:1100px;margin:0 auto;">
-        <!-- Decorative thin horizontal rule -->
-        <div style="width:48px;height:1px;background:var(--border);margin:0 auto 16px;"></div>
-
-        <!-- Footer logo row -->
         <div style="display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:6px;">
-            <span style="font-family:'Syne',sans-serif;font-size:16px;font-weight:800;color:var(--text);">
-                🏠 Hostel<span style="color:var(--accent);">Hub</span>
-            </span>
+            <span style="font-family:'Playfair Display',serif;font-size:16px;font-weight:700;color:#0f1923;">🏠 Hostel<span style="color:#1a56db;">Hub</span></span>
         </div>
-
-        <!-- Copyright line — date('Y') outputs the current four-digit year dynamically -->
-        <p style="font-size:11px;color:var(--muted);margin:0;">
-            Hostel Fee Management System &nbsp;·&nbsp; &copy; <?= date('Y') ?> HostelHub &nbsp;·&nbsp; All records are encrypted and access-controlled.
-        </p>
+        <p style="font-size:11px;color:#64748b;margin:0;">Hostel Fee Management System &nbsp;·&nbsp; &copy; <?= date('Y') ?> HostelHub</p>
     </div>
 </footer>
 

@@ -429,7 +429,7 @@ $greeting = $hour < 12 ? 'Good morning' : ($hour < 17 ? 'Good afternoon' : 'Good
             <span class="stat-label">Rooms Available</span>
             <a href="pages/rooms.php" class="stat-arrow">→</a>
         </div>
-        <div class="stat-card amber">
+         <div class="stat-card amber">
             <div class="stat-icon-wrap">💰</div>
             <span class="stat-number"><?= $feesPending ?></span>
             <span class="stat-label">Fees Pending</span>

@@ -1,0 +1,425 @@
+/* =====================================================
+   GLOBAL / BASE STYLES
+   ===================================================== */
+
+/* Remove default browser margin, add breathing room via padding,
+   set the base font, and apply a light grey page background */
+body {
+    margin: 0;
+    padding: 30px;
+    font-family: Arial, sans-serif;
+    background: #f4f6f9;
+}
+
+/* =====================================================
+   CONTAINER
+   ===================================================== */
+
+/* Main content wrapper: 95% of viewport width, centred,
+   white background, rounded corners, and a soft drop shadow */
+.container {
+    width: 95%;
+    margin: auto;            /* centres the block horizontally */
+    background: white;
+    padding: 25px;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.08); /* subtle elevation effect */
+}
+
+/* =====================================================
+   HEADINGS
+   ===================================================== */
+
+/* Centre all h2 headings, darken the colour, and add spacing below */
+h2 {
+    text-align: center;
+    color: #222;
+    margin-bottom: 20px;
+}
+
+/* =====================================================
+   ADD BUTTON
+   ===================================================== */
+
+/* Primary action button (e.g. "Add Fee"): displayed as inline block
+   so it sits next to other inline elements without breaking layout */
+.add-btn {
+    display: inline-block;
+    margin-bottom: 20px;    /* space below the button before the table */
+    background: #007bff;    /* Bootstrap-style blue */
+    color: white;
+    padding: 10px 15px;
+    border-radius: 6px;
+    text-decoration: none;  /* remove underline since it's an <a> tag */
+}
+
+/* =====================================================
+   TABLE
+   ===================================================== */
+
+/* Full-width table; border-collapse removes double borders between cells;
+   table-layout: auto lets columns size themselves to content */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    table-layout: auto;
+}
+
+/* Header row: dark charcoal background, white text, generous padding */
+th {
+    background: #343a40;
+    color: white;
+    padding: 14px;
+    text-align: left;
+}
+
+/* Data cells: comfortable padding, a thin bottom border acting as a row divider,
+   vertical-align: middle keeps cell contents vertically centred */
+td {
+    padding: 12px;
+    border-bottom: 1px solid #ddd;
+    vertical-align: middle;
+}
+
+/* Subtle highlight on row hover to aid readability */
+tr:hover {
+    background: #f9f9f9;
+}
+
+/* =====================================================
+   SEARCH BAR
+   ===================================================== */
+
+/* Search bar wrapper: flex row so the input and button sit side by side */
+.search-box {
+    margin-bottom: 20px;
+    display: flex;
+    gap: 10px;              /* space between the input and the button */
+}
+
+/* The search input expands to fill all available space */
+.search-box input {
+    flex: 1;
+    margin: 0;              /* override global input margin set further down */
+}
+
+/* The search button only takes as much width as its text needs */
+.search-box button {
+    width: auto;
+    padding: 10px 20px;
+}
+
+/* =====================================================
+   STATUS BADGES
+   ===================================================== */
+
+/* Shared badge styles: pill shape via border-radius, inline-block
+   so they sit naturally inside table cells, small bold text */
+.paid,
+.unpaid,
+.overdue {
+    padding: 5px 10px;
+    border-radius: 20px;    /* creates the pill/capsule shape */
+    display: inline-block;
+    font-size: 12px;
+    font-weight: bold;
+}
+
+/* Paid badge: soft green background with dark green text */
+.paid {
+    background: #dcfce7;
+    color: #166534;
+}
+
+/* Unpaid badge: soft amber background with dark amber text */
+.unpaid {
+    background: #fef3c7;
+    color: #92400e;
+}
+
+/* Overdue badge: soft red background with dark red text */
+.overdue {
+    background: #fee2e2;
+    color: #991b1b;
+}
+
+/* =====================================================
+   OVERDUE ROW HIGHLIGHT
+   ===================================================== */
+
+/* Applied to the entire <tr> when a fee is overdue;
+   !important overrides the generic tr:hover or striping rules */
+.late-row {
+    background: #ffe5e5 !important;  /* light red row tint */
+    border-left: 5px solid #dc2626; /* bold red left accent stripe */
+}
+
+/* Also darken the text inside an overdue row for emphasis */
+.late-row td {
+    color: #991b1b;
+}
+
+/* =====================================================
+   PAYMENT METHOD BADGES
+   ===================================================== */
+
+/* Base badge style shared by all payment method labels */
+.method {
+    padding: 5px 10px;
+    border-radius: 20px;    /* pill shape */
+    font-size: 12px;
+    font-weight: bold;
+    color: white;           /* white text works on all the coloured backgrounds */
+    display: inline-block;
+}
+
+/* Cash payment: forest green */
+.cash {
+    background: #16a34a;
+}
+
+/* Bank transfer: medium blue */
+.bank {
+    background: #2563eb;
+}
+
+/* Mobile payment: purple */
+.mobile {
+    background: #9333ea;
+}
+
+/* =====================================================
+   ACTION BUTTONS CONTAINER
+   ===================================================== */
+
+/* Flex row for grouping multiple action buttons (e.g. Pay + Delete)
+   in a single table cell; flex-wrap lets them wrap on narrow screens */
+.actions {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    align-items: center;
+}
+
+/* =====================================================
+   INDIVIDUAL ACTION BUTTONS
+   ===================================================== */
+
+/* "Mark as paid" button: green, used on fee record rows */
+.pay-btn {
+    background: #28a745;
+    color: white;
+    padding: 7px 10px;
+    border-radius: 5px;
+    text-decoration: none;  /* <a> tag styled as button */
+    font-size: 13px;
+}
+
+/* "Delete" button: red, used on fee record rows */
+.delete-btn {
+    background: #dc3545;
+    color: white;
+    padding: 7px 10px;
+    border-radius: 5px;
+    text-decoration: none;  /* <a> tag styled as button */
+    font-size: 13px;
+}
+
+/* =====================================================
+   FORM CARD (Invoice / Add / Edit forms)
+   ===================================================== */
+
+/* Centres the card horizontally with padding above/below */
+.invoice-wrapper {
+    display: flex;
+    justify-content: center;
+    padding: 30px 0;
+}
+
+/* The card itself: fixed 480px width, white background,
+   rounded corners, strong drop shadow, clips overflowing content
+   (so the coloured header doesn't leak outside the rounded corners) */
+.invoice-card {
+    width: 480px;
+    background: white;
+    border-radius: 14px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+    overflow: hidden;
+}
+
+/* Coloured header band at the top of the card */
+.invoice-header {
+    background: #2e59d9;    /* brand blue */
+    color: white;
+    padding: 20px;
+    text-align: center;
+}
+
+/* Title inside the card header (overrides global h2 colour) */
+.invoice-header h2 {
+    color: white;
+    margin: 0 0 4px;
+}
+
+/* Subtitle/description inside the card header */
+.invoice-header p {
+    margin: 0;
+    opacity: 0.85;          /* slightly transparent to feel softer */
+    font-size: 0.9rem;
+}
+
+/* White padded body area below the card header */
+.invoice-body {
+    padding: 25px;
+}
+
+/* =====================================================
+   FORM INPUTS
+   ===================================================== */
+
+/* All text inputs, dropdowns, and textareas: full width, comfortable padding,
+   slight top/bottom margin for spacing between fields,
+   rounded corners, thin border, box-sizing so padding doesn't overflow */
+input, select, textarea {
+    width: 100%;
+    padding: 10px;
+    margin-top: 6px;
+    margin-bottom: 15px;
+    border-radius: 8px;
+    border: 1px solid #ccc;
+    box-sizing: border-box; /* include padding in the declared width */
+}
+
+/* =====================================================
+   FORM SUBMIT BUTTON
+   ===================================================== */
+
+/* Full-width button with brand blue; pointer cursor shows it's clickable */
+button {
+    width: 100%;
+    padding: 12px;
+    background: #2e59d9;
+    border: none;
+    color: white;
+    border-radius: 8px;
+    cursor: pointer;
+}
+
+/* Darker shade on hover for interactive feedback */
+button:hover {
+    background: #1f3c88;
+}
+
+/* =====================================================
+   ERROR MESSAGE BOX
+   ===================================================== */
+
+/* Red-tinted alert box with a bold left border for validation errors */
+.error {
+    background: #fee2e2;
+    color: #b91c1c;
+    padding: 12px;
+    border-left: 5px solid #dc2626; /* red accent stripe on the left */
+    border-radius: 8px;
+    margin-bottom: 15px;
+    font-weight: 600;
+    text-align: center;
+}
+
+/* =====================================================
+   FINE SETTINGS PANEL
+   ===================================================== */
+
+/* Inset panel for fine/penalty configuration fields:
+   light grey background to visually separate from the main form */
+.fine-settings {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 14px;
+    margin-bottom: 15px;
+}
+
+/* =====================================================
+   RESPONSIVE — narrow screens (≤ 900px)
+   ===================================================== */
+@media (max-width: 900px) {
+    /* Remove fixed width and allow the container to fill the screen;
+       overflow-x: auto lets the table scroll horizontally if needed */
+    .container {
+        width: 100%;
+        padding: 15px;
+        overflow-x: auto;
+    }
+
+    /* Give the table a minimum width so columns don't collapse;
+       it will scroll inside the container on small screens */
+    table {
+        min-width: 1000px;
+    }
+}
+
+/* =====================================================
+   FEE MODULE NAVBAR
+   ===================================================== */
+
+/* Outer wrapper: same 95% width as .container, with bottom margin
+   to separate the nav from the page content below */
+.fee-nav-wrap {
+    width: 95%;
+    margin: 0 auto 20px auto;
+}
+
+/* Nav bar itself: white card, rounded, horizontal flex layout,
+   shadow and border to match the container card style */
+.fee-nav {
+    background: white;
+    border-radius: 12px;
+    padding: 14px 18px;
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;        /* links wrap to next line on smaller screens */
+    align-items: center;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+    border: 1px solid #e5e7eb;
+}
+
+/* Individual nav links: no underline, dark grey text,
+   pill-style padding, semi-bold, smooth hover transition */
+.fee-nav a {
+    text-decoration: none;
+    color: #374151;
+    padding: 10px 14px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    transition: 0.2s ease; /* smooth colour/background transition */
+}
+
+/* Hover state: light blue tint background + blue text */
+.fee-nav a:hover {
+    background: #eff6ff;
+    color: #2563eb;
+}
+
+/* Active state (current page link): solid blue background, white text */
+.fee-nav a.active {
+    background: #2563eb;
+    color: white;
+}
+
+/* =====================================================
+   RESPONSIVE — fee nav on mobile (≤ 768px)
+   ===================================================== */
+@media (max-width: 768px) {
+    /* Stack nav links vertically instead of horizontally */
+    .fee-nav {
+        flex-direction: column;
+        align-items: stretch; /* links stretch to full nav width */
+    }
+
+    /* Centre the text in each stacked link */
+    .fee-nav a {
+        text-align: center;
+    }
+}

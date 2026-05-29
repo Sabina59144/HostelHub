@@ -1,2 +1,0 @@
-# HostelHub
-Hostel Management System

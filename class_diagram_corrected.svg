@@ -1,0 +1,237 @@
+<svg viewBox="0 0 1400 980" xmlns="http://www.w3.org/2000/svg" font-family="Arial, sans-serif">
+<defs>
+  <marker id="crow" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+    <path d="M10,2 L2,6 L10,10 M10,6 L2,6" stroke="#1e3a8a" stroke-width="1.5" fill="none"/>
+  </marker>
+  <marker id="one" markerWidth="8" markerHeight="14" refX="2" refY="7" orient="auto">
+    <line x1="2" y1="1" x2="2" y2="13" stroke="#1e3a8a" stroke-width="2"/>
+  </marker>
+  <marker id="zero-many" markerWidth="16" markerHeight="12" refX="14" refY="6" orient="auto">
+    <path d="M14,2 L6,6 L14,10 M14,6 L6,6" stroke="#1e3a8a" stroke-width="1.5" fill="none"/>
+    <circle cx="3" cy="6" r="2.5" stroke="#1e3a8a" stroke-width="1.5" fill="white"/>
+  </marker>
+</defs>
+<rect width="1400" height="980" fill="#f0f4f8"/>
+<text x="700" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#1e3a8a">HostelHub – Team Class Diagram (Database Tables)</text>
+<rect x="33" y="61" width="235" height="200" rx="8" fill="#00000018"/>
+<rect x="30" y="58" width="235" height="200" rx="8" fill="white" stroke="#1e3a8a" stroke-width="2"/>
+<rect x="30" y="58" width="235" height="36" rx="8" fill="#1e3a8a"/>
+<rect x="30" y="86" width="235" height="8" fill="#1e3a8a"/>
+<text x="44" y="82" font-size="15" fill="white">▦</text>
+<text x="147" y="82" text-anchor="middle" font-size="15" font-weight="bold" fill="white">User</text>
+<rect x="38" y="102" width="26" height="14" rx="3" fill="#fbbf24"/>
+<text x="51" y="113" text-anchor="middle" font-size="9" font-weight="bold" fill="#1e3a8a">PK</text>
+<text x="70" y="113" font-size="11.5" fill="#0f1923">userId</text>
+<text x="257" y="113" text-anchor="end" font-size="10.5" fill="#64748b">int</text>
+<rect x="31" y="122" width="233" height="22" fill="#f0f7ff"/>
+<text x="40" y="135" font-size="12" fill="#475569">+</text>
+<text x="52" y="135" font-size="11.5" fill="#0f1923">username</text>
+<text x="257" y="135" text-anchor="end" font-size="10.5" fill="#64748b">string</text>
+<text x="40" y="157" font-size="12" fill="#475569">+</text>
+<text x="52" y="157" font-size="11.5" fill="#0f1923">password</text>
+<text x="257" y="157" text-anchor="end" font-size="10.5" fill="#64748b">string</text>
+<rect x="31" y="166" width="233" height="22" fill="#f0f7ff"/>
+<text x="40" y="179" font-size="12" fill="#475569">+</text>
+<text x="52" y="179" font-size="11.5" fill="#0f1923">fullName</text>
+<text x="257" y="179" text-anchor="end" font-size="10.5" fill="#64748b">string</text>
+<text x="40" y="201" font-size="12" fill="#475569">+</text>
+<text x="52" y="201" font-size="11.5" fill="#0f1923">role</text>
+<text x="257" y="201" text-anchor="end" font-size="10.5" fill="#64748b">enum(admin,staff)</text>
+<rect x="31" y="210" width="233" height="22" fill="#f0f7ff"/>
+<text x="40" y="223" font-size="12" fill="#475569">+</text>
+<text x="52" y="223" font-size="11.5" fill="#0f1923">isActive</text>
+<text x="257" y="223" text-anchor="end" font-size="10.5" fill="#64748b">bool</text>
+<text x="40" y="245" font-size="12" fill="#475569">+</text>
+<text x="52" y="245" font-size="11.5" fill="#0f1923">createdAt</text>
+<text x="257" y="245" text-anchor="end" font-size="10.5" fill="#64748b">datetime</text>
+<rect x="493" y="61" width="245" height="200" rx="8" fill="#00000018"/>
+<rect x="490" y="58" width="245" height="200" rx="8" fill="white" stroke="#1e3a8a" stroke-width="2"/>
+<rect x="490" y="58" width="245" height="36" rx="8" fill="#1e3a8a"/>
+<rect x="490" y="86" width="245" height="8" fill="#1e3a8a"/>
+<text x="504" y="82" font-size="15" fill="white">▦</text>
+<text x="612" y="82" text-anchor="middle" font-size="15" font-weight="bold" fill="white">Student</text>
+<rect x="498" y="102" width="26" height="14" rx="3" fill="#fbbf24"/>
+<text x="511" y="113" text-anchor="middle" font-size="9" font-weight="bold" fill="#1e3a8a">PK</text>
+<text x="530" y="113" font-size="11.5" fill="#0f1923">studentId</text>
+<text x="727" y="113" text-anchor="end" font-size="10.5" fill="#64748b">int</text>
+<rect x="491" y="122" width="243" height="22" fill="#f0f7ff"/>
+<text x="500" y="135" font-size="12" fill="#475569">+</text>
+<text x="512" y="135" font-size="11.5" fill="#0f1923">studentNumber</text>
+<text x="727" y="135" text-anchor="end" font-size="10.5" fill="#64748b">string</text>
+<text x="500" y="157" font-size="12" fill="#475569">+</text>
+<text x="512" y="157" font-size="11.5" fill="#0f1923">fullName</text>
+<text x="727" y="157" text-anchor="end" font-size="10.5" fill="#64748b">string</text>
+<rect x="491" y="166" width="243" height="22" fill="#f0f7ff"/>
+<text x="500" y="179" font-size="12" fill="#475569">+</text>
+<text x="512" y="179" font-size="11.5" fill="#0f1923">email</text>
+<text x="727" y="179" text-anchor="end" font-size="10.5" fill="#64748b">string</text>
+<text x="500" y="201" font-size="12" fill="#475569">+</text>
+<text x="512" y="201" font-size="11.5" fill="#0f1923">dateOfBirth</text>
+<text x="727" y="201" text-anchor="end" font-size="10.5" fill="#64748b">date</text>
+<rect x="491" y="210" width="243" height="22" fill="#f0f7ff"/>
+<rect x="498" y="212" width="24" height="14" rx="3" fill="#bfdbfe"/>
+<text x="510" y="223" text-anchor="middle" font-size="9" font-weight="bold" fill="#1e3a8a">FK</text>
+<text x="528" y="223" font-size="11.5" fill="#0f1923">roomId</text>
+<text x="727" y="223" text-anchor="end" font-size="10.5" fill="#64748b">int</text>
+<text x="500" y="245" font-size="12" fill="#475569">+</text>
+<text x="512" y="245" font-size="11.5" fill="#0f1923">status</text>
+<text x="727" y="245" text-anchor="end" font-size="10.5" fill="#64748b">bool</text>
+<rect x="1063" y="61" width="270" height="200" rx="8" fill="#00000018"/>
+<rect x="1060" y="58" width="270" height="200" rx="8" fill="white" stroke="#1e3a8a" stroke-width="2"/>
+<rect x="1060" y="58" width="270" height="36" rx="8" fill="#1e3a8a"/>
+<rect x="1060" y="86" width="270" height="8" fill="#1e3a8a"/>
+<text x="1074" y="82" font-size="15" fill="white">▦</text>
+<text x="1195" y="82" text-anchor="middle" font-size="15" font-weight="bold" fill="white">Room</text>
+<rect x="1068" y="102" width="26" height="14" rx="3" fill="#fbbf24"/>
+<text x="1081" y="113" text-anchor="middle" font-size="9" font-weight="bold" fill="#1e3a8a">PK</text>
+<text x="1100" y="113" font-size="11.5" fill="#0f1923">roomId</text>
+<text x="1322" y="113" text-anchor="end" font-size="10.5" fill="#64748b">int</text>
+<rect x="1061" y="122" width="268" height="22" fill="#f0f7ff"/>
+<text x="1070" y="135" font-size="12" fill="#475569">+</text>
+<text x="1082" y="135" font-size="11.5" fill="#0f1923">roomNumber</text>
+<text x="1322" y="135" text-anchor="end" font-size="10.5" fill="#64748b">string</text>
+<text x="1070" y="157" font-size="12" fill="#475569">+</text>
+<text x="1082" y="157" font-size="11.5" fill="#0f1923">roomType</text>
+<text x="1322" y="157" text-anchor="end" font-size="10.5" fill="#64748b">string</text>
+<rect x="1061" y="166" width="268" height="22" fill="#f0f7ff"/>
+<text x="1070" y="179" font-size="12" fill="#475569">+</text>
+<text x="1082" y="179" font-size="11.5" fill="#0f1923">capacity</text>
+<text x="1322" y="179" text-anchor="end" font-size="10.5" fill="#64748b">int</text>
+<text x="1070" y="201" font-size="12" fill="#475569">+</text>
+<text x="1082" y="201" font-size="11.5" fill="#0f1923">pricePerMonth</text>
+<text x="1322" y="201" text-anchor="end" font-size="10.5" fill="#64748b">decimal</text>
+<rect x="1061" y="210" width="268" height="22" fill="#f0f7ff"/>
+<text x="1070" y="223" font-size="12" fill="#475569">+</text>
+<text x="1082" y="223" font-size="11.5" fill="#0f1923">isEnsuite</text>
+<text x="1322" y="223" text-anchor="end" font-size="10.5" fill="#64748b">bool</text>
+<text x="1070" y="245" font-size="12" fill="#475569">+</text>
+<text x="1082" y="245" font-size="11.5" fill="#0f1923">availableFrom</text>
+<text x="1322" y="245" text-anchor="end" font-size="10.5" fill="#64748b">date</text>
+<rect x="393" y="403" width="345" height="332" rx="8" fill="#00000018"/>
+<rect x="390" y="400" width="345" height="332" rx="8" fill="white" stroke="#1e3a8a" stroke-width="2"/>
+<rect x="390" y="400" width="345" height="36" rx="8" fill="#1e3a8a"/>
+<rect x="390" y="428" width="345" height="8" fill="#1e3a8a"/>
+<text x="404" y="424" font-size="15" fill="white">▦</text>
+<text x="562" y="424" text-anchor="middle" font-size="15" font-weight="bold" fill="white">Fee</text>
+<rect x="398" y="444" width="26" height="14" rx="3" fill="#fbbf24"/>
+<text x="411" y="455" text-anchor="middle" font-size="9" font-weight="bold" fill="#1e3a8a">PK</text>
+<text x="430" y="455" font-size="11.5" fill="#0f1923">receiptNumber</text>
+<text x="727" y="455" text-anchor="end" font-size="10.5" fill="#64748b">string</text>
+<rect x="391" y="464" width="343" height="22" fill="#f0f7ff"/>
+<rect x="398" y="466" width="24" height="14" rx="3" fill="#bfdbfe"/>
+<text x="410" y="477" text-anchor="middle" font-size="9" font-weight="bold" fill="#1e3a8a">FK</text>
+<text x="428" y="477" font-size="11.5" fill="#0f1923">studentId</text>
+<text x="727" y="477" text-anchor="end" font-size="10.5" fill="#64748b">int</text>
+<text x="400" y="499" font-size="12" fill="#475569">+</text>
+<text x="412" y="499" font-size="11.5" fill="#0f1923">feeType</text>
+<text x="727" y="499" text-anchor="end" font-size="10.5" fill="#64748b">enum</text>
+<rect x="391" y="508" width="343" height="22" fill="#f0f7ff"/>
+<text x="400" y="521" font-size="12" fill="#475569">+</text>
+<text x="412" y="521" font-size="11.5" fill="#0f1923">amount</text>
+<text x="727" y="521" text-anchor="end" font-size="10.5" fill="#64748b">decimal</text>
+<text x="400" y="543" font-size="12" fill="#475569">+</text>
+<text x="412" y="543" font-size="11.5" fill="#0f1923">dueDate</text>
+<text x="727" y="543" text-anchor="end" font-size="10.5" fill="#64748b">date</text>
+<rect x="391" y="552" width="343" height="22" fill="#f0f7ff"/>
+<text x="400" y="565" font-size="12" fill="#475569">+</text>
+<text x="412" y="565" font-size="11.5" fill="#0f1923">isPaid</text>
+<text x="727" y="565" text-anchor="end" font-size="10.5" fill="#64748b">bool</text>
+<text x="400" y="587" font-size="12" fill="#475569">+</text>
+<text x="412" y="587" font-size="11.5" fill="#0f1923">paidAt</text>
+<text x="727" y="587" text-anchor="end" font-size="10.5" fill="#64748b">datetime</text>
+<rect x="391" y="596" width="343" height="22" fill="#f0f7ff"/>
+<text x="400" y="609" font-size="12" fill="#475569">+</text>
+<text x="412" y="609" font-size="11.5" fill="#0f1923">paymentMethod</text>
+<text x="727" y="609" text-anchor="end" font-size="10.5" fill="#64748b">string</text>
+<text x="400" y="631" font-size="12" fill="#475569">+</text>
+<text x="412" y="631" font-size="11.5" fill="#0f1923">fineRate</text>
+<text x="727" y="631" text-anchor="end" font-size="10.5" fill="#64748b">decimal</text>
+<rect x="391" y="640" width="343" height="22" fill="#f0f7ff"/>
+<text x="400" y="653" font-size="12" fill="#475569">+</text>
+<text x="412" y="653" font-size="11.5" fill="#0f1923">fineCap</text>
+<text x="727" y="653" text-anchor="end" font-size="10.5" fill="#64748b">decimal</text>
+<text x="400" y="675" font-size="12" fill="#475569">+</text>
+<text x="412" y="675" font-size="11.5" fill="#0f1923">fineAmount</text>
+<text x="727" y="675" text-anchor="end" font-size="10.5" fill="#64748b">decimal</text>
+<rect x="391" y="684" width="343" height="22" fill="#f0f7ff"/>
+<text x="400" y="697" font-size="12" fill="#475569">+</text>
+<text x="412" y="697" font-size="11.5" fill="#0f1923">totalDue</text>
+<text x="727" y="697" text-anchor="end" font-size="10.5" fill="#64748b">decimal</text>
+<text x="400" y="719" font-size="12" fill="#475569">+</text>
+<text x="412" y="719" font-size="11.5" fill="#0f1923">isActive</text>
+<text x="727" y="719" text-anchor="end" font-size="10.5" fill="#64748b">bool</text>
+<rect x="863" y="413" width="285" height="200" rx="8" fill="#00000018"/>
+<rect x="860" y="410" width="285" height="200" rx="8" fill="white" stroke="#1e3a8a" stroke-width="2"/>
+<rect x="860" y="410" width="285" height="36" rx="8" fill="#1e3a8a"/>
+<rect x="860" y="438" width="285" height="8" fill="#1e3a8a"/>
+<text x="874" y="434" font-size="15" fill="white">▦</text>
+<text x="1002" y="434" text-anchor="middle" font-size="15" font-weight="bold" fill="white">Maintenance</text>
+<rect x="868" y="454" width="26" height="14" rx="3" fill="#fbbf24"/>
+<text x="881" y="465" text-anchor="middle" font-size="9" font-weight="bold" fill="#1e3a8a">PK</text>
+<text x="900" y="465" font-size="11.5" fill="#0f1923">maintenanceId</text>
+<text x="1137" y="465" text-anchor="end" font-size="10.5" fill="#64748b">int</text>
+<rect x="861" y="474" width="283" height="22" fill="#f0f7ff"/>
+<text x="870" y="487" font-size="12" fill="#475569">+</text>
+<text x="882" y="487" font-size="11.5" fill="#0f1923">ticketNumber</text>
+<text x="1137" y="487" text-anchor="end" font-size="10.5" fill="#64748b">string</text>
+<rect x="868" y="498" width="24" height="14" rx="3" fill="#bfdbfe"/>
+<text x="880" y="509" text-anchor="middle" font-size="9" font-weight="bold" fill="#1e3a8a">FK</text>
+<text x="898" y="509" font-size="11.5" fill="#0f1923">roomId</text>
+<text x="1137" y="509" text-anchor="end" font-size="10.5" fill="#64748b">int</text>
+<rect x="861" y="518" width="283" height="22" fill="#f0f7ff"/>
+<rect x="868" y="520" width="24" height="14" rx="3" fill="#bfdbfe"/>
+<text x="880" y="531" text-anchor="middle" font-size="9" font-weight="bold" fill="#1e3a8a">FK</text>
+<text x="898" y="531" font-size="11.5" fill="#0f1923">assignedTo</text>
+<text x="1137" y="531" text-anchor="end" font-size="10.5" fill="#64748b">int</text>
+<text x="870" y="553" font-size="12" fill="#475569">+</text>
+<text x="882" y="553" font-size="11.5" fill="#0f1923">dateReported</text>
+<text x="1137" y="553" text-anchor="end" font-size="10.5" fill="#64748b">date</text>
+<rect x="861" y="562" width="283" height="22" fill="#f0f7ff"/>
+<rect x="868" y="564" width="24" height="14" rx="3" fill="#bfdbfe"/>
+<text x="880" y="575" text-anchor="middle" font-size="9" font-weight="bold" fill="#1e3a8a">FK</text>
+<text x="898" y="575" font-size="11.5" fill="#0f1923">reportedBy</text>
+<text x="1137" y="575" text-anchor="end" font-size="10.5" fill="#64748b">int</text>
+<text x="870" y="597" font-size="12" fill="#475569">+</text>
+<text x="882" y="597" font-size="11.5" fill="#0f1923">isResolved</text>
+<text x="1137" y="597" text-anchor="end" font-size="10.5" fill="#64748b">bool</text>
+<polyline points="735,201 1060,201" fill="none" stroke="#1e3a8a" stroke-width="1.8" marker-start="url(#one)" marker-end="url(#zero-many)"/><rect x="855" y="178" width="94" height="17" rx="3" fill="#dbeafe" opacity="0.95"/><text x="859" y="191" font-size="11" font-weight="bold" fill="#1e40af">allocated_to</text>
+<polyline points="562,258 562,400" fill="none" stroke="#1e3a8a" stroke-width="1.8" marker-start="url(#one)" marker-end="url(#zero-many)"/><rect x="564" y="316" width="31" height="17" rx="3" fill="#dbeafe" opacity="0.95"/><text x="568" y="329" font-size="11" font-weight="bold" fill="#1e40af">has</text>
+<polyline points="1195,258 1002,410" fill="none" stroke="#1e3a8a" stroke-width="1.8" marker-start="url(#one)" marker-end="url(#zero-many)"/><rect x="1197" y="321" width="101" height="17" rx="3" fill="#dbeafe" opacity="0.95"/><text x="1201" y="334" font-size="11" font-weight="bold" fill="#1e40af">has (tickets)</text>
+<polyline points="70,258 70,777 836,777 836,575 860,575" fill="none" stroke="#1e3a8a" stroke-width="1.8" marker-start="url(#one)" marker-end="url(#zero-many)"/><rect x="76" y="504" width="87" height="17" rx="3" fill="#dbeafe" opacity="0.95"/><text x="80" y="517" font-size="11" font-weight="bold" fill="#1e40af">reported_by</text>
+<polyline points="265,135 367,135 367,46 1395,46 1395,531 1145,531" fill="none" stroke="#1e3a8a" stroke-width="1.8" marker-start="url(#one)" marker-end="url(#zero-many)"/><rect x="843" y="29" width="87" height="17" rx="3" fill="#dbeafe" opacity="0.95"/><text x="847" y="42" font-size="11" font-weight="bold" fill="#1e40af">assigned_to</text>
+<rect x="30" y="802" width="280" height="132" rx="6" fill="white" stroke="#bfdbfe" stroke-width="1.5"/>
+<rect x="30" y="802" width="280" height="24" rx="6" fill="#1e3a8a"/>
+<rect x="30" y="820" width="280" height="6" fill="#1e3a8a"/>
+<text x="170" y="819" text-anchor="middle" font-size="12" font-weight="bold" fill="white">LEGEND</text>
+<rect x="40" y="831" width="30" height="16" rx="3" fill="#fbbf24"/>
+<text x="55" y="844" text-anchor="middle" font-size="9" font-weight="bold" fill="#1e3a8a">PK</text>
+<text x="78" y="844" font-size="11" fill="#374151">Primary Key</text>
+<rect x="40" y="853" width="30" height="16" rx="3" fill="#bfdbfe"/>
+<text x="55" y="866" text-anchor="middle" font-size="9" font-weight="bold" fill="#1e3a8a">FK</text>
+<text x="78" y="866" font-size="11" fill="#374151">Foreign Key</text>
+<rect x="40" y="875" width="30" height="16" rx="3" fill="#1e3a8a"/>
+<text x="55" y="888" text-anchor="middle" font-size="9" font-weight="bold" fill="#1e3a8a">| —</text>
+<text x="78" y="888" font-size="11" fill="#374151">One (mandatory)</text>
+<rect x="40" y="897" width="30" height="16" rx="3" fill="#1e3a8a"/>
+<text x="55" y="910" text-anchor="middle" font-size="9" font-weight="bold" fill="#1e3a8a">—&lt;</text>
+<text x="78" y="910" font-size="11" fill="#374151">Many (zero or more)</text>
+<rect x="330" y="802" width="730" height="132" rx="6" fill="white" stroke="#bfdbfe" stroke-width="1.5"/>
+<rect x="330" y="802" width="730" height="24" rx="6" fill="#1e3a8a"/>
+<rect x="330" y="820" width="730" height="6" fill="#1e3a8a"/>
+<text x="695" y="819" text-anchor="middle" font-size="12" font-weight="bold" fill="white">RELATIONSHIPS SUMMARY</text>
+<circle cx="345" cy="840" r="6" fill="#3b82f6"/>
+<text x="345" y="844" text-anchor="middle" font-size="9" font-weight="bold" fill="white">1</text>
+<text x="360" y="844" font-size="11" fill="#374151">One Room can be allocated to zero or many Students  (Student.roomId FK).</text>
+<circle cx="345" cy="859" r="6" fill="#3b82f6"/>
+<text x="345" y="863" text-anchor="middle" font-size="9" font-weight="bold" fill="white">2</text>
+<text x="360" y="863" font-size="11" fill="#374151">One Student can have zero or many Fee records  (Fee.studentId FK).</text>
+<circle cx="345" cy="878" r="6" fill="#3b82f6"/>
+<text x="345" y="882" text-anchor="middle" font-size="9" font-weight="bold" fill="white">3</text>
+<text x="360" y="882" font-size="11" fill="#374151">One Room can have zero or many Maintenance tickets  (Maintenance.roomId FK).</text>
+<circle cx="345" cy="897" r="6" fill="#3b82f6"/>
+<text x="345" y="901" text-anchor="middle" font-size="9" font-weight="bold" fill="white">4</text>
+<text x="360" y="901" font-size="11" fill="#374151">One User can report zero or many Maintenance tickets  (Maintenance.reportedBy FK).</text>
+<circle cx="345" cy="916" r="6" fill="#3b82f6"/>
+<text x="345" y="920" text-anchor="middle" font-size="9" font-weight="bold" fill="white">5</text>
+<text x="360" y="920" font-size="11" fill="#374151">One User can be assigned to zero or many Maintenance tickets  (Maintenance.assignedTo FK).</text>
+</svg>

@@ -76,7 +76,7 @@ $base     = $inSubdir ? '../' : '';   // Prepend "../" when in a subdirectory
             </a>
         </li>
         <li>
-            <a href="<?= $base ?>Fee%20module/index.php"
+            <a href="<?= $base ?>Fee%20module/dashboard.php"
                class="<?= strpos($_SERVER['SCRIPT_FILENAME'], 'Fee module') !== false ? 'active' : '' ?>">
                 Fees
             </a>

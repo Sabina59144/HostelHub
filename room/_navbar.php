@@ -39,12 +39,12 @@ $activeNav = $activeNav ?? 'rooms';
     <!-- The 'active' class is applied to whichever link matches $activeNav,
          making it visually highlighted in the navbar. -->
     <div class="nav-links">
-        <a href="../dashboard.php"               class="<?php echo $activeNav==='dashboard'   ? 'active' : ''; ?>">Dashboard</a>
-        <a href="../Student module/index.php"    class="<?php echo $activeNav==='students'    ? 'active' : ''; ?>">Students</a>
-        <a href="index.php"                      class="<?php echo $activeNav==='rooms'       ? 'active' : ''; ?>">Rooms</a>
-        <a href="../fees/index.php"              class="<?php echo $activeNav==='fees'        ? 'active' : ''; ?>">Fees</a>
-        <a href="../maintenance/index.php"       class="<?php echo $activeNav==='maintenance' ? 'active' : ''; ?>">Maintenance</a>
-        <a href="../users/index.php"             class="<?php echo $activeNav==='users'       ? 'active' : ''; ?>">Users</a>
+        <a href="../dashboard.php"                                     class="<?php echo $activeNav==='dashboard'   ? 'active' : ''; ?>">Dashboard</a>
+        <a href="../Student module/index.php"                          class="<?php echo $activeNav==='students'    ? 'active' : ''; ?>">Students</a>
+        <a href="index.php"                                            class="<?php echo $activeNav==='rooms'       ? 'active' : ''; ?>">Rooms</a>
+        <a href="../Fee module/index.php"                              class="<?php echo $activeNav==='fees'        ? 'active' : ''; ?>">Fees</a>
+        <a href="../Maintenace module/html/maintenance/index.php"      class="<?php echo $activeNav==='maintenance' ? 'active' : ''; ?>">Maintenance</a>
+        <a href="../User module/users.php"                             class="<?php echo $activeNav==='users'       ? 'active' : ''; ?>">Users</a>
     </div>
 
     <!-- ── Right side: Logged-in user info + logout button ── -->

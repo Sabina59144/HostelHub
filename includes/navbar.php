@@ -8,11 +8,19 @@ $user        = currentUser();
 // Used to highlight the correct nav link as "active"
 $currentPage = basename($_SERVER['PHP_SELF']);
 
-// Use real filesystem paths — avoids URL encoding issues with folder names containing spaces
-$projectRoot = dirname(__DIR__);
-$scriptDir   = dirname($_SERVER['SCRIPT_FILENAME']);
-$inSubdir    = (realpath($scriptDir) !== realpath($projectRoot));
-$base        = $inSubdir ? '../' : '';
+// Build $base as the correct relative prefix back to the project root.
+// Simple boolean was wrong for pages 2+ levels deep (e.g. html/maintenance/).
+$projectRoot = realpath(dirname(__DIR__));
+$scriptDir   = realpath(dirname($_SERVER['SCRIPT_FILENAME']));
+$depth = 0;
+$dir   = $scriptDir;
+while ($dir && $dir !== $projectRoot) {
+    $depth++;
+    $parent = realpath(dirname($dir));
+    if (!$parent || $parent === $dir) break;
+    $dir = $parent;
+}
+$base = str_repeat('../', $depth);
 ?>
 
 <nav class="navbar">

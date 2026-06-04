@@ -45,7 +45,7 @@ try {
         authLoginUser('admin', (int)$admin['admin_id'], (string)$admin['name'], (string)$admin['username']);
     }
 
-    echo json_encode(['success' => true]);
+    echo json_encode(['success' => true, 'role' => $role]);
 } catch (PDOException $e) {
     echo json_encode(['success' => false, 'errors' => [$e->getMessage()]]);
 }

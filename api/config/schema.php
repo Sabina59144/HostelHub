@@ -17,6 +17,34 @@ function ensureMaintenanceArchiveSchema(PDO $db): void
     if (!schemaColumnExists($db, 'maintenance', 'deleted_at')) {
         $db->exec("ALTER TABLE maintenance ADD COLUMN deleted_at DATETIME NULL");
     }
+    if (!schemaColumnExists($db, 'maintenance', 'description')) {
+        $db->exec("ALTER TABLE maintenance ADD COLUMN description TEXT NULL AFTER room_id");
+    }
+    if (!schemaColumnExists($db, 'maintenance', 'status')) {
+        $db->exec("ALTER TABLE maintenance ADD COLUMN status VARCHAR(20) NOT NULL DEFAULT 'Pending'");
+    }
+    if (!schemaColumnExists($db, 'maintenance', 'resolution_note')) {
+        $db->exec("ALTER TABLE maintenance ADD COLUMN resolution_note TEXT NULL");
+    }
+    // Add proper FK column for assigned staff (INT ref → users)
+    if (!schemaColumnExists($db, 'maintenance', 'assigned_to_id')) {
+        $db->exec("ALTER TABLE maintenance ADD COLUMN assigned_to_id INT NULL DEFAULT NULL");
+        try {
+            $db->exec("ALTER TABLE maintenance ADD CONSTRAINT fk_maintenance_assigned FOREIGN KEY (assigned_to_id) REFERENCES users(user_id) ON DELETE SET NULL ON UPDATE CASCADE");
+        } catch (PDOException $e) {
+            // FK may already exist or be unsupported in this context — safe to ignore
+        }
+    }
+    // Make legacy assigned_to nullable
+    $db->exec("ALTER TABLE maintenance MODIFY COLUMN assigned_to VARCHAR(100) NULL DEFAULT NULL");
+    // Clean up legacy 'Pending Assignment' placeholder stored by old code
+    $db->exec("UPDATE maintenance SET assigned_to = NULL WHERE assigned_to = 'Pending Assignment'");
+    // Drop FK on reported_by — students are reporters but are not in the users table
+    try {
+        $db->exec("ALTER TABLE maintenance DROP FOREIGN KEY fk_maintenance_reporter");
+    } catch (PDOException $e) {
+        // Already dropped or never existed — safe to ignore
+    }
 }
 
 function ensureAuthSchema(PDO $db): void

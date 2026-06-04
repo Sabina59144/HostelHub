@@ -103,8 +103,14 @@ document.getElementById('loginForm').addEventListener('submit', async (event) =>
         });
         const json = await resp.json();
         if (json.success) {
-            // Redirect on success
-            window.location.href = 'maintenance/index.php';
+            // Redirect on success based on role
+            if (json.role === 'admin') {
+                window.location.href = 'index.php';
+            } else if (json.role === 'student') {
+                window.location.href = 'student_dashboard.php';
+            } else {
+                window.location.href = 'index.php';
+            }
             return;
         }
         showMessage('error', json.errors ? json.errors.join(' ') : 'Login failed.');

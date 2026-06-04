@@ -1,6 +1,6 @@
 <?php
 require_once(__DIR__ . '/../config/auth.php');
 authLogoutUser();
-header('Location: ../../html/login.php');
+header('Location: ../../login.php');
 exit;
 

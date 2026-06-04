@@ -17,16 +17,20 @@ if (session_status() === PHP_SESSION_NONE) {
  * Check if user is logged in
  * @return bool True if user session exists
  */
-function isLoggedIn(): bool {
-    return isset($_SESSION['user_id']) && !empty($_SESSION['user_id']);
+if (!function_exists('isLoggedIn')) {
+    function isLoggedIn(): bool {
+        return isset($_SESSION['user_id']) && !empty($_SESSION['user_id']);
+    }
 }
 
 /**
  * Get current user's role
  * @return string User role (admin, staff, student)
  */
-function currentRole(): string {
-    return $_SESSION['role'] ?? 'guest';
+if (!function_exists('currentRole')) {
+    function currentRole(): string {
+        return $_SESSION['role'] ?? 'guest';
+    }
 }
 
 /**
@@ -34,16 +38,25 @@ function currentRole(): string {
  * @return array|null User data array or null if not logged in
  */
 function currentUser() {
-    if (!isLoggedIn()) {
-        return null;
+    if (isLoggedIn()) {
+        return [
+            'user_id'   => $_SESSION['user_id'],
+            'username'  => $_SESSION['username'],
+            'full_name' => $_SESSION['full_name'],
+            'role'      => $_SESSION['role'],
+        ];
     }
-
-    return [
-        'user_id'   => $_SESSION['user_id'],
-        'username'  => $_SESSION['username'],
-        'full_name' => $_SESSION['full_name'],
-        'role'      => $_SESSION['role'],
-    ];
+    // Fallback for students who authenticate via auth_user (not user_id)
+    if (!empty($_SESSION['auth_user']) && ($_SESSION['auth_user']['role'] ?? '') === 'student') {
+        $au = $_SESSION['auth_user'];
+        return [
+            'user_id'   => null,
+            'username'  => $au['identifier'] ?? '',
+            'full_name' => $au['name'] ?? '',
+            'role'      => 'student',
+        ];
+    }
+    return null;
 }
 
 /**
@@ -53,23 +66,29 @@ function currentUser() {
  * @return string Relative path with proper navigation
  */
 function _rootPath(string $file = ''): string {
-    // session.php is in includes/, so project root is one level up
-    $projectRoot = dirname(dirname(__FILE__));
-    $scriptDir   = dirname($_SERVER['SCRIPT_FILENAME']);
-    $inSubdir    = (realpath($scriptDir) !== realpath($projectRoot));
-    
-    $prefix = $inSubdir ? '../' : '';
-    return $prefix . $file;
+    $projectRoot = realpath(dirname(dirname(__FILE__)));
+    $scriptDir   = realpath(dirname($_SERVER['SCRIPT_FILENAME']));
+    $depth = 0;
+    $dir   = $scriptDir;
+    while ($dir && $dir !== $projectRoot) {
+        $depth++;
+        $parent = realpath(dirname($dir));
+        if (!$parent || $parent === $dir) break;
+        $dir = $parent;
+    }
+    return str_repeat('../', $depth) . $file;
 }
 
 /**
  * Require user to be logged in
  * Redirects to login page if not authenticated
  */
-function requireLogin(): void {
-    if (!isLoggedIn()) {
-        header("Location: " . _rootPath('login.php'));
-        exit;
+if (!function_exists('requireLogin')) {
+    function requireLogin(): void {
+        if (!isLoggedIn()) {
+            header("Location: " . _rootPath('login.php'));
+            exit;
+        }
     }
 }
 
@@ -167,9 +186,11 @@ function requireAnyRole(array $allowedRoles): void {
  * Logout current user
  * Destroys session and redirects to login
  */
-function logout(): void {
-    session_destroy();
-    header("Location: " . _rootPath('login.php'));
-    exit;
+if (!function_exists('logout')) {
+    function logout(): void {
+        session_destroy();
+        header("Location: " . _rootPath('login.php'));
+        exit;
+    }
 }
 ?>

@@ -421,40 +421,40 @@ $greeting = $hour < 12 ? 'Good morning' : ($hour < 17 ? 'Good afternoon' : 'Good
             <div class="stat-icon-wrap">🎓</div>
             <span class="stat-number"><?= $totalStudents ?></span>
             <span class="stat-label">Total Students</span>
-            <a href="pages/students.php" class="stat-arrow">→</a>
+            <a href="Student%20module/index.php" class="stat-arrow">→</a>
         </div>
         <div class="stat-card green">
             <div class="stat-icon-wrap">🛏️</div>
             <span class="stat-number"><?= $availableRooms ?></span>
             <span class="stat-label">Rooms Available</span>
-            <a href="pages/rooms.php" class="stat-arrow">→</a>
+            <a href="Room%20module/index.php" class="stat-arrow">→</a>
         </div>
         <div class="stat-card amber">
             <div class="stat-icon-wrap">💰</div>
             <span class="stat-number"><?= $feesPending ?></span>
             <span class="stat-label">Fees Pending</span>
-            <a href="pages/fees.php" class="stat-arrow">→</a>
+            <a href="Fee%20module/dashboard.php" class="stat-arrow">→</a>
         </div>
         <div class="stat-card rose">
             <div class="stat-icon-wrap">🔧</div>
             <span class="stat-number"><?= $maintenanceOpen ?></span>
             <span class="stat-label">Maintenance Open</span>
-            <a href="pages/maintenance.php" class="stat-arrow">→</a>
+            <a href="html/maintenance/index.php" class="stat-arrow">→</a>
         </div>
     </div>
 
     <p class="section-label">Quick Actions</p>
     <div class="quick-links">
-        <a href="pages/students.php" class="quick-link">
+        <a href="Student%20module/index.php" class="quick-link">
             <div class="quick-link-icon">🎓</div> Manage Students
         </a>
-        <a href="pages/rooms.php" class="quick-link">
+        <a href="Room%20module/index.php" class="quick-link">
             <div class="quick-link-icon">🛏️</div> Manage Rooms
         </a>
-        <a href="pages/fees.php" class="quick-link">
+        <a href="Fee%20module/dashboard.php" class="quick-link">
             <div class="quick-link-icon">💰</div> View Fees
         </a>
-        <a href="pages/maintenance.php" class="quick-link">
+        <a href="html/maintenance/index.php" class="quick-link">
             <div class="quick-link-icon">🔧</div> Maintenance
         </a>
         <?php if ($_SESSION['role'] === 'admin'): ?>

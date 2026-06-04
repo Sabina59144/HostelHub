@@ -10,10 +10,10 @@ $activePage = $activePage ?? 'dashboard';
         <span class="brand-tag">Student Portal</span>
     </a>
 
-    <div class="nav-links">
+    <div class="navbar-links">
         <a href="index.php"        class="<?= $activePage === 'dashboard'   ? 'active' : '' ?>">Dashboard</a>
         <a href="fees.php"         class="<?= $activePage === 'fees'        ? 'active' : '' ?>">My Fees</a>
-        <a href="maintenance.php"  class="<?= $activePage === 'maintenance' ? 'active' : '' ?>">Maintenance</a>
+        <a href="../html/maintenance/index.php"  class="<?= $activePage === 'maintenance' ? 'active' : '' ?>">Maintenance</a>
         <a href="room_request.php" class="<?= $activePage === 'request'     ? 'active' : '' ?>">Room Request</a>
     </div>
 

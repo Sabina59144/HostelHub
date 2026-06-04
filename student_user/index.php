@@ -35,7 +35,7 @@ $recentFees = $rf->fetchAll();
 // Recent maintenance for student's room
 $recentMaint = [];
 if ($s['room_id']) {
-    $mq = $db->prepare("SELECT * FROM maintenance WHERE room_id = ? ORDER BY date_reported DESC LIMIT 4");
+    $mq = $db->prepare("SELECT * FROM maintenance WHERE room_id = ? AND COALESCE(is_deleted,0) = 0 ORDER BY date_reported DESC LIMIT 4");
     $mq->execute([$s['room_id']]);
     $recentMaint = $mq->fetchAll();
 }
@@ -189,7 +189,7 @@ $activePage = 'dashboard';
                 </svg>
                 Room Maintenance
             </h2>
-            <a href="maintenance.php" style="font-size:0.78rem;color:#7c3aed;text-decoration:none;font-weight:600;">View all →</a>
+            <a href="../html/maintenance/index.php" style="font-size:0.78rem;color:#7c3aed;text-decoration:none;font-weight:600;">View all →</a>
         </div>
         <?php if (!$s['room_id'] || empty($recentMaint)): ?>
             <div class="no-rows"><?= !$s['room_id'] ? 'No room allocated.' : 'No maintenance records for your room.' ?></div>

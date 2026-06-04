@@ -1,40 +1,16 @@
 <?php
+// Consolidated student login — use root login.php for unified auth
 require_once __DIR__ . '/../includes/session.php';
-require_once __DIR__ . '/../includes/db.php';
 
-// Already logged in as student
+// If student already logged in, redirect to dashboard
 if (!empty($_SESSION['student_id'])) {
-    header("Location: index.php");
+    header("Location: ../student_dashboard.php");
     exit();
 }
 
-$error = '';
-
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $student_number = trim($_POST['student_number'] ?? '');
-    $dob            = trim($_POST['date_of_birth']  ?? '');
-
-    if (empty($student_number) || empty($dob)) {
-        $error = "Please enter your Student Number and Date of Birth.";
-    } else {
-        $stmt = $db->prepare(
-            "SELECT * FROM students WHERE student_number = ? AND date_of_birth = ? AND status = 1 LIMIT 1"
-        );
-        $stmt->execute([$student_number, $dob]);
-        $student = $stmt->fetch();
-
-        if ($student) {
-            $_SESSION['student_id']     = $student['student_id'];
-            $_SESSION['student_number'] = $student['student_number'];
-            $_SESSION['student_name']   = $student['full_name'];
-            $_SESSION['student_room']   = $student['room_id'];
-            header("Location: index.php");
-            exit();
-        } else {
-            $error = "Invalid Student Number or Date of Birth.";
-        }
-    }
-}
+// Redirect to unified root login
+header("Location: ../login.php");
+exit();
 ?>
 <!DOCTYPE html>
 <html lang="en">

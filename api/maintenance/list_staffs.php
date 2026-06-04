@@ -5,7 +5,7 @@ require_once(__DIR__ . '/../config/auth.php');
 requireLoginJson();
 
 try {
-    $stmt = $db->prepare("SELECT staff_id, name, role, email FROM staffs ORDER BY name");
+    $stmt = $db->prepare("SELECT user_id AS staff_id, full_name AS name, role, NULL AS email FROM users WHERE is_active = 1 ORDER BY full_name");
     $stmt->execute();
     $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
     echo json_encode([ 'success' => true, 'data' => $rows ]);

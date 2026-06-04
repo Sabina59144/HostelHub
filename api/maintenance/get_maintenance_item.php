@@ -14,11 +14,16 @@ if ($id === '' || !ctype_digit($id)) {
 try {
     ensureMaintenanceArchiveSchema($db);
 
-    // Try to select including newer columns; if columns missing, fall back
-    $sql = "SELECT m.*, r.room_number, s.name AS assigned_to_name, st.name AS reported_by_name FROM maintenance m
-            LEFT JOIN staffs s ON m.assigned_to = s.staff_id
-            LEFT JOIN students st ON m.reported_by = st.student_id
-            LEFT JOIN rooms r ON m.room_id = r.room_id
+    $sql = "SELECT m.*,
+                   r.room_number,
+                   m.assigned_to_id,
+                   COALESCE(au.full_name, '') AS assigned_to_name,
+                   COALESCE(u.full_name, s.full_name, '') AS reported_by_name
+            FROM maintenance m
+            LEFT JOIN users u    ON m.reported_by = u.user_id
+            LEFT JOIN students s ON m.reported_by = s.student_id
+            LEFT JOIN rooms r    ON m.room_id     = r.room_id
+            LEFT JOIN users au   ON m.assigned_to_id = au.user_id
             WHERE m.maintenance_id = :id AND m.is_deleted = 0";
     if (($user['role'] ?? '') === 'student') {
         $sql .= " AND m.reported_by = :reported_by";
@@ -36,7 +41,6 @@ try {
         exit;
     }
 
-    // Ensure keys exist for compatibility
     if (!array_key_exists('status', $row)) $row['status'] = ($row['is_resolved'] == 1 ? 'Completed' : 'Pending');
     if (!array_key_exists('resolution_note', $row)) $row['resolution_note'] = '';
 

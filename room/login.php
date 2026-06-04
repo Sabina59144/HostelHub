@@ -1,60 +1,20 @@
 <?php
-// ─────────────────────────────────────────────────────────────────────────────
-// room/login.php  –  Admin / Staff Login Page
-//
-// This page handles authentication for the admin side of the system.
-// It uses username + password (with bcrypt hashing via password_verify).
-// Students have their own login at student_user/login.php.
-// ─────────────────────────────────────────────────────────────────────────────
-
-// Load the shared session helper and database connection.
+// Consolidated login — use root login.php for both staff and student
 require_once(__DIR__ . "/../includes/session.php");
-require_once(__DIR__ . "/../includes/db.php");
 
-// If the user is already logged in, skip the login page and go straight to the dashboard.
+// If already logged in, redirect to appropriate dashboard
 if (isLoggedIn()) {
-    header("Location: index.php");
+    if (currentRole() === 'student') {
+        header("Location: ../student_dashboard.php");
+    } else {
+        header("Location: index.php");
+    }
     exit();
 }
 
-// ── Handle the login form submission ─────────────────────────────────────────
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-
-    // Read what the user typed, trimming any leading/trailing spaces.
-    $username = trim($_POST['username'] ?? '');
-    $password = trim($_POST['password'] ?? '');
-
-    // Simple validation: both fields must be filled in.
-    if (empty($username) || empty($password)) {
-        $error = "Please enter both username and password.";
-    } else {
-        // Look up the user by username. is_active = 1 means the account is not disabled.
-        // LIMIT 1 stops the query as soon as it finds a match (faster).
-        $stmt = $db->prepare("SELECT * FROM users WHERE username = ? AND is_active = 1 LIMIT 1");
-        $stmt->execute([$username]);
-        $user = $stmt->fetch();
-
-        // password_verify() checks the plain-text password against the stored bcrypt hash.
-        // This is the safe way — we never store passwords in plain text.
-        if ($user && password_verify($password, $user['password'])) {
-
-            // Login successful: store key user data in the session.
-            // The session acts like a "logged-in stamp" that persists across pages.
-            $_SESSION['user_id']   = $user['user_id'];
-            $_SESSION['username']  = $user['username'];
-            $_SESSION['full_name'] = $user['full_name'];
-            $_SESSION['role']      = $user['role'];
-
-            // Send the user to the dashboard.
-            header("Location: index.php");
-            exit();
-        } else {
-            // Wrong username or password. Keep the message vague on purpose
-            // so attackers can't tell which one was wrong.
-            $error = "Invalid username or password.";
-        }
-    }
-}
+// Redirect all room/ logins to unified root login
+header("Location: ../login.php");
+exit();
 ?>
 <!DOCTYPE html>
 <html lang="en">

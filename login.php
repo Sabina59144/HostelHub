@@ -35,6 +35,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $_SESSION['username']  = $user['username'];
                 $_SESSION['full_name'] = $user['full_name'];
                 $_SESSION['role']      = $user['role'];
+                
+                $_SESSION['auth_user'] = [
+                    'role' => $user['role'],
+                    'id' => $user['user_id'],
+                    'name' => $user['full_name'],
+                    'identifier' => $user['username']
+                ];
 
                 header("Location: dashboard.php");
                 exit();
@@ -57,9 +64,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $student = $stmt->fetch();
 
             if ($student && password_verify($password, $student['password'])) {
-                $_SESSION['student_id']   = $student['student_id'];
-                $_SESSION['student_name'] = $student['full_name'];
-                $_SESSION['role']         = 'student';
+                $_SESSION['student_id']     = $student['student_id'];
+                $_SESSION['student_name']   = $student['full_name'];
+                $_SESSION['student_number'] = $student['student_number'];
+                $_SESSION['full_name']      = $student['full_name'];
+                $_SESSION['role']           = 'student';
+
+                $_SESSION['auth_user'] = [
+                    'role' => 'student',
+                    'id' => $student['student_id'],
+                    'name' => $student['full_name'],
+                    'identifier' => $student['student_number']
+                ];
 
                 header("Location: student_dashboard.php");
                 exit();

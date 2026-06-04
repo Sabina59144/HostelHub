@@ -19,11 +19,11 @@ $filter  = $_GET['f'] ?? '';
 $records = [];
 
 if ($student['room_id']) {
-    $sql    = "SELECT * FROM maintenance WHERE room_id = ?";
+    $sql    = "SELECT m.*, u.full_name AS assigned_to_name FROM maintenance m LEFT JOIN users u ON m.assigned_to_id = u.user_id WHERE m.room_id = ? AND COALESCE(m.is_deleted,0) = 0";
     $params = [$student['room_id']];
-    if ($filter === 'open')     { $sql .= " AND is_resolved = 0"; }
-    if ($filter === 'resolved') { $sql .= " AND is_resolved = 1"; }
-    $sql .= " ORDER BY date_reported DESC";
+    if ($filter === 'open')     { $sql .= " AND m.is_resolved = 0"; }
+    if ($filter === 'resolved') { $sql .= " AND m.is_resolved = 1"; }
+    $sql .= " ORDER BY m.date_reported DESC";
     $mq = $db->prepare($sql); $mq->execute($params);
     $records = $mq->fetchAll();
 }
@@ -84,7 +84,7 @@ $activePage = 'maintenance';
                     <tr>
                         <td><strong><?= htmlspecialchars($m['ticket_number']) ?></strong></td>
                         <td><?= htmlspecialchars($m['description'] ?? '—') ?></td>
-                        <td><?= htmlspecialchars($m['assigned_to']) ?></td>
+                        <td><?= htmlspecialchars($m['assigned_to_name'] ?? 'None') ?></td>
                         <td><?= date('d M Y', strtotime($m['date_reported'])) ?></td>
                         <td>
                             <?= $m['is_resolved']

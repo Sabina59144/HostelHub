@@ -1,4 +1,4 @@
-ï»¿-- HostelHub schema (cleaned merge)
+ÿþï»¿-- HostelHub schema (cleaned merge)
 -- Run in database 'hostelhub'
 CREATE DATABASE IF NOT EXISTS hostelhub CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 USE hostelhub;
@@ -6,58 +6,58 @@ USE hostelhub;
 -- Users table
 CREATE TABLE IF NOT EXISTS users (
   user_id INT NOT NULL AUTO_INCREMENT,
-  username VARCHAR(50) NOT NULL UNIQUE,
+  username VARCHAR(50NOT NULL UNIQUE,
   password VARCHAR(255) NOT NULL,
-  full_name VARCHAR(100) NOT NULL,
+  full_name VARCHAR(100NOT NULL,
   role ENUM('admin','staff') NOT NULL DEFAULT 'staff',
-  is_active TINYINT(1) NOT NULL DEFAULT 1,
+  is_active TINYINT(1NOT NULL DEFAULT 1,
   created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (user_id)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- Rooms
 CREATE TABLE IF NOT EXISTS rooms (
   room_id INT NOT NULL AUTO_INCREMENT,
   room_number VARCHAR(20) NOT NULL UNIQUE,
-  room_type VARCHAR(20) DEFAULT 'shared',
+  room_type VARCHAR(20DEFAULT 'shared',
   capacity INT NOT NULL DEFAULT 1,
   price_per_month DECIMAL(10,2) DEFAULT 0.00,
   is_ensuite TINYINT(1) DEFAULT 0,
   available_from DATE DEFAULT NULL,
   PRIMARY KEY (room_id)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- Students
 CREATE TABLE IF NOT EXISTS students (
   student_id INT NOT NULL AUTO_INCREMENT,
   student_number VARCHAR(50) NOT NULL UNIQUE,
-  password VARCHAR(255) NOT NULL,
+  password VARCHAR(255NOT NULL,
   full_name VARCHAR(100) NOT NULL,
-  email VARCHAR(100) DEFAULT NULL,
+  email VARCHAR(100DEFAULT NULL,
   date_of_birth DATE DEFAULT NULL,
   room_id INT DEFAULT NULL,
   status TINYINT(1) NOT NULL DEFAULT 1,
   created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (student_id),
-  CONSTRAINT fk_student_room FOREIGN KEY (room_id) REFERENCES rooms(room_id) ON DELETE SET NULL ON UPDATE CASCADE
+  CONSTRAINT fk_student_room FOREIGN KEY (room_idREFERENCES rooms(room_idON DELETE SET NULL ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- Fees
 CREATE TABLE IF NOT EXISTS fees (
-  receipt_number VARCHAR(30) NOT NULL,
+  receipt_number VARCHAR(30NOT NULL,
   student_id INT NOT NULL,
-  fee_type ENUM('rent','deposit','utility','fine','laundry','other') NOT NULL,
+  fee_type ENUM('rent','deposit','utility','fine','laundry','other'NOT NULL,
   amount DECIMAL(10,2) NOT NULL,
   due_date DATE NOT NULL,
-  is_paid TINYINT(1) NOT NULL DEFAULT 0,
+  is_paid TINYINT(1NOT NULL DEFAULT 0,
   paid_at DATETIME DEFAULT NULL,
-  payment_method VARCHAR(20) DEFAULT NULL,
+  payment_method VARCHAR(20DEFAULT NULL,
   fine_rate DECIMAL(5,2) DEFAULT 0.00,
   fine_amount DECIMAL(10,2) DEFAULT 0.00,
   total_due DECIMAL(10,2) DEFAULT 0.00,
   created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (receipt_number),
-  CONSTRAINT fk_fee_student FOREIGN KEY (student_id) REFERENCES students(student_id) ON DELETE RESTRICT ON UPDATE CASCADE
+  CONSTRAINT fk_fee_student FOREIGN KEY (student_idREFERENCES students(student_idON DELETE RESTRICT ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- Maintenance
@@ -72,5 +72,5 @@ CREATE TABLE IF NOT EXISTS maintenance (
   notes TEXT DEFAULT NULL,
   PRIMARY KEY (maintenance_id),
   CONSTRAINT fk_maintenance_room FOREIGN KEY (room_id) REFERENCES rooms(room_id) ON DELETE RESTRICT ON UPDATE CASCADE,
-  CONSTRAINT fk_maintenance_reporter FOREIGN KEY (reported_by) REFERENCES users(user_id) ON DELETE SET NULL ON UPDATE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+  CONSTRAINT fk_maintenance_reporter FOREIGN KEY (reported_byREFERENCES users(user_idON DELETE SET NULL ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;

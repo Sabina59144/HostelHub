@@ -33,16 +33,18 @@ $roomsResult = $db->query(
 $errors = [];
 $success = "";
 $student_number = $full_name = $email = $date_of_birth = "";
-$room_id = "";
+$room_id = $password = $confirm_password = "";
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     /* ── Sanitise POST input ────────────────────── */
-    $student_number = trim($_POST['student_number']);
-    $full_name      = trim($_POST['full_name']);
-    $email          = trim($_POST['email']);
-    $date_of_birth  = trim($_POST['date_of_birth']);
-    $room_id        = $_POST['room_id'] !== '' ? (int)$_POST['room_id'] : null;
-    $status         = 1; // New students default to active
+    $student_number   = trim($_POST['student_number']);
+    $full_name        = trim($_POST['full_name']);
+    $email            = trim($_POST['email']);
+    $date_of_birth    = trim($_POST['date_of_birth']);
+    $room_id          = $_POST['room_id'] !== '' ? (int)$_POST['room_id'] : null;
+    $password         = $_POST['password'] ?? '';
+    $confirm_password = $_POST['confirm_password'] ?? '';
+    $status           = 1;
 
     /* ── Required field & format validation ─────── */
     if (empty($student_number)) {
@@ -53,6 +55,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (empty($full_name))  $errors[] = "Full name is required.";
     if (empty($email))      $errors[] = "Email address is required.";
     elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) $errors[] = "Please enter a valid email address.";
+    if (empty($password))   $errors[] = "Password is required.";
+    elseif (strlen($password) < 8) $errors[] = "Password must be at least 8 characters.";
+    elseif ($password !== $confirm_password) $errors[] = "Passwords do not match.";
 
     /* ── Duplicate student number check ─────────── */
     if (empty($errors)) {
@@ -88,11 +93,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     /* ── Insert student & reset form on success ─── */
     if (empty($errors)) {
-        $dob  = !empty($date_of_birth) ? $date_of_birth : null;
-        $stmt = $db->prepare("INSERT INTO students (student_number, full_name, email, date_of_birth, room_id, status) VALUES (?,?,?,?,?,?)");
-        if ($stmt->execute([$student_number, $full_name, $email, $dob, $room_id, $status])) {
+        $dob          = !empty($date_of_birth) ? $date_of_birth : null;
+        $passwordHash = password_hash($password, PASSWORD_BCRYPT);
+        $stmt = $db->prepare("INSERT INTO students (student_number, full_name, email, date_of_birth, room_id, password, status) VALUES (?,?,?,?,?,?,?)");
+        if ($stmt->execute([$student_number, $full_name, $email, $dob, $room_id, $passwordHash, $status])) {
             $success = "Student '{$full_name}' has been registered successfully!";
-            $student_number = $full_name = $email = $date_of_birth = $room_id = "";
+            $student_number = $full_name = $email = $date_of_birth = $room_id = $password = $confirm_password = "";
         } else {
             $errors[] = "Something went wrong. Please try again.";
         }
@@ -216,6 +222,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <input type="date" id="date_of_birth" name="date_of_birth"
                        value="<?= htmlspecialchars($date_of_birth) ?>">
                 <div class="hint">Optional</div>
+            </div>
+            <div class="form-group">
+                <label for="password">Password *</label>
+                <input type="password" id="password" name="password" placeholder="Minimum 8 characters">
+            </div>
+            <div class="form-group">
+                <label for="confirm_password">Confirm Password *</label>
+                <input type="password" id="confirm_password" name="confirm_password" placeholder="Re-enter password">
             </div>
             <div class="form-group">
                 <label for="room_id">Assign Room</label>

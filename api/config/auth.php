@@ -1,4 +1,5 @@
 <?php
+require_once __DIR__ . '/../../includes/auth.php';
 
 function authStartSession(): void
 {
@@ -59,4 +60,3 @@ function requireLoginJson(): array
     echo json_encode(['success' => false, 'errors' => ['Authentication required.']]);
     exit;
 }
-

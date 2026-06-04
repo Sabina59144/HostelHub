@@ -1,7 +1,20 @@
 <?php
 require_once(__DIR__ . '/../../api/config/auth.php');
+require_once(__DIR__ . '/../../api/config/db.php');
+require_once(__DIR__ . '/../../includes/session.php');
 requireLoginPage('../login.php');
 $authUser = authCurrentUser();
+
+// For students, pre-fetch their assigned room so the form can auto-select it
+$studentRoomId = null;
+if ($authUser && $authUser['role'] === 'student') {
+    $rStmt = $db->prepare("SELECT room_id FROM students WHERE student_id = :id LIMIT 1");
+    $rStmt->bindValue(':id', (int)$authUser['id'], PDO::PARAM_INT);
+    $rStmt->execute();
+    $row = $rStmt->fetch(PDO::FETCH_ASSOC);
+    $studentRoomId = ($row && $row['room_id']) ? (int)$row['room_id'] : null;
+    $db = null;
+}
 ?>
 
 <?php
@@ -25,16 +38,15 @@ $authUser = authCurrentUser();
 <head>
     <title>Maintenance Module</title>
     <link rel="stylesheet" href="../../css/styles.css">
+ <link rel="stylesheet" href="../../css/style.css">
+
 </head>
 <body>
 <main class="app-shell">
+    <?php include("../../includes/navbar.php"); ?>
     <header class="app-header">
         <h1>Maintenance Requests</h1>
         <p>Monitor all maintenance tickets and their current status.</p>
-        <div class="header-meta">
-            <span>Signed in as <strong><?php echo htmlspecialchars($authUser['name'], ENT_QUOTES, 'UTF-8'); ?></strong> (<?php echo htmlspecialchars($authUser['role'], ENT_QUOTES, 'UTF-8'); ?>)</span>
-            <a class="btn secondary small" href="../../api/auth/logout.php">Logout</a>
-        </div>
         <nav>
             <ul class="top-nav">
                 <li><a href="#" id="openCreateLink">Add Request</a></li>
@@ -69,6 +81,7 @@ $authUser = authCurrentUser();
                     <tr>
                         <th>Ticket</th>
                         <th>Room</th>
+                        <th>Description</th>
                         <th>Assigned To</th>
                         <th>Reported By</th>
                         <th>Date Reported</th>
@@ -97,10 +110,8 @@ $authUser = authCurrentUser();
                     </select>
                 </div>
                 <div class="form-row">
-                    <label for="assigned_to">Assigned To*</label>
-                    <select id="assigned_to" name="assigned_to" required>
-                        <option value="">-- Select Staff --</option>
-                    </select>
+                    <label for="description">Description*</label>
+                    <textarea id="description" name="description" rows="3" placeholder="Describe the issue..." required style="width:100%;resize:vertical;"></textarea>
                 </div>
                 <div class="form-row">
                     <label for="date_reported">Date Reported*</label>
@@ -123,6 +134,12 @@ $authUser = authCurrentUser();
 
                 <div id="adminEditFields">
                     <div class="form-row">
+                        <label for="edit_assigned_to">Assign To</label>
+                        <select id="edit_assigned_to" name="edit_assigned_to">
+                            <option value="">-- Select Staff --</option>
+                        </select>
+                    </div>
+                    <div class="form-row">
                         <label for="status">Status</label>
                         <select name="status" id="status">
                             <option value="Pending">Pending</option>
@@ -138,10 +155,8 @@ $authUser = authCurrentUser();
 
                 <div id="studentEditFields">
                     <div class="form-row">
-                        <label for="edit_room_id">Room</label>
-                        <select id="edit_room_id" name="edit_room_id">
-                            <option value="">-- Select Room --</option>
-                        </select>
+                        <label for="edit_description">Description</label>
+                        <textarea id="edit_description" name="edit_description" rows="4" style="width:100%;resize:vertical;"></textarea>
                     </div>
                 </div>
 
@@ -158,6 +173,8 @@ $authUser = authCurrentUser();
 <script>
 // Authenticated user data injected from PHP
 const authUser = <?php echo json_encode($authUser, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES); ?>;
+// Student's assigned room (null if admin or no room assigned)
+const studentRoomId = <?php echo json_encode($studentRoomId); ?>;
 // Role helpers used to show/hide UI and actions
 const isAdmin = authUser && authUser.role === 'admin';
 const isStudent = authUser && authUser.role === 'student';
@@ -179,7 +196,6 @@ const addRequestLink = document.getElementById('openCreateLink');
 const archivedTabLink = document.querySelector('.top-nav a[data-view="archived"]');
 const adminEditFields = document.getElementById('adminEditFields');
 const studentEditFields = document.getElementById('studentEditFields');
-const editRoomSelect = document.getElementById('edit_room_id');
 
 let maintenanceData = [];
 let selectsLoaded = false;
@@ -344,7 +360,8 @@ function renderMaintenance() {
         const statusText = normalizeStatus(row.status, row.is_resolved);
         tr.appendChild(createCell(row.ticket_number));
         tr.appendChild(createCell(row.room_number));
-        tr.appendChild(createCell(row.assigned_to_name));
+        tr.appendChild(createNoteCell(row.description));
+        tr.appendChild(createCell(row.assigned_to_name || 'None'));
         tr.appendChild(createCell(row.reported_by_name));
         tr.appendChild(createCell(row.date_reported));
         tr.appendChild(createStatusCell(statusText));
@@ -450,47 +467,44 @@ async function populateRoomOptions(selectElement) {
         opt.textContent = `${rm.room_number} (cap:${rm.capacity || 1})`;
         selectElement.appendChild(opt);
     });
+    // For students, auto-select their assigned room and lock the field
+    if (isStudent && studentRoomId) {
+        selectElement.value = String(studentRoomId);
+        selectElement.disabled = true;
+    }
     return null;
 }
 
-// Populate all selects used in the create form (rooms + staffs)
+// Populate room dropdown for the create form
 async function populateSelects() {
     try {
         clearCreateError();
         const roomSelect = document.getElementById('room_id');
-        const staffSelect = document.getElementById('assigned_to');
-
         const roomErr = await populateRoomOptions(roomSelect);
-        if (roomErr) {
-            showCreateError(roomErr);
-            return false;
-        }
-
-        resetSelectOptions(staffSelect);
-        const staffResp = await fetchJsonWithFallback('list_staffs.php');
-        if (staffResp && staffResp.success) {
-            staffResp.data.forEach(s => {
-                const opt = document.createElement('option');
-                opt.value = s.staff_id;
-                opt.textContent = `${s.name} (${s.role || 'staff'})`;
-                staffSelect.appendChild(opt);
-            });
-        } else {
-            showCreateError(staffResp && staffResp.errors ? staffResp.errors.join(' ') : 'Failed to load staffs.');
-            return false;
-        }
+        if (roomErr) { showCreateError(roomErr); return false; }
         return true;
     } catch (err) {
-        showCreateError('Failed to load dropdown options.');
+        showCreateError('Failed to load room options.');
         return false;
     }
 }
 
-// Populate rooms for the edit form (student-only edit)
-async function populateEditRooms() {
-    const roomErr = await populateRoomOptions(editRoomSelect);
-    if (roomErr) return false;
-    return true;
+// Populate staff dropdown for the admin edit form (lazy-loaded)
+let editStaffsLoaded = false;
+async function populateEditStaffs() {
+    const staffSelect = document.getElementById('edit_assigned_to');
+    resetSelectOptions(staffSelect);
+    const staffResp = await fetchJsonWithFallback('list_staffs.php');
+    if (staffResp && staffResp.success) {
+        staffResp.data.forEach(s => {
+            const opt = document.createElement('option');
+            opt.value = s.staff_id;
+            opt.textContent = `${s.name} (${s.role || 'staff'})`;
+            staffSelect.appendChild(opt);
+        });
+        return true;
+    }
+    return false;
 }
 
 // Form helpers
@@ -527,11 +541,10 @@ document.getElementById('cancelCreate').addEventListener('click', closeCreateMod
 function validateMaintenanceForm(data) {
     const errors = [];
     if (!data.room_id || !String(data.room_id).trim()) errors.push('Room ID is required.');
-    if (data.assigned_to === undefined || data.assigned_to === null || String(data.assigned_to).trim() === '') errors.push('Assigned To is required.');
+    if (!data.description || !String(data.description).trim()) errors.push('Description is required.');
     if (!data.date_reported) errors.push('Date Reported is required.');
     if (data.room_id && !/^\d+$/.test(String(data.room_id))) errors.push('Room ID must be a room ID.');
-    if (data.date_reported && !/^\d{4}-\d{2}-\d{2}$/.test(data.date_reported)) errors.push('Date Reported must be in YYYY-MM-DD format.');
-    if (data.assigned_to && !/^\d+$/.test(String(data.assigned_to))) errors.push('Assigned To must be a staff ID.');
+    if (data.date_reported && !/^\d{4}-\d{2}-\d{2}$/.test(data.date_reported)) errors.push('Date must be YYYY-MM-DD.');
     return errors;
 }
 
@@ -540,9 +553,11 @@ createForm.addEventListener('submit', async (event) => {
     event.preventDefault();
     clearCreateError();
 
+    const roomSelect = document.getElementById('room_id');
     const data = {
-        room_id: document.getElementById('room_id').value.trim(),
-        assigned_to: document.getElementById('assigned_to').value.trim(),
+        // Use studentRoomId as fallback because disabled selects don't submit values
+        room_id:       roomSelect.value.trim() || (studentRoomId ? String(studentRoomId) : ''),
+        description:   document.getElementById('description').value.trim(),
         date_reported: document.getElementById('date_reported').value
     };
 
@@ -616,17 +631,16 @@ async function openEditModal(id) {
             studentEditFields.style.display = 'none';
             document.getElementById('status').value = normalizeStatus(data.status, data.is_resolved);
             document.getElementById('resolution_note').value = data.resolution_note || '';
+            if (!editStaffsLoaded) {
+                editStaffsLoaded = await populateEditStaffs();
+            }
+            // Pre-select current assigned staff by their user_id (reliable, no name-matching)
+            const staffSel = document.getElementById('edit_assigned_to');
+            staffSel.value = data.assigned_to_id ? String(data.assigned_to_id) : '';
         } else {
             adminEditFields.style.display = 'none';
             studentEditFields.style.display = 'block';
-            if (!editRoomsLoaded) {
-                editRoomsLoaded = await populateEditRooms();
-                if (!editRoomsLoaded) {
-                    alert('Failed to load rooms.');
-                    return;
-                }
-            }
-            editRoomSelect.value = String(data.room_id || '');
+            document.getElementById('edit_description').value = data.description || '';
         }
 
         openModal(editModal);
@@ -648,17 +662,20 @@ document.getElementById('saveEdit').addEventListener('click', async () => {
     const errors = [];
 
     if (isAdmin) {
-        const status = document.getElementById('status').value;
+        const status          = document.getElementById('status').value;
         const resolution_note = document.getElementById('resolution_note').value.trim();
+        const assigned_to     = document.getElementById('edit_assigned_to').value.trim();
         if (!status) errors.push('Status is required.');
         if (status === 'Completed' && resolution_note.length === 0) errors.push('Resolution Note is required when marked Completed.');
         if (resolution_note.length > 2000) errors.push('Resolution Note must be 2000 characters or less.');
         payload.append('status', status);
         payload.append('resolution_note', resolution_note);
+        // Always send assigned_to: empty string = clear assignment, digit = assign to that user
+        payload.append('assigned_to', assigned_to);
     } else {
-        const roomId = editRoomSelect.value.trim();
-        if (!roomId) errors.push('Room is required.');
-        payload.append('room_id', roomId);
+        const description = document.getElementById('edit_description').value.trim();
+        if (!description) errors.push('Description is required.');
+        payload.append('description', description);
     }
 
     if (errors.length) {

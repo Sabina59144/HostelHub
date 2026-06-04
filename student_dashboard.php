@@ -2,6 +2,8 @@
 // student_dashboard.php
 require_once(__DIR__ . "/includes/session.php");
 require_once(__DIR__ . "/includes/db.php");
+require_once(__DIR__ . "/api/config/schema.php");
+ensureMaintenanceArchiveSchema($db);
 
 // Only students may access this page
 if (!isset($_SESSION['student_id']) || $_SESSION['role'] !== 'student') {
@@ -41,10 +43,11 @@ $total_paid = array_sum(array_column(array_filter($fees, fn($f) =>  $f['is_paid'
 
 // ── Fetch maintenance tickets ────────────────────────────────
 $mstmt = $db->prepare("
-    SELECT m.*, r.room_number
+    SELECT m.*, r.room_number, u.full_name AS assigned_to_name
     FROM   maintenance m
     JOIN   rooms r ON m.room_id = r.room_id
-    WHERE  m.room_id = ? 
+    LEFT JOIN users u ON m.assigned_to_id = u.user_id
+    WHERE  m.room_id = ? AND COALESCE(m.is_deleted, 0) = 0
     ORDER  BY m.date_reported DESC
     LIMIT  5
 ");
@@ -75,24 +78,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
     if ($action === 'maintenance') {
-        $issue = trim($_POST['issue'] ?? '');
-        if (!$student['room_id']) {
-            $req_error = "You are not assigned to a room yet. Cannot raise a maintenance request.";
-        } elseif (empty($issue)) {
-            $req_error = "Please describe the maintenance issue.";
-        } else {
-            $ticket_no = 'TKT-' . strtoupper(substr(md5(uniqid()), 0, 8));
-            $ins = $db->prepare("
-                INSERT INTO maintenance (ticket_number, room_id, assigned_to, date_reported, reported_by, is_resolved)
-                VALUES (?, ?, 'Pending Assignment', CURDATE(), NULL, 0)
-            ");
-            // reported_by references users table; students aren't users, so NULL is fine
-            $ins->execute([$ticket_no, $student['room_id']]);
-            $req_success = "Maintenance request submitted! Ticket: <strong>{$ticket_no}</strong>";
-            // Refresh tickets
-            $mstmt->execute([$room_id]);
-            $tickets = $mstmt->fetchAll();
-        }
+        // Maintenance requests are handled via the maintenance module
+        header("Location: html/maintenance/index.php");
+        exit();
     }
 }
 
@@ -651,7 +639,7 @@ $first_name = explode(' ', $student['full_name'])[0];
                         <div class="ticket-dot <?= $t['is_resolved'] ? 'dot-resolved' : 'dot-open' ?>"></div>
                         <div class="ticket-info">
                             <div class="ticket-no"><?= htmlspecialchars($t['ticket_number']) ?></div>
-                            <div class="ticket-date">Reported: <?= date('d M Y', strtotime($t['date_reported'])) ?> &nbsp;·&nbsp; Assigned to: <?= htmlspecialchars($t['assigned_to']) ?></div>
+                            <div class="ticket-date">Reported: <?= date('d M Y', strtotime($t['date_reported'])) ?> &nbsp;·&nbsp; Assigned to: <?= htmlspecialchars($t['assigned_to_name'] ?? 'None') ?></div>
                         </div>
                         <div class="ticket-status <?= $t['is_resolved'] ? 'status-resolved' : 'status-open' ?>">
                             <?= $t['is_resolved'] ? '✔ Resolved' : '⏳ Open' ?>
@@ -673,17 +661,12 @@ $first_name = explode(' ', $student['full_name'])[0];
 
         <!-- Maintenance form -->
         <div class="req-panel active" id="panel-maintenance">
-            <form method="POST" action="">
-                <input type="hidden" name="action" value="maintenance">
-                <?php if (!$student['room_id']): ?>
-                    <div class="alert-error">⚠️ You must be assigned a room before submitting a maintenance request.</div>
-                <?php else: ?>
-                    <label style="font-size:0.82rem;font-weight:600;color:#4a5470;display:block;margin-bottom:0.4rem;">Describe the issue in your room</label>
-                    <textarea class="req-textarea" name="issue" placeholder="e.g. The bathroom tap is leaking, lights not working in bedroom…" required></textarea>
-                    <p class="req-note">Your room number (<?= htmlspecialchars($student['room_number']) ?>) will be attached automatically.</p>
-                    <button type="submit" class="btn-submit">Submit Request</button>
-                <?php endif; ?>
-            </form>
+            <?php if (!$student['room_id']): ?>
+                <div class="alert-error">⚠️ You must be assigned a room before submitting a maintenance request.</div>
+            <?php else: ?>
+                <p style="font-size:0.88rem;color:#475569;margin-bottom:1rem;">Use the Maintenance portal to submit and track requests for your room (<?= htmlspecialchars($student['room_number']) ?>).</p>
+                <a href="html/maintenance/index.php" class="btn-submit" style="display:inline-block;text-decoration:none;text-align:center;">Go to Maintenance Portal →</a>
+            <?php endif; ?>
         </div>
 
         <!-- Room change form -->

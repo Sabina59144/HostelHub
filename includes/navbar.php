@@ -75,8 +75,8 @@ $base        = $inSubdir ? '../' : '';
             </a>
         </li>
         <li>
-            <a href="<?= $base ?>pages/maintenance.php"
-               class="<?= $currentPage === 'maintenance.php' ? 'active' : '' ?>">
+            <a href="<?= $base ?>html/maintenance/index.php"
+               class="<?= strpos($_SERVER['PHP_SELF'], 'maintenance') !== false ? 'active' : '' ?>">
                 Maintenance
             </a>
         </li>

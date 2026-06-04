@@ -63,8 +63,8 @@ $base        = $inSubdir ? '../' : '';
             </a>
         </li>
         <li>
-            <a href="<?= $base ?>Room%20module/index.php"
-               class="<?= strpos($_SERVER['SCRIPT_FILENAME'], 'Room module') !== false ? 'active' : '' ?>">
+            <a href="<?= $base ?>room/index.php"
+               class="<?= strpos($_SERVER['SCRIPT_FILENAME'], 'room') !== false ? 'active' : '' ?>">
                 Rooms
             </a>
         </li>

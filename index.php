@@ -3,8 +3,8 @@
 require_once("includes/session.php");
 
 if (isLoggedIn()) {
-    header("Location: room/index.php");
+    header("Location: dashboard.php");
 } else {
-    header("Location: room/login.php");
+    header("Location: login.php");
 }
 exit();

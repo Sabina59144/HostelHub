@@ -8,18 +8,11 @@ $user        = currentUser();
 // Used to highlight the correct nav link as "active"
 $currentPage = basename($_SERVER['PHP_SELF']);
 
-<<<<<<< HEAD
 // Use real filesystem paths — avoids URL encoding issues with folder names containing spaces
-$projectRoot = dirname(__DIR__); // navbar.php is in includes/, so dirname gives HostelHub root
+$projectRoot = dirname(__DIR__);
 $scriptDir   = dirname($_SERVER['SCRIPT_FILENAME']);
 $inSubdir    = (realpath($scriptDir) !== realpath($projectRoot));
 $base        = $inSubdir ? '../' : '';
-=======
-// Detect if we're inside a subdirectory (e.g. pages/)
-// so links point back to the right root-level files
-$inSubdir = strpos($_SERVER['PHP_SELF'], '/pages/') !== false;
-$base     = $inSubdir ? '../' : '';   // Prepend "../" when in a subdirectory
->>>>>>> aa5c0b6e2539ab2140fb1f8574a56a3ff3aa921d
 ?>
 
 <nav class="navbar">

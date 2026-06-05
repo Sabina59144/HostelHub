@@ -1,0 +1,28 @@
+Room Module
+ [x] Capacity extreme min negative is rejected
+ [x] Capacity min minus one zero is rejected
+ [x] Capacity min boundary one is accepted
+ [x] Capacity min plus one two is accepted
+ [x] Capacity max minus one nine is accepted
+ [x] Capacity max boundary ten is accepted
+ [x] Capacity max plus one eleven should be rejected but is not
+ [x] Capacity mid five is accepted
+ [x] Capacity extreme max 9999 should be rejected but is not
+ [x] Capacity invalid letters are rejected
+ [x] Capacity empty field is rejected
+ [x] Price extreme min negative large is rejected
+ [x] Price min minus one negative decimal is rejected
+ [x] Price min boundary zero is accepted
+ [x] Price min plus one small decimal is accepted
+ [x] Price mid 500 is accepted
+ [x] Price extreme max should be rejected but is not
+ [x] Price invalid letters are rejected
+ [x] Price empty field is rejected
+ [x] Allocation empty room 0 of 3 succeeds
+ [x] Allocation one occupant 1 of 3 succeeds
+ [x] Allocation two occupants 2 of 3 last spot succeeds
+ [x] Allocation full room 3 of 3 is rejected
+ [x] Allocation overfull room 4 of 3 is rejected
+ [x] Allocation student already in same room is rejected
+ [x] Allocation mid capacity room 1 of 3 succeeds
+

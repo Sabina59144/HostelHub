@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites>
+  <testsuite name="C:\xampp\htdocs\HostelHub\phpunit.xml" tests="26" assertions="31" errors="0" failures="0" skipped="0" time="0.009555">
+    <testsuite name="Room Module Tests" tests="26" assertions="31" errors="0" failures="0" skipped="0" time="0.009555">
+      <testsuite name="RoomModuleTest" file="C:\xampp\htdocs\HostelHub\tests\RoomModuleTest.php" tests="26" assertions="31" errors="0" failures="0" skipped="0" time="0.009555">
+        <testcase name="capacity_extreme_min_negative_is_rejected" file="C:\xampp\htdocs\HostelHub\tests\RoomModuleTest.php" line="63" class="RoomModuleTest" classname="RoomModuleTest" assertions="1" time="0.006061"/>
+        <testcase name="capacity_min_minus_one_zero_is_rejected" file="C:\xampp\htdocs\HostelHub\tests\RoomModuleTest.php" line="70" class="RoomModuleTest" classname="RoomModuleTest" assertions="2" time="0.001174"/>
+        <testcase name="capacity_min_boundary_one_is_accepted" file="C:\xampp\htdocs\HostelHub\tests\RoomModuleTest.php" line="78" class="RoomModuleTest" classname="RoomModuleTest" assertions="1" time="0.000134"/>
+        <testcase name="capacity_min_plus_one_two_is_accepted" file="C:\xampp\htdocs\HostelHub\tests\RoomModuleTest.php" line="85" class="RoomModuleTest" classname="RoomModuleTest" assertions="1" time="0.000135"/>
+        <testcase name="capacity_max_minus_one_nine_is_accepted" file="C:\xampp\htdocs\HostelHub\tests\RoomModuleTest.php" line="92" class="RoomModuleTest" classname="RoomModuleTest" assertions="1" time="0.000305"/>
+        <testcase name="capacity_max_boundary_ten_is_accepted" file="C:\xampp\htdocs\HostelHub\tests\RoomModuleTest.php" line="99" class="RoomModuleTest" classname="RoomModuleTest" assertions="1" time="0.000106"/>
+        <testcase name="capacity_max_plus_one_eleven_should_be_rejected_but_is_not" file="C:\xampp\htdocs\HostelHub\tests\RoomModuleTest.php" line="110" class="RoomModuleTest" classname="RoomModuleTest" assertions="1" time="0.000084"/>
+        <testcase name="capacity_mid_five_is_accepted" file="C:\xampp\htdocs\HostelHub\tests\RoomModuleTest.php" line="118" class="RoomModuleTest" classname="RoomModuleTest" assertions="1" time="0.000099"/>
+        <testcase name="capacity_extreme_max_9999_should_be_rejected_but_is_not" file="C:\xampp\htdocs\HostelHub\tests\RoomModuleTest.php" line="128" class="RoomModuleTest" classname="RoomModuleTest" assertions="1" time="0.000084"/>
+        <testcase name="capacity_invalid_letters_are_rejected" file="C:\xampp\htdocs\HostelHub\tests\RoomModuleTest.php" line="136" class="RoomModuleTest" classname="RoomModuleTest" assertions="2" time="0.000112"/>
+        <testcase name="capacity_empty_field_is_rejected" file="C:\xampp\htdocs\HostelHub\tests\RoomModuleTest.php" line="144" class="RoomModuleTest" classname="RoomModuleTest" assertions="1" time="0.000076"/>
+        <testcase name="price_extreme_min_negative_large_is_rejected" file="C:\xampp\htdocs\HostelHub\tests\RoomModuleTest.php" line="156" class="RoomModuleTest" classname="RoomModuleTest" assertions="1" time="0.000112"/>
+        <testcase name="price_min_minus_one_negative_decimal_is_rejected" file="C:\xampp\htdocs\HostelHub\tests\RoomModuleTest.php" line="163" class="RoomModuleTest" classname="RoomModuleTest" assertions="2" time="0.000098"/>
+        <testcase name="price_min_boundary_zero_is_accepted" file="C:\xampp\htdocs\HostelHub\tests\RoomModuleTest.php" line="171" class="RoomModuleTest" classname="RoomModuleTest" assertions="1" time="0.000071"/>
+        <testcase name="price_min_plus_one_small_decimal_is_accepted" file="C:\xampp\htdocs\HostelHub\tests\RoomModuleTest.php" line="178" class="RoomModuleTest" classname="RoomModuleTest" assertions="1" time="0.000071"/>
+        <testcase name="price_mid_500_is_accepted" file="C:\xampp\htdocs\HostelHub\tests\RoomModuleTest.php" line="185" class="RoomModuleTest" classname="RoomModuleTest" assertions="1" time="0.000067"/>
+        <testcase name="price_extreme_max_should_be_rejected_but_is_not" file="C:\xampp\htdocs\HostelHub\tests\RoomModuleTest.php" line="195" class="RoomModuleTest" classname="RoomModuleTest" assertions="1" time="0.000067"/>
+        <testcase name="price_invalid_letters_are_rejected" file="C:\xampp\htdocs\HostelHub\tests\RoomModuleTest.php" line="203" class="RoomModuleTest" classname="RoomModuleTest" assertions="1" time="0.000081"/>
+        <testcase name="price_empty_field_is_rejected" file="C:\xampp\htdocs\HostelHub\tests\RoomModuleTest.php" line="210" class="RoomModuleTest" classname="RoomModuleTest" assertions="1" time="0.000075"/>
+        <testcase name="allocation_empty_room_0_of_3_succeeds" file="C:\xampp\htdocs\HostelHub\tests\RoomModuleTest.php" line="222" class="RoomModuleTest" classname="RoomModuleTest" assertions="1" time="0.000073"/>
+        <testcase name="allocation_one_occupant_1_of_3_succeeds" file="C:\xampp\htdocs\HostelHub\tests\RoomModuleTest.php" line="229" class="RoomModuleTest" classname="RoomModuleTest" assertions="1" time="0.000069"/>
+        <testcase name="allocation_two_occupants_2_of_3_last_spot_succeeds" file="C:\xampp\htdocs\HostelHub\tests\RoomModuleTest.php" line="236" class="RoomModuleTest" classname="RoomModuleTest" assertions="1" time="0.000068"/>
+        <testcase name="allocation_full_room_3_of_3_is_rejected" file="C:\xampp\htdocs\HostelHub\tests\RoomModuleTest.php" line="243" class="RoomModuleTest" classname="RoomModuleTest" assertions="2" time="0.000094"/>
+        <testcase name="allocation_overfull_room_4_of_3_is_rejected" file="C:\xampp\htdocs\HostelHub\tests\RoomModuleTest.php" line="251" class="RoomModuleTest" classname="RoomModuleTest" assertions="1" time="0.000082"/>
+        <testcase name="allocation_student_already_in_same_room_is_rejected" file="C:\xampp\htdocs\HostelHub\tests\RoomModuleTest.php" line="258" class="RoomModuleTest" classname="RoomModuleTest" assertions="2" time="0.000087"/>
+        <testcase name="allocation_mid_capacity_room_1_of_3_succeeds" file="C:\xampp\htdocs\HostelHub\tests\RoomModuleTest.php" line="267" class="RoomModuleTest" classname="RoomModuleTest" assertions="1" time="0.000068"/>
+      </testsuite>
+    </testsuite>
+  </testsuite>
+</testsuites>
